@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clean Core Strategy &amp; Měření — Série (Patrick Weber)</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>mermaid.initialize({ startOnLoad: true, theme: 'default', flowchart: { curve: 'linear' } });</script>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 1.65;
+    color: #2c3e50;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 40px 48px;
+    background: #fff;
+  }
+  h1 { font-size: 2em; border-bottom: 3px solid #2980b9; padding-bottom: 10px; margin-top: 0; }
+  h2 { font-size: 1.4em; border-bottom: 1px solid #ddd; padding-bottom: 6px; margin-top: 2em; color: #2c3e50; }
+  h3 { font-size: 1.15em; margin-top: 1.5em; color: #34495e; }
+  h4 { font-size: 1em; color: #555; }
+  blockquote {
+    border-left: 4px solid #3498db;
+    margin: 12px 0;
+    padding: 8px 16px;
+    background: #f0f7ff;
+    border-radius: 0 4px 4px 0;
+    color: #2c3e50;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 16px 0;
+    font-size: 13px;
+  }
+  th {
+    background: #2980b9;
+    color: white;
+    padding: 8px 12px;
+    text-align: left;
+  }
+  td {
+    border: 1px solid #ddd;
+    padding: 7px 12px;
+    vertical-align: top;
+  }
+  tr:nth-child(even) td { background: #f8f9fa; }
+  code {
+    background: #f4f4f4;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 12px;
+  }
+  pre.mermaid {
+    background: white;
+    border: 1px solid #e8e8e8;
+    border-radius: 6px;
+    padding: 16px;
+    text-align: center;
+    margin: 20px 0;
+    overflow-x: auto;
+  }
+  hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
+  ul, ol { padding-left: 1.5em; }
+  li { margin: 3px 0; }
+  a { color: #2980b9; }
+  strong { color: #2c3e50; }
+  em { color: #555; }
+  @media print {
+    body { max-width: 100%; padding: 20px; font-size: 12px; }
+    h1 { font-size: 1.6em; }
+    h2 { font-size: 1.2em; }
+    pre.mermaid { page-break-inside: avoid; }
+    table { page-break-inside: avoid; font-size: 11px; }
+    blockquote { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<pre><code>
+</code></pre>
+<h1 id="clean-core-strategy-mereni-serie-patrick-weber">Clean Core Strategy &amp; Měření — Série (Patrick Weber)</h1>
+<blockquote>
+<p>Autor: Patrick Weber | Prostředí: S/4 HANA 2023 on-premise | GitHub: <a href="https://github.com/sap-weberpatrick/Clean-Core-Index">sap-weberpatrick/Clean-Core-Index</a></p>
+</blockquote>
+<p>Série 3 blogů popisuje <strong>reálnou implementaci Clean Core strategie</strong> v průmyslové firmě s 30 lety ABAP legacy kódu — od motivace přes strategii až po konkrétní KPI. Výjimečná tím, že otevřeně popisuje i kde to nevyšlo.</p>
+<pre class="mermaid">flowchart LR
+    P1["📘 Part 1<br/>Proč Clean Core?<br/>Background + Dimenze<br/>+ Rizika"] --> P2["📋 Part 2<br/>Strategie + Quality Gates<br/>Artifacts + Cíle<br/>(8 měsíců v praxi)"] --> P3["📊 Part 3<br/>Clean Core Index<br/>KPI měření<br/>CDS Views + GitHub"]
+    style P1 fill:,stroke:
+    style P2 fill:,stroke:
+    style P3 fill:,stroke:
+</pre>
+<table>
+<thead>
+<tr>
+<th>Díl</th>
+<th>Odkaz</th>
+<th>Obsah</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><a href="https://community.sap.com/t5/technology-blog-posts-by-members/clean-core-strategy-a-practical-approach-to-get-a-cleaner-on-premise-system/ba-p/14180311">Part 1</a></td>
+<td>Proč Clean Core, background 30 let legacy, dimenze, rizika, extensibility typy</td>
+</tr>
+<tr>
+<td>2</td>
+<td><a href="https://community.sap.com/t5/technology-blog-posts-by-members/clean-core-strategy-a-practical-approach-to-get-a-cleaner-on-premise-system/ba-p/14180323">Part 2</a></td>
+<td>Strategie, Quality Gates, ATC konfigurace, artifacts tabulka, 3 horizonty cílů</td>
+</tr>
+<tr>
+<td>3</td>
+<td><a href="https://community.sap.com/t5/technology-blog-posts-by-members/clean-core-index/ba-p/14180326">Part 3</a></td>
+<td>Clean Core Index = KPI, severity váhy, CDS Views pro automatické měření</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="cast-1-proc-clean-core-zaklady">📘 ČÁST 1 — Proč Clean Core &amp; základy</h2>
+<blockquote>
+<p><a href="https://community.sap.com/t5/technology-blog-posts-by-members/clean-core-strategy-a-practical-approach-to-get-a-cleaner-on-premise-system/ba-p/14180311">Part 1</a> | lokální: Clean Core Strategy, a practical approach to get a cleaner on-premise system</p>
+</blockquote>
+<h3 id="shrnuti">Shrnutí</h3>
+<p>Motivační díl série: 30 let SAP legacy, brownfield migrace ECC → S/4, a proč je Clean Core důležité i bez plánovaného přechodu na cloud. Zavádí 5 dimenzí Clean Core a ukazuje, proč je extensibility dimenze nejkritičtější z pohledu developera.</p>
+<hr />
+<h3 id="background-30-let-legacy">Background — 30 let legacy</h3>
+<p>Firma používá SAP od <strong>1996</strong>. Za 30 let vyvíjeli interní i externí vývojáři s různou úrovní zkušeností — od mainframe veteránů (IBM AS/400 éra) po OOP-nativní juniory. Výsledek: chaos custom kódu, nekonzistentní přístupy, obrovský technický dluh.</p>
+<p><strong>Klíčový moment:</strong> Brownfield migrace ECC → S/4 HANA 2 roky zpět. Kvůli nedostatku času a rozpočtu bylo nutné zachovat většinu custom objektů. Dnes: S/4 HANA 2023 FP1 on-premise + 30 let prachu navrchu.</p>
+<blockquote>
+<p><strong>Takeaway autora:</strong> <em>„Inovovat 30 let software developmentu není sprint. Je to alespoň maraton na měsíce až roky, s reálnou šancí nikdy nedosáhnout cíle. Ale každý krok pomáhá."</em></p>
+<p><strong>💡 Komentář:</strong> Tenhle background je kopírka situace, do které narazíme u každého velkého klienta, který SAP provozuje 15+ let. CSSZ, Foxconn a podobné firmy jsou přesně tady — a proto jsou tyto blogy tak relevantní.</p>
+</blockquote>
+<hr />
+<h3 id="5-dimenzi-clean-core">5 dimenzí Clean Core</h3>
+<p><strong>„Clean"</strong> = pro každou dimenzi je přijat správný přístup tak, aby byla: <em>up-to-date / cloud compliant / optimized and perfected</em></p>
+<pre class="mermaid">mindmap
+  root((Clean Core))
+    E2E Processes
+      Standardní procesy
+      Process governance
+    Data + Customizing
+      Master data quality
+      Customizing přístup
+    Integration
+      3rd party integrace
+      API-first přístup
+    Operations
+      Release management
+      Monitoring + jobs
+    Extensibility
+      Custom reports
+      Function Modules
+      Z-Fields + Appends
+      User-Exits + BAdI
+      Formuláře
+      Modifikace
+</pre>
+<blockquote>
+<p><strong>Klíčové:</strong> Série se zaměřuje <strong>výhradně na dimenzi Extensibility</strong> — to je devlopérská zodpovědnost. Ostatní dimenze (Data, Integration, Operations, E2E) řeší konzultanti a Basis tým.</p>
+<p><strong>💡 Komentář k odpovědnostem:</strong> Hranice dimenzí nejsou vždy jasné. Developer odpovídá za Extensibility, ale zároveň i za Integration (API volání). Konzultant řeší E2E procesy, ale ty mohou vyžadovat integraci. Odpovědnosti za Integration dimenzi jsou sdílené — je třeba to explicitně definovat.</p>
+</blockquote>
+<hr />
+<h3 id="proc-je-clean-core-dulezite-i-bez-cloud-planu">Proč je Clean Core důležité (i bez cloud plánu)</h3>
+<pre class="mermaid">flowchart TD
+    TD["⚠️ Technický dluh<br/>(30 let legacy)"]
+    TD --> U["🔄 Roční upgrady S/4<br/>→ ruční reimplementace<br/>modifikací při každém upgradu"]
+    TD --> AI["🤖 AI + nové technologie<br/>→ Joule AI nefunguje<br/>v modifikovaném prostředí"]
+    TD --> KD["🧠 Knowledge drain<br/>→ senioři odcházejí do důchodu<br/>(90 let zkušeností ztraceno)"]
+    TD --> DUP["📋 Duplicitní implementace<br/>→ stejný požadavek řešen<br/>víckrát v různých závodech"]
+    TD --> CLOUD["☁️ Blokovaný cloud přechod<br/>→ i bez plánu dnes,<br/>kdo zaručí zítřek?"]
+    style TD fill:,stroke:
+    style U fill:
+    style AI fill:
+    style KD fill:
+    style DUP fill:
+    style CLOUD fill:
+</pre>
+<blockquote>
+<p><strong>💡 Komentář k AI argumentu:</strong> Joule argument je silný a nový. S/4 HANA AI asistent byl trénovaný na SAP standardu. Pokud máš tisíce modifikací, Joule neví o tvém business kontextu a bude generovat nepoužitelné výsledky. Čím víc AI SAP zabuduje do produktu, tím více budou modifikace zpomalovat adopci.</p>
+<p><strong>💡 Komentář k knowledge drainu:</strong> Autor zmiňuje 90 let zkušeností odcházejících do důchodu. Tohle je argument, který bije na poplach v každé firmě provozující SAP 20+ let. A dokumentace modifikací? Buď neexistuje, nebo je to Word dokument z roku 2008.</p>
+</blockquote>
+<hr />
+<h3 id="extensibility-co-to-je-a-proc-je-problematicke">Extensibility — co to je a proč je problematické</h3>
+<p><strong>Extension</strong> = cokoliv co zákazník přidal k SAP standardu:</p>
+<table>
+<thead>
+<tr>
+<th>Typ extension</th>
+<th>Clean Core compliance</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Custom ABAP report</td>
+<td>❌ Non-compliant</td>
+</tr>
+<tr>
+<td>Custom Function Module</td>
+<td>❌ Non-compliant</td>
+</tr>
+<tr>
+<td>Z-Fields &amp; table appends</td>
+<td>⚠️ Závisí na přístupu</td>
+</tr>
+<tr>
+<td>User-Exit implementace</td>
+<td>⚠️ Závisí (viz tabulka Part 2)</td>
+</tr>
+<tr>
+<td>BAdI implementace</td>
+<td>✅ Compliant (released BAdI)</td>
+</tr>
+<tr>
+<td>Formuláře (SAPScript/SmartForms)</td>
+<td>❌ Non-compliant → Adobe</td>
+</tr>
+<tr>
+<td>Modifikace SAP objektů</td>
+<td>❌❌ Nejhorší možnost</td>
+</tr>
+<tr>
+<td>Implicit enhancements</td>
+<td>❌ Non-compliant</td>
+</tr>
+<tr>
+<td>Kopie SAP objektů</td>
+<td>❌❌ Nejhorší možnost</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Proč se to dělalo přesto?</strong><br />
+- Vysoká pracovní zátěž a tlak na splnění požadavků businessu<br />
+- Žádná alternativa od SAP, ale business-kritická potřeba<br />
+- Upgrady jen jednou za X let (kdo by čekal problémy?)<br />
+- Některé modifikace existují 20+ let — nikdo nečekal tak dlouhou životnost</p>
+<p><strong>Co se změnilo s příchodem S/4:</strong><br />
+- SAP <strong>skutečně odstraňuje</strong> deprecated User-Exits (dříve jen varoval) → SAP Note <a href="https://me.sap.com/notes/3414378">3414378</a><br />
+- SAP odstraňuje deprecated Function Modules, které zákazníci stále volají<br />
+- Kód okolo modifikací se změnil → reimplementace nutná i když samotná modifikace je stejná<br />
+- Celý zdrojový kód transakce může být nahrazen → modifikace se prostě nespouští</p>
+<hr />
+<h3 id="klicova-citace-definice-clean-core">Klíčová citace — definice Clean Core</h3>
+<blockquote>
+<p><em>„A clean core is not so much a core without custom ABAP, but it is a core with well designed and clearly interfaced and carefully encapsulated custom code.</em><br />
+<em>This code is then far easier to deal with during upgrade situations, and you have more flexibility in terms of future redesigns."</em></p>
+<p><strong>💡 Komentář:</strong> Tato citace je zásadní — Clean Core <strong>neznamená žádný Z-kód</strong>. Znamená <strong>dobře navržený, rozhraním oddělený, zapouzdřený</strong> custom kód. To je achievable i dnes, bez přechodu na cloud. BAdI místo User-Exit, RAP místo FM, Fiori místo SE38 reportu — to jsou kroky správným směrem.</p>
+</blockquote>
+<hr />
+<h2 id="cast-2-prakticka-strategie">📋 ČÁST 2 — Praktická strategie</h2>
+<blockquote>
+<p><a href="https://community.sap.com/t5/technology-blog-posts-by-members/clean-core-strategy-a-practical-approach-to-get-a-cleaner-on-premise-system/ba-p/14180323">Part 2</a> | lokální: Clean Core Strategy, a practical approach to get a cleaner on-premise system Part 2</p>
+</blockquote>
+<h3 id="shrnuti_1">Shrnutí</h3>
+<p>Jak vybudovat Clean Core strategii od nuly: změřit stav → získat support managementu → nastavit guidelines + governance → vynutit Quality Gates → definovat časové cíle. Po 8 měsících: krátké cíle splněny, střední a dlouhé ambicióznější než realita dovolila.</p>
+<hr />
+<h3 id="1-measure-scoping-nejdriv-zmer-pak-cisti">1. Measure &amp; Scoping — nejdřív změř, pak čisti</h3>
+<p>Než začneš cokoliv opravovat, potřebuješ kompletní inventuru custom kódu:<br />
+- Přehled všech <strong>modifikací</strong> (SSCR klíče)<br />
+- Seznam <strong>User-Exits a BAdI</strong> implementací<br />
+- Které <strong>custom reporty</strong> jsou stále používané?<br />
+- Stav <strong>SAPScript/SmartForms</strong> formulářů — v použití, nebo zombie?<br />
+- <strong>Rozhraní odpovědnosti</strong> — co patří IT, co jiným týmům? (abapgit repozitáře, Excel integrace…)</p>
+<p><strong>Nástroje pro inventuru:</strong><br />
+- <strong>SCMON</strong> — sledování modifikací<br />
+- <strong>UPL (Usage and Procedure Logging)</strong> — kdo co používá<br />
+- <strong>Custom Code Migration App</strong> — analýza přechodu na S/4<br />
+- <strong>CCLM (Solution Manager)</strong> — lifecycle management<br />
+- <strong>Clean Core Index CDS Views</strong> → GitHub (vlastní vývoj, viz Část 3)</p>
+<blockquote>
+<p><strong>💡 Komentář:</strong> Inventura je krok 0, bez kterého nelze nic plánovat. V praxi je výsledek vždy překvapivý — firmy si myslí, že mají 200 modifikací, a mají 1000+. SCMON + UPL je kombinace, kterou bych doporučil na každém projektu <strong>ještě před fází discovery</strong>.</p>
+</blockquote>
+<hr />
+<h3 id="2-awareness-management-business">2. Awareness — Management &amp; Business</h3>
+<p>Klíčový challenge: v prvních měsících Clean Core nepřináší viditelnou business hodnotu. Management potřebuje argumenty:</p>
+<p><strong>Pro Board of Management:</strong><br />
+- Snížení nákladů na údržbu systému (méně ruční práce při upgradu)<br />
+- Nižší náklady na onboarding — kolegové s SAP znalostmi jsou cennější v čistém systému<br />
+- Levnější spolupráce s externími konzultanty (méně „WTF je tenhle kód")<br />
+- Rychlejší development díky SAP standardu</p>
+<p><strong>Pro business uživatele:</strong><br />
+- Jsou zvyklí na staré procesy a transakce (někdy 10+ let)<br />
+- Bojí se změn → potřebují trénink, komunikaci, zapojení</p>
+<blockquote>
+<p><strong>💡 Komentář:</strong> Čísla = jazyk managementu. Proto je Clean Core Index tak mocný — místo „máme hodně technického dluhu" řekneš „náš index je 47,000, cíl je pod 15,000, za Q3 jsme snížili o 12 %". To se prezentuje samo.</p>
+</blockquote>
+<hr />
+<h3 id="3-development-guidelines-governance">3. Development Guidelines &amp; Governance</h3>
+<p>Stará guidelines typicky popisují ECC vývoj. S/4 přináší nové paradigma — CDS Views, RESTful ABAP, BAdI místo User-Exits — a starý dokument to nereflektuje.</p>
+<p><strong>Co udělat:</strong><br />
+- Aktualizovat guideline pro S/4 objekty (kdy CDS vs. kdy class, kdy RAP…)<br />
+- <strong>Formální schvalovací proces pro modifikace</strong> — každá modifikace musí schválit Head of IT<br />
+- Zdokumentovat každou modifikaci → ATC check to vynucuje technicky (viz Quality Gates)</p>
+<blockquote>
+<p><strong>💡 Komentář:</strong> Governance je o lidech, ne o technologii. Tisíce modifikací vznikly proto, že bylo „rychlejší modifikovat než hledat alternativu". BAdI pro blokování TR typu Repair (viz níže) je příklad, jak governance vynutit technicky — silnější než procesní schválení.</p>
+</blockquote>
+<hr />
+<h3 id="4-quality-gates-nejcennejsi-cast-clanku">4. Quality Gates ⭐ — nejcennější část článku</h3>
+<p>Ani nejlepší guideline nezabrání tomu, aby ji lidé nedodrželi. Quality Gates = technické vynucení kvality před deploymentem na produkci.</p>
+<pre class="mermaid">flowchart LR
+    DEV["👨‍💻 Developer<br/>vyvíjí změnu"] --> TRC{"TR typ<br/>= Repair?"}
+    TRC -->|"Ano"| BLOCK["❌ BAdI blokuje<br/>Vytvoření/release TR"]
+    TRC -->|"Ne"| ATC{"ATC check<br/>prochází?"}
+    ATC -->|"Ne"| FIX["🔧 Oprav ATC<br/>errors/warnings"]
+    FIX --> ATC
+    ATC -->|"Ano"| DOC{"Modifikace?<br/>Dokumentace<br/>existuje?"}
+    DOC -->|"Ne"| DOCFIX["📝 Doplň<br/>dokumentaci"]
+    DOCFIX --> DOC
+    DOC -->|"Ano / žádná modif."| ABAP{"ABAPDoc<br/>v nové třídě?"}
+    ABAP -->|"Ne"| ABAPFIX["📝 Doplň<br/>ABAPDoc"]
+    ABAPFIX --> ABAP
+    ABAP -->|"Ano"| RELEASE["✅ Release TR<br/>možný"]
+    style BLOCK fill:,stroke:
+    style RELEASE fill:,stroke:
+    style FIX fill:
+    style DOCFIX fill:
+    style ABAPFIX fill:
+</pre>
+<p><strong>Implementované Quality Gates:</strong></p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Gate</th>
+<th>Popis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>Custom ATC variant</strong></td>
+<td>Vlastní varianta S/4 HANA Readiness check + přidané checks</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>ABAP code-PAL</strong></td>
+<td>Instalace checks; nevyužívají všechny, jen relevantní sadu</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>Mandatory ATC při release TR</strong></td>
+<td>ATC musí projít, jinak transport nelze pustit</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>BAdI blokující TR typu Repair</strong></td>
+<td>Technické zabránění vytvoření/release opravného transportu</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>Vlastní ATC: ABAPDoc</strong></td>
+<td>Error jen pro třídy vytvořené <strong>po určitém datu</strong> (ne retroaktivně!)</td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>Vlastní ATC: dokumentace modifikace</strong></td>
+<td>Modifikace bez dokumentace = transport blokován</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Plánované gates (zatím nefinalizované):</strong><br />
+- ATC check pro povinný <strong>KTD dokument</strong> (Knowledge Transfer Document) pro CDS Views, RAP API<br />
+- ATC check ověřující záznam v <strong>interní Fiori App Reference Library</strong> (vlastní, jako SAP Help Portal)<br />
+- ATC check ověřující dokumentaci v <strong>interním API repozitáři</strong> (vlastní, jako api.sap.com pro Z-objekty)</p>
+<blockquote>
+<p><strong>💡 ABAPDoc check — chytrá adoption strategie:</strong> Místo globálního přepnutí warning → error (tisíce errorů v legacy třídách) vyvinuli vlastní ATC check s <strong>date cutoff</strong> — error jen pro třídy vytvořené po X datu. Nové třídy: povinný ABAPDoc. Staré třídy: bez donutku. Geniální — neinvaliduje existující kód, zabrání novému špatnému.</p>
+<p><strong>💡 Interní Fiori App Library &amp; API repozitář:</strong> Vlastní dokumentační infrastruktura pro Z-vývoj. Největší problém custom kódu je absence dokumentace — ATC check, který ji vynucuje před release do produkce, to řeší systémově.</p>
+</blockquote>
+<hr />
+<h3 id="5-engage-learning-journey-pro-tym">5. Engage — Learning Journey pro tým</h3>
+<ul>
+<li><strong>Individuální learning journey</strong> pro každého člena týmu (ne plošný trénink)</li>
+<li><strong>MS Teams community channel</strong> — kolegové sdílejí co se naučili, interní SAP knowledge base</li>
+<li>Každý člen týmu prozkoumá <strong>jeden BTP produkt</strong> → prezentuje use-case a přínos pro firmu</li>
+<li>Cíl: broadening scope + discovery nových možností + dostat lidi z komfortní zóny</li>
+</ul>
+<blockquote>
+<p><strong>💡 Komentář:</strong> Kulturní změna je těžší než technická. MS Teams channel jako interní community je přesně typ věci s velkým dopadem a minimální investicí — zejména při odchodech seniorů (knowledge drain z Části 1).</p>
+</blockquote>
+<hr />
+<h3 id="6-cile-ve-trech-horizontech">6. Cíle ve třech horizontech</h3>
+<blockquote>
+<p><strong>Spoiler autora:</strong> „Cíle byly příliš ambiciózní."</p>
+</blockquote>
+<pre class="mermaid">gantt
+    title Clean Core Journey - Roadmap cilu
+    dateFormat  YYYY-MM-DD
+    axisFormat  Mes. %m
+    section Kratkodobe (6 mes.)
+    Zakazat modifikace - Head of IT approval   :done,    2025-01-01, 30d
+    Mandatory ATC pri release TR               :done,    2025-01-01, 60d
+    Eclipse ADT only - bye SE80/SE38           :done,    2025-02-01, 60d
+    ABAPCleaner aktivni                        :done,    2025-02-01, 30d
+    Trenink RAP + Fiori Elements               :done,    2025-02-01, 120d
+    Trenink Key-User Extensibility             :done,    2025-03-01, 90d
+    Explore BTP produkty                       :done,    2025-01-01, 180d
+    CC Index pod 15000                         :done,    2025-01-01, 180d
+    section Strednedobe (12 mes.)
+    ABAP code-PAL mandatory ATC                :crit,    2025-07-01, 150d
+    ABAP language version to Cloud             :crit,    2025-07-01, 150d
+    Stop custom reports kde mozne              :crit,    2025-07-01, 150d
+    Resolve ATC S4 readiness errors            :done,    2025-07-01, 150d
+    Nove komunikacni kanaly                    :active,  2025-08-01, 120d
+    Analyza ostatnich dimenzi konzultanti      :active,  2025-07-01, 150d
+    section Dlouhodobe (18 mes.)
+    Evaluace kazdeho tier-3 enhancementu       :active,  2026-01-01, 180d
+    Migrace User-Exits na BAdI                 :crit,    2026-01-01, 180d
+    Migrace SmartForms na Adobe Forms          :crit,    2026-01-01, 180d
+</pre>
+<hr />
+<h3 id="7-tabulka-development-artifacts-compliance-prehled">7. Tabulka: Development Artifacts — compliance přehled</h3>
+<pre class="mermaid">flowchart TD
+    Q["Potřebuji rozšíření SAP?"] --> STD{"SAP standard<br/>nestačí?"}
+    STD -->|"Ne"| USE["✅ Použij SAP standard"]
+    STD -->|"Ano"| KUE{"Key-User<br/>Extensibility<br/>Tier 1?"}
+    KUE -->|"Ano"| T1["✅ Tier 1 — In-App<br/>Fiori adaptations<br/>Custom fields via KU tools"]
+    KUE -->|"Ne"| BADI{"Released BAdI<br/>nebo RAP API<br/>existuje? Tier 2?"}
+    BADI -->|"Ano"| T2["✅ Tier 2 — On-Stack<br/>Released BAdI<br/>RAP, CDS Views"]
+    BADI -->|"Ne"| SIDE{"Side-by-side<br/>na BTP<br/>Tier 3?"}
+    SIDE -->|"Ano"| T3["✅ Tier 3 — Side-by-Side<br/>CAP, SAP Build Apps<br/>Integration Suite"]
+    SIDE -->|"Ne"| MOD["⚠️ Modifikace<br/>schválení Head of IT<br/>+ dokumentace + ATC"]
+    style USE fill:,stroke:
+    style T1 fill:,stroke:
+    style T2 fill:,stroke:
+    style T3 fill:,stroke:
+    style MOD fill:,stroke:
+</pre>
+<table>
+<thead>
+<tr>
+<th>Artifact (non-compliant)</th>
+<th>Clean Core alternativa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Modifications</td>
+<td><strong>Žádná</strong> — jen v krajním případě</td>
+</tr>
+<tr>
+<td>User-Exits</td>
+<td>Released BAdIs</td>
+</tr>
+<tr>
+<td>Duplicates of SAP objects</td>
+<td><strong>Žádná</strong></td>
+</tr>
+<tr>
+<td>Implicit enhancements</td>
+<td><strong>Žádná</strong></td>
+</tr>
+<tr>
+<td>Method overriding SAP standard classes</td>
+<td><strong>Žádná</strong></td>
+</tr>
+<tr>
+<td>Business Transaction Events (BTE)</td>
+<td>Business Object Events, RAP Events</td>
+</tr>
+<tr>
+<td>SAPScript &amp; SmartForms</td>
+<td>Adobe Forms</td>
+</tr>
+<tr>
+<td>Queries (SQ01/SQ02, Quick Views)</td>
+<td>Analytical CDS Views → Fiori / Excel</td>
+</tr>
+<tr>
+<td>Z-Reports &amp; custom FMs</td>
+<td>RAP API → Fiori nebo SAP Build Apps</td>
+</tr>
+<tr>
+<td>Batch-Input v Z-reportech</td>
+<td>SAP standard API + Business Objects (api.sap.com)</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>💡 Výjimka pro Z-reporty:</strong> Jediný legitimní on-premise use-case pro custom ABAP report je <strong>SM36/SM37 background job</strong> — job step může být jen ABAP report, ne třída. Vše ostatní → Fiori/RAP.</p>
+</blockquote>
+<hr />
+<h3 id="8-zaver-z-praxe-co-vyslo-co-ne-po-8-mesicich">8. Závěr z praxe — co vyšlo, co ne (po 8 měsících)</h3>
+<p><strong>✅ Dosaženo:</strong><br />
+- Téměř všechny krátké cíle splněny<br />
+- Dramatické snížení počtu modifikací a reportů<br />
+- Všechny ATC S/4 readiness check findings vyřešeny<br />
+- Pravidelné reportování → zvýšená podpora managementu i businessu</p>
+<p><strong>❌ Nerealistické nebo problematické:</strong><br />
+- <strong>ABAP code-PAL mandatory</strong>: 1 ATC job → <strong>2,4 milionu errorů</strong> — SAP uvolnil jen zlomek objektů za 30 let<br />
+- <strong>ABAP language version → Cloud</strong>: záplava errorů, alternativy neexistují<br />
+- <strong>Stop custom reports</strong>: nelze — SM36/SM37 background jobs nutně potřebují ABAP report<br />
+- <strong>Migrace všech User-Exits → BAdI</strong>: pro část User-Exits BAdI náhradník prostě neexistuje<br />
+- <strong>SAPScript → Adobe Forms</strong>: komplexní formuláře nemají šablony; tým neumí forms vývoj; in-use identifikace netriviální<br />
+- <strong>BTP evaluace</strong>: trial účty mají omezení; licencování v rámci skupiny firmy je nepřehledné</p>
+<hr />
+<h2 id="cast-3-clean-core-index-kpi">📊 ČÁST 3 — Clean Core Index (KPI)</h2>
+<blockquote>
+<p><a href="https://community.sap.com/t5/technology-blog-posts-by-members/clean-core-index/ba-p/14180326">Part 3</a> | lokální: Clean Core Index <em>(tento soubor)</em></p>
+</blockquote>
+<h3 id="co-to-je">Co to je</h3>
+<p><strong>Clean Core Index</strong> = firemně definované KPI měřící Clean Core compliance dimenze Extensibility. <strong>Index 0 = 100% compliant</strong> (hypoteticky provozovatelné v public cloudu). Žádná oficiální SAP definice neexistuje.</p>
+<p>Síla indexu: <strong>manažersky srozumitelné číslo</strong> s jasným trendem — viz argument z Části 1 (Joule AI, upgrady, knowledge drain).</p>
+<hr />
+<h3 id="metodika-vypoctu">Metodika výpočtu</h3>
+<pre class="mermaid">flowchart LR
+    INV["📋 Inventura<br/>custom objektů<br/>CDS Views"] --> CLASS["Klasifikace<br/>dle typu objektu"]
+    CLASS --> WEIGHT["x Severity<br/>weight"]
+    WEIGHT --> SUM["Σ = Clean Core<br/>Index"]
+    SUM --> TRACK["📈 Týdenní<br/>měření"]
+    TRACK --> REPORT["📊 Kvartální<br/>report managementu<br/>per modul + per typ"]
+    REPORT --> ACTION["🎯 Prioritizace<br/>čisticích aktivit"]
+    ACTION --> INV
+    style SUM fill:,stroke:,stroke-width:2px
+</pre>
+<p><code>Index = Σ (počet objektů daného typu × severity)</code></p>
+<table>
+<thead>
+<tr>
+<th>Typ objektu</th>
+<th>Severity</th>
+<th>Zdůvodnění</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Reports</td>
+<td>1</td>
+<td>Legacy, ale upgrade-safe; redesign nákladný</td>
+</tr>
+<tr>
+<td>Function Modules</td>
+<td>1</td>
+<td>Stejně jako reporty</td>
+</tr>
+<tr>
+<td>SAPScript + SmartForms</td>
+<td>2</td>
+<td>20+ let zastaralé; každá změna = příležitost k náhradě</td>
+</tr>
+<tr>
+<td>ATC Errors (S/4 readiness check)</td>
+<td>5</td>
+<td>Snadno opravitelné — přítomnost = zahálka</td>
+</tr>
+<tr>
+<td>User Exits <strong>bez</strong> released BAdI náhradníka</td>
+<td>5</td>
+<td>Nelze nahradit; ověřit po každém upgradu</td>
+</tr>
+<tr>
+<td>User Exits <strong>s</strong> released BAdI náhradníkem</td>
+<td>8</td>
+<td>Řešitelné, ale dosud neřešené = lajdáctví</td>
+</tr>
+<tr>
+<td>Modifications</td>
+<td>10</td>
+<td>Nejvyšší riziko při každém upgradu</td>
+</tr>
+<tr>
+<td>Impl. Enhancements</td>
+<td>10</td>
+<td>Stejně kritické jako modifikace</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>💡 Komentář k váhám:</strong> Logika je konzistentní — čím víc „nemáš výmluvu proč to neřešit", tím vyšší severity. User Exit s BAdI náhradníkem (8) dostane vyšší váhu než bez náhradníka (5), protože ten bez náhradníka opravdu nejde opravit, zatímco ten s náhradníkem je jen odkládání.</p>
+<p><strong>Praktická záludnost:</strong> Nelze automaticky rozlišit User Exit s a bez BAdI náhradníka — nutná ruční analýza každého. Autor to přiznává a nakonec sjednotil severity na 8 pro všechny.</p>
+</blockquote>
+<hr />
+<h3 id="jak-to-merit">Jak to měřit</h3>
+<p>🔗 <strong>GitHub repozitář:</strong> <a href="https://github.com/sap-weberpatrick/Clean-Core-Index">sap-weberpatrick/Clean-Core-Index</a></p>
+<p>Obsahuje: CDS Views pro automatické měření všech typů objektů + ABAP report pro UPL tracking formulářů.</p>
+<p><strong>Speciální případ — SAPScript &amp; SmartForms:</strong><br />
+UPL nezaznamenává použití formulářů standardně. Řešení: vlastní ABAP report spouštěný jako periodický job, výsledky do Z-Table. Vše v GitHub repozitáři.</p>
+<blockquote>
+<p><strong>💡 Komentář:</strong> Formulářový „zombie problém" — SAPScript z roku 2001 existuje v systému, nikdo neví jestli se tiskne. Toto řešení přes Z-Table + job je pragmatické a přenositelné do jiných systémů.</p>
+</blockquote>
+<hr />
+<h3 id="jak-vyuzit-vysledky">Jak využít výsledky</h3>
+<ul>
+<li>Měřit <strong>týdně</strong> (automaticky via CDS Views + scheduled job)</li>
+<li>Sledovat progress <strong>per modul</strong> (MM, PP, SD…) i <strong>per typ</strong> (modifikace, ATC, reporty)</li>
+<li><strong>Kvartální report managementu</strong> s trendem → přínos vidí, podporují iniciativu</li>
+</ul>
+<hr />
+<h2 id="napojeni-na-existujici-poznamky">🔗 Napojení na existující poznámky</h2>
+<h3 id="konceptualni-zaklad-co-clean-core-je">Konceptuální základ — co Clean Core je</h3>
+<ul>
+<li>Clean Core demystified What does it mean and how to achieve it with SAP BTP — definice pojmu, BTP jako enabler</li>
+<li>SAP Clean Core + BTP = Future-Ready ERP Streamline Upgrades and Accelerate AI Adoption — BTP ekosystém pro side-by-side extensibility (Tier 3)</li>
+<li>BTP - Clean Core Full Stack Application Development (CAP) with SAP BTP — praktický CAP workshop</li>
+</ul>
+<h3 id="technicke-napojeni-jak-implementovat">Technické napojení — jak implementovat</h3>
+<ul>
+<li>CDS - Core Data Services — CDS Views jsou páteří Clean Core Index měření (Část 3)</li>
+<li>Extensibility — Clean Core rozlišuje typy extensibility; tabulka artifacts (Část 2) to konkretizuje</li>
+<li>SAP RAP ACTIONS + SAP RAP SAVE SEQUENCE — RAP je doporučená alternativa za Z-Reporty a custom FMs</li>
+<li>Consuming SAP with SAP Build Apps adding application logic with CAP while keeping the core clean — SAP Build jako alternativa (Tier 3)</li>
+<li>SAP Adobe Forms — doporučená náhrada za SAPScript/SmartForms</li>
+</ul>
+<h3 id="abap-kvalita-governance">ABAP kvalita &amp; governance</h3>
+<ul>
+<li>DSAG_ABAP_Leitfaden_translations_from_chat_EN — silný překryv: ATC checks, abapGit, kvalita kódu; DSAG guidelines jsou prakticky paralelní dokument k této sérii</li>
+<li>Modernizing ABAP Code — stejná problematika refactoringu legacy ABAP kódu</li>
+<li>ABAP Development on SAP BTP — ABAP Cloud = cílový stav; ABAP language version target</li>
+</ul>
+<h3 id="projektovy-kontext">Projektový kontext</h3>
+<ul>
+<li>Foxconn Master — side-by-side extensibility s BTP; Clean Core Index jako argument pro tech governance</li>
+<li>CSSZ - Overview karty — legacy Z-reporty a formuláře; Quality Gates přístup přímo aplikovatelný</li>
+</ul>
+<hr />
+<h2 id="celkove-hodnoceni-serie">🧠 Celkové hodnocení série</h2>
+<blockquote>
+<p><strong>Praktičnost: ⭐⭐⭐⭐⭐</strong><br />
+Jedna z nejpraktičtějších věcí k Clean Core tématu. Místo teorie: reálná firma, reálná čísla, reálné failu — a to je přesně to, co chybí ve většině SAP blogů.</p>
+</blockquote>
+<h3 id="nejcennejsi-insights-cross-serie">Nejcennější insights (cross-série):</h3>
+<table>
+<thead>
+<tr>
+<th>Insight</th>
+<th>Část</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Joule AI argument — modifikace blokují AI adopci</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Knowledge drain = 90 let zkušeností zmizelo za 2 roky</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Citace: Clean Core = dobře navržený, ne zero Z-kód</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Quality Gates technicky (ATC mandatory, BAdI pro Repair TR blokaci)</td>
+<td>2</td>
+</tr>
+<tr>
+<td>ABAPDoc ATC jen pro nové třídy — chytrá adoption strategie</td>
+<td>2</td>
+</tr>
+<tr>
+<td>SM36/SM37 exception — ABAP reporty nikdy úplně nevymizí</td>
+<td>2</td>
+</tr>
+<tr>
+<td>2,4M ATC errorů — data point pro ABAP Cloud language version</td>
+<td>2</td>
+</tr>
+<tr>
+<td>Interní Fiori App Library &amp; API repozitář — governance infrastructure</td>
+<td>2</td>
+</tr>
+<tr>
+<td>Clean Core Index severity weights a jejich logika</td>
+<td>3</td>
+</tr>
+<tr>
+<td>SAPScript zombie problem — UPL nestačí, nutný vlastní Z-report</td>
+<td>3</td>
+</tr>
+</tbody>
+</table>
+<h3 id="limitace-serie">Limitace série:</h3>
+<ul>
+<li>Index pokrývá jen Extensibility dimenzi (ne Integration, Data, Operations, E2E processes)</li>
+<li>„Index 0 = public cloud ready" je zjednodušující — public cloud má vlastní kompromisy</li>
+<li>BTP evaluace blokována licencováním a trial omezeními — reálná bariéra</li>
+<li>Přístup předpokládá silnou podporu managementu a Head of IT → bez toho Quality Gates nestojí</li>
+</ul>
+<h3 id="aplikovatelnost">Aplikovatelnost:</h3>
+<ul>
+<li>✅ <strong>On-premise S/4 HANA</strong> — přímá inspirace, okamžitě použitelné</li>
+<li>✅ <strong>Brownfield migrace ECC → S/4</strong> — inventura a cíle jsou téměř identické</li>
+<li>✅ <strong>Konzultantská práce</strong> — Quality Gates a governance argumenty universálně použitelné</li>
+<li>⚠️ <strong>Public Cloud / BTP ABAP Environment</strong> — jiná situace, jiná tabulka artifacts</li>
+</ul>
+<hr />
+<p><em>Zpracováno: 2026-02-23 | Série: Part 1 + Part 2 + Part 3 kompletní</em></p>
+<hr>
+<p style="color:#888; font-size:12px; text-align:center;">
+  Exportováno z Obsidian vault | Clean Core Strategy &amp; Měření — Série (Patrick Weber)
+</p>
+</body>
+</html>
