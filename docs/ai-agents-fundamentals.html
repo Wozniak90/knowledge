@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Agents Fundamentals – KodeKloud</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --border: #30363d;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --accent: #58a6ff;
+      --accent2: #3fb950;
+      --tag-bg: #1f6feb33;
+      --tag-border: #1f6feb;
+      --code-bg: #1f2428;
+      --table-header: #21262d;
+      --blockquote: #1f6feb;
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 16px;
+      line-height: 1.7;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .header {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      line-height: 1.25;
+      margin-bottom: 0.75rem;
+      color: var(--text);
+    }
+
+    .meta {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      align-items: center;
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+
+    .meta a { color: var(--accent); text-decoration: none; }
+    .meta a:hover { text-decoration: underline; }
+
+    .tags {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      background: var(--tag-bg);
+      border: 1px solid var(--tag-border);
+      border-radius: 2rem;
+      padding: 0.15rem 0.65rem;
+      font-size: 0.78rem;
+      color: var(--accent);
+    }
+
+    /* Headings */
+    h2 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin: 2.5rem 0 1rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin: 1.75rem 0 0.75rem;
+      color: var(--text);
+    }
+
+    /* Text */
+    p { margin-bottom: 1rem; }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    ul, ol {
+      margin: 0.5rem 0 1rem 1.5rem;
+    }
+
+    li { margin-bottom: 0.35rem; }
+
+    strong { font-weight: 600; color: #f0f6fc; }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.875em;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.1em 0.4em;
+      color: #f85149;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0 1.5rem;
+      font-size: 0.9rem;
+    }
+
+    th {
+      background: var(--table-header);
+      border: 1px solid var(--border);
+      padding: 0.6rem 1rem;
+      text-align: left;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    td {
+      border: 1px solid var(--border);
+      padding: 0.6rem 1rem;
+      color: var(--text);
+    }
+
+    tr:nth-child(even) td { background: #161b2280; }
+
+    .diagram-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin: 1.25rem 0;
+      overflow-x: auto;
+      text-align: center;
+    }
+
+    .diagram-wrap .mermaid { display: block; width: 100%; }
+    .diagram-wrap .mermaid svg { width: 100% !important; height: auto !important; max-width: none !important; }
+
+    .mindmap-wrap {
+      background: #f6f8fa;
+      border: 1px solid #d0d7de;
+      border-radius: 8px;
+      padding: 2rem 1.5rem;
+      margin: 1.25rem 0;
+      overflow-x: auto;
+      text-align: center;
+      min-height: 520px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mindmap-wrap .mermaid { display: block; width: 100%; }
+    .mindmap-wrap .mermaid svg { width: 100% !important; height: auto !important; min-height: 480px; max-width: none !important; }
+
+    /* Resources */
+    .resources {
+      background: var(--surface);
+      border-left: 3px solid var(--accent2);
+      border-radius: 0 6px 6px 0;
+      padding: 0.75rem 1.25rem;
+      margin: 1.25rem 0;
+    }
+
+    .resources h3 {
+      margin-top: 0;
+      color: var(--accent2);
+      font-size: 0.95rem;
+    }
+
+    .resources ul { margin-bottom: 0; }
+
+    /* Labs table */
+    .lab-badge {
+      display: inline-block;
+      background: #1f6feb22;
+      border: 1px solid #1f6feb55;
+      border-radius: 4px;
+      padding: 0.1rem 0.5rem;
+      font-size: 0.8rem;
+      color: var(--accent);
+    }
+
+    /* Timestamp table */
+    .ts-link {
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+    }
+
+    /* Divider */
+    hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 2rem 0;
+    }
+
+    /* Intro callout */
+    .callout {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem 1.5rem;
+      margin: 1.25rem 0;
+      font-size: 0.95rem;
+      color: var(--muted);
+    }
+
+    /* Connections */
+    .connections {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.5rem;
+      margin-top: 2rem;
+      font-size: 0.9rem;
+    }
+
+    .connections h3 { margin-top: 0; color: var(--accent); }
+    .connections ul { margin-bottom: 0; color: var(--muted); }
+
+    .footer {
+      margin-top: 3rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.85rem;
+      color: var(--muted);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>AI Agents Fundamentals</h1>
+    <div class="meta">
+      <span>📅 2026-03-10</span>
+      <span>⏱️ ~56 min</span>
+      <a href="https://www.youtube.com/watch?v=ZaPbP9DwBOE" target="_blank">▶ YouTube – KodeKloud</a>
+    </div>
+    <div class="tags">
+      <span class="tag">status/active</span>
+      <span class="tag">type/reference</span>
+      <span class="tag">area/ai</span>
+    </div>
+  </div>
+
+  <!-- Mindmap -->
+  <div class="mindmap-wrap">
+    <div class="mermaid">
+%%{init: {'theme': 'default', 'themeVariables': {'fontSize': '16px', 'primaryColor': '#dbeafe', 'primaryTextColor': '#1e3a5f', 'primaryBorderColor': '#3b82f6', 'lineColor': '#3b82f6', 'secondaryColor': '#f0fdf4', 'tertiaryColor': '#fef9c3'}}}%%
+mindmap
+  root((🤖 AI Agents))
+    🧠 LLM
+      Transformery
+      Tokeny
+      Kontext window
+        Grok 4 · 256k
+        Claude Opus · 200k
+        Gemini 2.5 · 1M
+    📐 Embeddingy
+      Text → vektor
+      1536 dimenzí
+      Cosine similarity
+    ⚙️ LangChain
+      Chat modely
+      Memory Saver
+      Prompt Templates
+      Output Parsers
+      Chain kompozice
+    ✍️ Prompt Engineering
+      Zero-shot
+      One-shot
+      Few-shot
+      Chain-of-thought
+    🗃️ Vector DB
+      ChromaDB
+      Pinecone
+      Chunking + overlap
+      Similarity threshold
+    🔍 RAG
+      Retrieval
+      Augmented Generation
+      500 GB za 30s
+    🔀 LangGraph
+      Stateful agenti
+      Multi-step workflows
+    🔌 MCP
+      Model Context Protocol
+      External tools
+      DB · API · FS
+    </div>
+  </div>
+  <h2>O čem to je</h2>
+  <p>Komplexní přehled AI agentů od nuly – bez předchozích znalostí. Provádí od základů LLM až po budování produkčních AI systémů s praktickými labs zdarma. Scénář je postavený na fiktivní firmě <strong>TechCorp</strong>, která má 500 GB dokumentů a potřebuje je prohledávat — tím motivuje jednotlivé technologie.</p>
+
+  <div class="diagram-wrap">
+    <div class="mermaid">
+flowchart LR
+    subgraph Foundation["🧠 Foundation"]
+        LLM["LLM<br/>(GPT, Claude, Gemini)"]
+        TOK["Tokeny &amp;<br/>Kontext window"]
+        EMB["Embeddingy<br/>(vektory)"]
+    end
+    subgraph Storage["🗃️ Storage"]
+        VDB["Vector DB<br/>(ChromaDB, Pinecone)"]
+    end
+    subgraph Orchestration["⚙️ Orchestration"]
+        LC["LangChain"]
+        RAG["RAG"]
+        LG["LangGraph<br/>(stateful agents)"]
+    end
+    subgraph Integration["🔌 Integration"]
+        MCP["MCP<br/>(Model Context Protocol)"]
+        TOOLS["External Tools<br/>(DB, API, FS)"]
+    end
+    LLM --> TOK --> EMB --> VDB
+    VDB --> RAG --> LC --> LG
+    LC --> MCP --> TOOLS
+    </div>
+  </div>
+
+  <!-- 1. LLM -->
+  <h2>1) LLM základy</h2>
+  <ul>
+    <li>LLM = transformery trénované na desítkách trilionů tokenů (healthcare, law, coding, science…)</li>
+    <li>Populární modely: <strong>OpenAI GPT</strong>, <strong>Anthropic Claude</strong>, <strong>Google Gemini</strong></li>
+    <li>Token ≈ ¾ anglického slova</li>
+  </ul>
+
+  <h3>Kontext window (krátkodobá paměť)</h3>
+  <table>
+    <thead><tr><th>Model</th><th>Kontext window</th></tr></thead>
+    <tbody>
+      <tr><td>xAI Grok 4</td><td>256k tokenů</td></tr>
+      <tr><td>Anthropic Claude Opus 4</td><td>200k tokenů</td></tr>
+      <tr><td>Gemini 2.5 Pro</td><td>1M tokenů</td></tr>
+      <tr><td>Nano/Mini/Flash (malé modely)</td><td>2k–4k tokenů</td></tr>
+    </tbody>
+  </table>
+  <ul>
+    <li>1M tokenů ≈ 7,5k slov nebo 50k řádků kódu</li>
+    <li><strong>Klíčový poznatek:</strong> 500 GB firemních dokumentů se do kontext window prostě nevejde → potřeba embeddingů + RAG</li>
+    <li>Nerelevantní kontext může LLM zmást (příklad s počítáním jablek s nesouvisejícími detaily)</li>
+  </ul>
+
+  <div class="diagram-wrap">
+    <div class="mermaid">
+flowchart LR
+    A["📄 Training data<br/>(triliony tokenů)"] --> B["🧠 LLM<br/>(Transformer)"]
+    B --> C["💬 Kontext window<br/>(krátkodobá paměť)"]
+    C --> D["📝 Token stream<br/>in / out"]
+    D --> E["💰 Cena<br/>(input &lt; output)"]
+    </div>
+  </div>
+
+  <div class="resources">
+    <h3>📚 Zdroje pro další studium</h3>
+    <ul>
+      <li><a href="https://www.youtube.com/watch?v=kCc8FmEb1nY" target="_blank">Andrej Karpathy – Let's build GPT</a> — jak LLM funguje zevnitř</li>
+      <li><a href="https://platform.openai.com/tokenizer" target="_blank">OpenAI Tokenizer</a> — interaktivní vizualizace tokenů</li>
+      <li><a href="https://arxiv.org/abs/1706.03762" target="_blank">Attention Is All You Need (paper)</a> — originální transformer paper</li>
+      <li><a href="https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi" target="_blank">3Blue1Brown – Neural Networks series</a> — vizuální vysvětlení</li>
+    </ul>
+  </div>
+
+  <!-- 2. Embeddingy -->
+  <hr>
+  <h2>2) Embeddingy a sémantická reprezentace</h2>
+  <ul>
+    <li>Text → numerický vektor ve vysokodimenzionálním prostoru (typicky <strong>1536 dimenzí</strong>)</li>
+    <li>Sémanticky podobné texty = matematicky blízké vektory</li>
+    <li>Příklad: <code>"employee vacation policy"</code> ≈ <code>"staff time off guidelines"</code></li>
+    <li>Příklad z praxe: dotaz <code>"I wear jeans to work"</code> vrátí dress code policy, i když slovo „jeans" v dokumentu není</li>
+  </ul>
+
+  <div class="diagram-wrap">
+    <div class="mermaid">
+flowchart LR
+    A["📝 Text<br/>'vacation policy'"] --> B["🔢 Embedding model<br/>(text-embedding-3)"]
+    B --> C["📐 Vektor<br/>1536 dimenzí"]
+    D["📝 Text<br/>'holiday guidelines'"] --> B
+    B --> E["📐 Vektor<br/>≈ blízký C"]
+    C -.->|"cosine similarity ≈ 0.97"| E
+    </div>
+  </div>
+
+  <div class="resources">
+    <h3>📚 Zdroje pro další studium</h3>
+    <ul>
+      <li><a href="https://platform.openai.com/docs/guides/embeddings" target="_blank">OpenAI Embeddings guide</a> — official docs</li>
+      <li><a href="https://www.sbert.net/" target="_blank">sentence-transformers (HuggingFace)</a> — open-source embedding modely</li>
+      <li><a href="https://jalammar.github.io/illustrated-word2vec/" target="_blank">Jay Alammar – The Illustrated Word2Vec</a> — vizuální vysvětlení</li>
+      <li><a href="https://cohere.com/blog/sentence-word-embeddings" target="_blank">Cohere – What are Embeddings?</a></li>
+    </ul>
+  </div>
+
+  <!-- 3. LangChain -->
+  <hr>
+  <h2>3) LangChain – orchestrační vrstva</h2>
+  <p><strong>Proč?</strong> Přímé SDK vyžaduje hodně boilerplatu – LangChain to zjednodušuje:</p>
+  <ul>
+    <li>Standardizovaný interface pro různé providery (OpenAI → Anthropic = změna jednoho řádku)</li>
+    <li>Komponenty: chat modely, Memory Saver (chat history), vector DB interface (Pinecone, ChromaDB), embedding utils, tools (DB, web search, file system)</li>
+  </ul>
+  <p><strong>LLM vs. Agent:</strong></p>
+  <ul>
+    <li>LLM = statický mozek odpovídající z tréninkových dat</li>
+    <li>Agent = autonomní systém s pamětí, nástroji a schopností multi-step rozhodování</li>
+  </ul>
+  <p><strong>LangChain v kódu:</strong></p>
+  <ul>
+    <li>~70% méně kódu než raw OpenAI SDK</li>
+    <li>Prompt templates (placeholders místo hard-coded promptů)</li>
+    <li>Output parsers (převod textu na list/JSON)</li>
+    <li>Chain kompozice: <code>prompt → model → parser</code> (pipe-like)</li>
+  </ul>
+
+  <div class="diagram-wrap">
+    <div class="mermaid">
+flowchart TD
+    subgraph LangChain
+        PT["📋 Prompt Template<br/>{role}, {query}"]
+        LLM["🧠 LLM<br/>(OpenAI / Anthropic / Gemini)"]
+        OP["🔄 Output Parser<br/>text → JSON/List"]
+        MEM["💾 Memory Saver<br/>(chat history)"]
+        VDB["🗃️ Vector DB<br/>(ChromaDB, Pinecone)"]
+        TOOLS["🔧 Tools<br/>(DB, web, FS)"]
+    end
+    USER["👤 User query"] --> PT
+    PT --> LLM
+    LLM --> OP --> ANSWER["✅ Strukturovaná odpověď"]
+    MEM <--> LLM
+    VDB --> LLM
+    TOOLS <--> LLM
+    </div>
+  </div>
+
+  <div class="resources">
+    <h3>📚 Zdroje pro další studium</h3>
+    <ul>
+      <li><a href="https://python.langchain.com/docs/" target="_blank">LangChain docs</a> — oficiální dokumentace</li>
+      <li><a href="https://www.youtube.com/watch?v=lG7Uxts9SXs" target="_blank">LangChain Crash Course (freeCodeCamp)</a></li>
+      <li><a href="https://github.com/langchain-ai/langchain" target="_blank">LangChain GitHub</a></li>
+      <li><a href="https://smith.langchain.com/" target="_blank">LangSmith</a> — debugging a monitoring LangChain aplikací</li>
+    </ul>
+  </div>
+
+  <!-- 4. Prompt Engineering -->
+  <hr>
+  <h2>4) Prompt Engineering</h2>
+  <table>
+    <thead><tr><th>Technika</th><th>Popis</th><th>Kdy použít</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Zero-shot</strong></td><td>Žádné příklady, jen instrukce</td><td>Rychlé, obecné dotazy</td></tr>
+      <tr><td><strong>One-shot</strong></td><td>Jeden příklad pro formát/strukturu</td><td>Konzistentní formátování</td></tr>
+      <tr><td><strong>Few-shot</strong></td><td>Více příkladů pro tón/vzor</td><td>Specifický styl/tone</td></tr>
+      <tr><td><strong>Chain-of-thought</strong></td><td>Instrukce k zobrazení postupu uvažování</td><td>Složité úlohy, analýzy</td></tr>
+    </tbody>
+  </table>
+  <p><strong>Klíčový princip:</strong> specifičnost &gt;&gt; vágnost</p>
+  <ul>
+    <li>❌ <code>"What is the policy?"</code></li>
+    <li>✅ <code>"What's the company's remote work policy for international employees?"</code></li>
+  </ul>
+
+  <div class="diagram-wrap">
+    <div class="mermaid">
+flowchart LR
+    ZS["🎯 Zero-shot<br/>Jen instrukce<br/>Rychlé"] --> OS["📄 One-shot<br/>1 příklad<br/>Formát"] --> FS["📚 Few-shot<br/>N příkladů<br/>Tón/styl"] --> COT["🧠 Chain-of-thought<br/>Krok po kroku<br/>Komplexní úlohy"]
+    </div>
+  </div>
+
+  <div class="resources">
+    <h3>📚 Zdroje pro další studium</h3>
+    <ul>
+      <li><a href="https://www.promptingguide.ai/" target="_blank">Prompt Engineering Guide</a> — nejlepší volně dostupný zdroj</li>
+      <li><a href="https://platform.openai.com/docs/guides/prompt-engineering" target="_blank">OpenAI Prompt Engineering guide</a></li>
+      <li><a href="https://docs.anthropic.com/en/prompt-library/library" target="_blank">Anthropic Prompt Library</a> — příklady od Anthropic</li>
+      <li><a href="https://learnprompting.org/" target="_blank">Learn Prompting</a> — interaktivní kurz zdarma</li>
+    </ul>
+  </div>
+
+  <!-- 5. Vector DB -->
+  <hr>
+  <h2>5) Vector Databases a sémantické vyhledávání</h2>
+  <p><strong>Problém s klasickým vyhledáváním:</strong> keyword/SQL search selže u sémanticky příbuzných dotazů (<code>"reset password"</code> vs <code>"password recovery"</code>).</p>
+  <p><strong>Jak to funguje:</strong></p>
+  <ol>
+    <li>Dokument se rozseká na <strong>chunky</strong> (s překryvem pro zachování kontextu)</li>
+    <li>Každý chunk → embedding model → vektor</li>
+    <li>Vektory se uloží do vector DB (Pinecone, ChromaDB)</li>
+    <li>Dotaz se také převede na vektor → similarity search</li>
+  </ol>
+  <p><strong>Klíčové parametry:</strong></p>
+  <ul>
+    <li><strong>Dimenzionalita</strong> (typicky 1536) – vyšší = bohatší kontext, ale větší velikost</li>
+    <li><strong>Similarity threshold</strong> – nastavit, aby se filtrovaly slabé shody</li>
+    <li><strong>Chunk size + overlap</strong> – overlap zachovává kontext přes hranice chunků</li>
+  </ul>
+
+  <div class="diagram-wrap">
+    <div class="mermaid">
+sequenceDiagram
+    participant D as 📄 Dokument
+    participant C as ✂️ Chunker
+    participant E as 🔢 Embedding model
+    participant V as 🗃️ Vector DB
+    participant Q as ❓ Dotaz uživatele
+    participant S as 🔍 Similarity search
+
+    D->>C: rozsekat na chunky (s překryvem)
+    C->>E: každý chunk → vektor
+    E->>V: uložit vektory + metadata
+
+    Q->>E: dotaz → vektor
+    E->>S: query vektor
+    S->>V: najdi nejbližší vektory
+    V-->>S: top-k výsledků
+    S-->>Q: relevantní chunky
+    </div>
+  </div>
+
+  <div class="resources">
+    <h3>📚 Zdroje pro další studium</h3>
+    <ul>
+      <li><a href="https://docs.trychroma.com/" target="_blank">ChromaDB docs</a> — nejjednodušší open-source vector DB</li>
+      <li><a href="https://www.pinecone.io/learn/" target="_blank">Pinecone Learning Center</a> — detailní tutoriály</li>
+      <li><a href="https://weaviate.io/developers/weaviate" target="_blank">Weaviate Vector Database</a> — alternativa s hybrid search</li>
+      <li><a href="https://qdrant.tech/documentation/" target="_blank">Qdrant</a> — výkonná open-source alternativa</li>
+    </ul>
+  </div>
+
+  <!-- 6. RAG -->
+  <hr>
+  <h2>6) RAG (Retrieval Augmented Generation)</h2>
+  <p>Kombinace vector DB search + LLM:<br>
+  <code>Dotaz → embedding → podobné chunky → LLM dostane relevantní kontext → odpověď</code></p>
+  <p>Praktický příklad: TechCorp's 500 GB dokumentů prohledáno za &lt; 30 sekund.</p>
+
+  <div class="diagram-wrap">
+    <div class="mermaid">
+sequenceDiagram
+    participant U as 👤 Uživatel
+    participant E as 🔢 Embedding model
+    participant V as 🗃️ Vector DB
+    participant L as 🧠 LLM
+
+    U->>E: Jaká je dovolená policy?
+    E->>V: query vektor
+    V-->>E: top-3 relevantní chunky
+    E-->>L: otázka + chunky jako kontext
+    L-->>U: Máte nárok na 25 dní...
+    </div>
+  </div>
+
+  <div class="resources">
+    <h3>📚 Zdroje pro další studium</h3>
+    <ul>
+      <li><a href="https://python.langchain.com/docs/tutorials/rag/" target="_blank">LangChain RAG Tutorial</a> — step-by-step</li>
+      <li><a href="https://aws.amazon.com/what-is/retrieval-augmented-generation/" target="_blank">AWS – What is RAG?</a> — konceptuální přehled</li>
+      <li><a href="https://www.pinecone.io/learn/retrieval-augmented-generation/" target="_blank">RAG vs Fine-tuning</a> — kdy co použít</li>
+      <li><a href="https://arxiv.org/abs/2005.11401" target="_blank">Arxiv: RAG original paper</a></li>
+    </ul>
+  </div>
+
+  <!-- 7. LangGraph + MCP -->
+  <hr>
+  <h2>7) LangGraph a MCP</h2>
+  <ul>
+    <li><strong>LangGraph</strong> – multi-step AI workflows, stateful agenti</li>
+    <li><strong>MCP</strong> (Model Context Protocol) – standardizovaný způsob propojení AI s externími nástroji</li>
+  </ul>
+
+  <div class="diagram-wrap">
+    <div class="mermaid">
+flowchart TD
+    subgraph LangGraph["⚙️ LangGraph – Agent loop"]
+        IN["📥 Input"] --> THINK["🧠 LLM<br/>(rozhodování)"]
+        THINK -->|"potřebuji tool"| TOOL["🔧 Tool call"]
+        TOOL --> OBS["👁️ Observation"]
+        OBS --> THINK
+        THINK -->|"mám odpověď"| OUT["📤 Output"]
+    end
+    subgraph MCP["🔌 MCP – Model Context Protocol"]
+        AI["🤖 AI Model"] <-->|"standardizovaný protokol"| SERVER["MCP Server"]
+        SERVER <--> DB["🗃️ Database"]
+        SERVER <--> API["🌐 External API"]
+        SERVER <--> FS["📁 File System"]
+    end
+    LangGraph --> MCP
+    </div>
+  </div>
+
+  <div class="resources">
+    <h3>📚 LangGraph</h3>
+    <ul>
+      <li><a href="https://langchain-ai.github.io/langgraph/" target="_blank">LangGraph docs</a></li>
+      <li><a href="https://langchain-ai.github.io/langgraph/tutorials/introduction/" target="_blank">LangGraph Quickstart</a></li>
+    </ul>
+    <h3 style="margin-top:0.75rem;">📚 MCP</h3>
+    <ul>
+      <li><a href="https://www.anthropic.com/news/model-context-protocol" target="_blank">Anthropic MCP introduction</a></li>
+      <li><a href="https://github.com/modelcontextprotocol/specification" target="_blank">MCP specification (GitHub)</a></li>
+      <li><a href="https://github.com/modelcontextprotocol/servers" target="_blank">MCP servers list</a> — ready-made MCP servery</li>
+    </ul>
+  </div>
+
+  <!-- Labs -->
+  <hr>
+  <h2>Praktické labs</h2>
+  <table>
+    <thead><tr><th>Lab</th><th>Obsah</th></tr></thead>
+    <tbody>
+      <tr><td><span class="lab-badge">OpenAI API</span></td><td>Setup virtualenv, API key, chat completion, extrakce response, počítání tokenů a ceny</td></tr>
+      <tr><td><span class="lab-badge">LangChain</span></td><td>Multi-provider (GPT-4, Gemini, Grok), prompt templates, output parsers, chain kompozice</td></tr>
+      <tr><td><span class="lab-badge">Prompt Engineering</span></td><td>Porovnání zero/one/few-shot a CoT head-to-head</td></tr>
+      <tr><td><span class="lab-badge">Semantic Search</span></td><td>sentence-transformers (Mini-LM), ChromaDB, cosine similarity</td></tr>
+      <tr><td><span class="lab-badge">RAG</span></td><td>Implementace full RAG pipeline</td></tr>
+      <tr><td><span class="lab-badge">LangGraph</span></td><td>Stateful AI workflow</td></tr>
+      <tr><td><span class="lab-badge">MCP</span></td><td>Pokročilé koncepty MCP</td></tr>
+    </tbody>
+  </table>
+  <p>🧪 <a href="https://kode.wiki/3Wh4DZ6" target="_blank">Labs zdarma: kode.wiki/3Wh4DZ6</a></p>
+
+  <!-- Timestamps -->
+  <hr>
+  <h2>Timestamps</h2>
+  <table>
+    <thead><tr><th>Čas</th><th>Téma</th></tr></thead>
+    <tbody>
+      <tr><td class="ts-link"><a href="https://www.youtube.com/watch?v=ZaPbP9DwBOE&t=0s" target="_blank">00:00</a></td><td>Úvod do AI agentů</td></tr>
+      <tr><td class="ts-link"><a href="https://www.youtube.com/watch?v=ZaPbP9DwBOE&t=40s" target="_blank">00:40</a></td><td>Jak fungují LLM v reálném čase</td></tr>
+      <tr><td class="ts-link"><a href="https://www.youtube.com/watch?v=ZaPbP9DwBOE&t=296s" target="_blank">04:56</a></td><td>Embeddingy a vektorové reprezentace</td></tr>
+      <tr><td class="ts-link"><a href="https://www.youtube.com/watch?v=ZaPbP9DwBOE&t=356s" target="_blank">05:56</a></td><td>Jak funguje LangChain</td></tr>
+      <tr><td class="ts-link"><a href="https://www.youtube.com/watch?v=ZaPbP9DwBOE&t=612s" target="_blank">10:12</a></td><td>Lab – první volání AI API</td></tr>
+      <tr><td class="ts-link"><a href="https://www.youtube.com/watch?v=ZaPbP9DwBOE&t=897s" target="_blank">14:57</a></td><td>Lab – LangChain</td></tr>
+      <tr><td class="ts-link"><a href="https://www.youtube.com/watch?v=ZaPbP9DwBOE&t=1077s" target="_blank">17:57</a></td><td>Prompt Engineering techniky</td></tr>
+      <tr><td class="ts-link"><a href="https://www.youtube.com/watch?v=ZaPbP9DwBOE&t=1281s" target="_blank">21:21</a></td><td>Lab – Prompt Engineering</td></tr>
+      <tr><td class="ts-link"><a href="https://www.youtube.com/watch?v=ZaPbP9DwBOE&t=1486s" target="_blank">24:46</a></td><td>Vector Databases</td></tr>
+      <tr><td class="ts-link"><a href="https://www.youtube.com/watch?v=ZaPbP9DwBOE&t=1887s" target="_blank">31:27</a></td><td>Lab – Sémantický vyhledávač</td></tr>
+      <tr><td class="ts-link"><a href="https://www.youtube.com/watch?v=ZaPbP9DwBOE&t=2115s" target="_blank">35:15</a></td><td>RAG</td></tr>
+      <tr><td class="ts-link"><a href="https://www.youtube.com/watch?v=ZaPbP9DwBOE&t=2294s" target="_blank">38:14</a></td><td>Lab – RAG implementace</td></tr>
+      <tr><td class="ts-link"><a href="https://www.youtube.com/watch?v=ZaPbP9DwBOE&t=2534s" target="_blank">42:14</a></td><td>LangGraph pro AI workflows</td></tr>
+      <tr><td class="ts-link"><a href="https://www.youtube.com/watch?v=ZaPbP9DwBOE&t=2751s" target="_blank">45:51</a></td><td>Lab – Stateful AI workflow</td></tr>
+      <tr><td class="ts-link"><a href="https://www.youtube.com/watch?v=ZaPbP9DwBOE&t=2931s" target="_blank">48:51</a></td><td>Model Context Protocol (MCP)</td></tr>
+      <tr><td class="ts-link"><a href="https://www.youtube.com/watch?v=ZaPbP9DwBOE&t=3116s" target="_blank">51:56</a></td><td>Lab – MCP</td></tr>
+      <tr><td class="ts-link"><a href="https://www.youtube.com/watch?v=ZaPbP9DwBOE&t=3321s" target="_blank">55:21</a></td><td>Závěr</td></tr>
+    </tbody>
+  </table>
+
+  <!-- Connections -->
+  <div class="connections">
+    <h3>🔗 Propojení</h3>
+    <ul>
+      <li><strong>Vzniklo z:</strong> <a href="https://www.youtube.com/watch?v=ZaPbP9DwBOE" target="_blank">YouTube – KodeKloud</a></li>
+      <li><strong>Souvisí s:</strong> SAP BTP AI Best Practices, SAP-AI-Assistant-Architektura</li>
+      <li><strong>Použito v projektu:</strong> —</li>
+    </ul>
+  </div>
+
+  <div class="footer">
+    Generováno 2026-03-10 · <a href="https://www.youtube.com/watch?v=ZaPbP9DwBOE" target="_blank">Originální video</a>
+  </div>
+
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    useMaxWidth: false,
+    flowchart: { useMaxWidth: false, htmlLabels: true },
+    sequence: { useMaxWidth: false },
+    themeVariables: {
+      darkMode: true,
+      background: '#161b22',
+      mainBkg: '#21262d',
+      nodeBorder: '#30363d',
+      lineColor: '#58a6ff',
+      textColor: '#e6edf3',
+      fontSize: '15px'
+    }
+  });
+</script>
+</body>
+</html>
