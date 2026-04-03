@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SAP S/4HANA – E-Mail Templates: Master Note</title>
+
+  <!-- Mermaid.js -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+  <!-- highlight.js for ABAP / HTML code blocks -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/xml.min.js"></script>
+
+  <style>
+    :root {
+      --sap-blue:   #0070f2;
+      --sap-orange: #f0ab00;
+      --sap-dark:   #1d2d3e;
+      --sap-light:  #f5f6f7;
+      --sap-border: #d9d9d9;
+      --code-bg:    #f6f8fa;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "72", "SAP 72", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+      color: #333;
+      background: #fff;
+    }
+
+    /* ── Header bar ── */
+    header {
+      background: var(--sap-dark);
+      color: #fff;
+      padding: 18px 40px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    header .badge {
+      background: var(--sap-blue);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .5px;
+      padding: 3px 9px;
+      border-radius: 12px;
+      white-space: nowrap;
+    }
+    header h1 {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: .3px;
+    }
+
+    /* ── Layout ── */
+    .wrapper {
+      max-width: 1060px;
+      margin: 0 auto;
+      padding: 36px 40px 80px;
+    }
+
+    /* ── TOC sidebar ── */
+    nav.toc {
+      float: right;
+      width: 270px;
+      margin: 0 0 28px 32px;
+      background: var(--sap-light);
+      border: 1px solid var(--sap-border);
+      border-radius: 6px;
+      padding: 16px 20px;
+      font-size: 13px;
+    }
+    nav.toc::before {
+      content: "📑 Obsah";
+      display: block;
+      font-weight: 700;
+      margin-bottom: 10px;
+      font-size: 13px;
+      color: var(--sap-dark);
+    }
+    nav.toc ul { list-style: none; padding: 0; }
+    nav.toc li { margin: 4px 0; }
+    nav.toc a { color: var(--sap-blue); text-decoration: none; }
+    nav.toc a:hover { text-decoration: underline; }
+
+    /* ── Headings ── */
+    h1 { font-size: 26px; font-weight: 700; color: var(--sap-dark); margin: 32px 0 12px; border-bottom: 2px solid var(--sap-blue); padding-bottom: 6px; }
+    h2 { font-size: 20px; font-weight: 700; color: var(--sap-dark); margin: 36px 0 12px; border-bottom: 1px solid var(--sap-border); padding-bottom: 4px; }
+    h3 { font-size: 16px; font-weight: 700; color: var(--sap-dark); margin: 24px 0 8px; }
+    h4 { font-size: 14px; font-weight: 700; margin: 18px 0 6px; }
+
+    /* ── Paragraphs & lists ── */
+    p { margin: 10px 0; }
+    ul, ol { margin: 10px 0 10px 26px; }
+    li { margin: 4px 0; }
+    li input[type="checkbox"] { margin-right: 6px; }
+
+    /* ── Blockquote / callout ── */
+    blockquote {
+      border-left: 4px solid var(--sap-orange);
+      background: #fffbf0;
+      margin: 14px 0;
+      padding: 10px 16px;
+      border-radius: 0 4px 4px 0;
+      color: #555;
+    }
+    blockquote p { margin: 4px 0; }
+
+    /* ── Tables ── */
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 16px 0;
+      font-size: 14px;
+    }
+    th {
+      background: var(--sap-dark);
+      color: #fff;
+      padding: 8px 12px;
+      text-align: left;
+      font-weight: 600;
+    }
+    td {
+      padding: 7px 12px;
+      border-bottom: 1px solid var(--sap-border);
+    }
+    tr:nth-child(even) td { background: var(--sap-light); }
+    tr:hover td { background: #eaf3ff; }
+
+    /* ── Code ── */
+    code {
+      font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+      font-size: 13px;
+      background: var(--code-bg);
+      padding: 2px 5px;
+      border-radius: 3px;
+      border: 1px solid #e1e4e8;
+    }
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--sap-border);
+      border-radius: 6px;
+      padding: 16px 18px;
+      overflow-x: auto;
+      margin: 14px 0;
+    }
+    pre code {
+      background: none;
+      border: none;
+      padding: 0;
+      font-size: 13px;
+    }
+
+    /* ── Mermaid diagrams ── */
+    .mermaid {
+      background: var(--sap-light);
+      border: 1px solid var(--sap-border);
+      border-radius: 8px;
+      padding: 20px;
+      margin: 18px 0;
+      text-align: center;
+      overflow-x: auto;
+    }
+
+    /* ── Propojeni section ── */
+    .wrapper > ul:last-of-type li,
+    h2:last-of-type + ul li {
+      list-style: none;
+    }
+
+    /* ── Horizontal rule ── */
+    hr { border: none; border-top: 1px solid var(--sap-border); margin: 28px 0; }
+
+    /* ── Links ── */
+    a { color: var(--sap-blue); }
+    a:hover { text-decoration: underline; }
+
+    /* ── Wikilinks ── */
+    .wikilink {
+      background: #e8f4fd;
+      border: 1px solid #b3d9f7;
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-size: 13px;
+      color: var(--sap-blue);
+      white-space: nowrap;
+    }
+
+    /* ── Footer ── */
+    footer {
+      margin-top: 60px;
+      padding-top: 16px;
+      border-top: 1px solid var(--sap-border);
+      font-size: 12px;
+      color: #888;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 760px) {
+      nav.toc { float: none; width: 100%; margin: 0 0 24px 0; }
+      .wrapper { padding: 20px 18px 60px; }
+      header { padding: 14px 18px; }
+    }
+
+    @media print {
+      header { background: var(--sap-dark) !important; -webkit-print-color-adjust: exact; }
+      nav.toc { display: none; }
+      pre { white-space: pre-wrap; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <span class="badge">SAP S/4HANA</span>
+  <h1>E-Mail Templates — Master Note</h1>
+</header>
+
+<div class="wrapper">
+<h1 id="sap-s4hana-e-mail-templates-master-note">SAP S/4HANA – E-Mail Templates: Master Note</h1>
+<h2 id="mindmapy">🗺️ Mindmapy</h2>
+<div class="mermaid">
+graph TD
+  root((E-Mail Templates)) --> A & B & C & D & E
+  A[CL_SMTG_EMAIL_API] --> A1[get_instance] & A2[render_bcs] & A3[render]
+  B[CDS View] --> B1[Key Fields] & B2[Placeholders] & B3[Aktivace]
+  C[CL_BCS] --> C1[Sender] & C2[Recipient] & C3[Document]
+  D[SE80] --> D1[Template Editor] & D2[Languages] & D3[Preview]
+  E[SAPconnect] --> E1[SCOT] & E2[SOST] & E3[SMTP Node]
+</div>
+<div class="mermaid">
+graph TD
+  root((S4HANA Email)) --> A & B & C & D
+  A[Architektura] --> A1[Output Management] & A2[BRF+]
+  A1 --> A3[Output Type] & A4[Output Channel EMAIL]
+  B[Vývoj] --> B1[Šablona v SE80] & B2[CDS View] & B3[ABAP Program]
+  B3 --> B4[Jednoduchý mail] & B5[Dynamická tabulka] & B6[Příloha PDF]
+  C[Konfigurace] --> C1[SCOT SMTP] & C2[Send Job SOSB]
+  D[Provoz] --> D1[Troubleshooting] & D2[SOST Monitoring] & D3[Background Job SM36]
+</div>
+<hr />
+<blockquote>
+<p><strong>Primární zdroje:</strong><br />
+- <a href="https://community.sap.com/t5/enterprise-resource-planning-blog-posts-by-members/e-mail-templates-in-s-4-hana/ba-p/13397719">Blog 1 – E-Mail Templates in S/4HANA (základy)</a><br />
+- <a href="https://community.sap.com/t5/enterprise-resource-planning-blog-posts-by-members/e-mail-templates-in-s-4-hana-display-table-in-email-template/ba-p/13546304">Blog 2 – Display Table in Email Template</a></p>
+<p><strong>Doplňkové zdroje:</strong><br />
+- <a href="https://help.sap.com/docs/SAP_S4HANA_ON-PREM/7b24a64d9d0941bda1afa753263d9e39/">SAP Help – Output Management S/4HANA On-Premise</a><br />
+- <a href="https://help.sap.com/docs/SAP_NETWEAVER_AS_ABAP_752/a4ada43d9b364862b6cc430b43e26ef5/">SAP Help – BRF+ Business Rules Framework</a><br />
+- SAP Note <code>455140</code> – Configuration of e-mail using SMTP (SAPconnect)<br />
+- SAP Note <code>1605242</code> – SAPconnect SMTP troubleshooting<br />
+- SAP Note <code>191494</code> – SAPconnect general setup</p>
+</blockquote>
+<hr />
+<h2 id="obsah">Obsah</h2>
+<ol>
+<li><a href="#1-co-jsou-e-mail-templates">Co jsou E-Mail Templates?</a></li>
+<li><a href="#2-srovnání-starý-vs-nový-způsob-odesílání">Srovnání: starý vs. nový způsob</a></li>
+<li><a href="#3-systémový-předpoklad--scotsapconnect">Systémový předpoklad – SCOT/SAPconnect</a></li>
+<li><a href="#4-předpoklady--znalosti">Předpoklady – znalosti</a></li>
+<li><a href="#5-vytvoření-e-mail-template-v-se80">Vytvoření šablony v SE80</a></li>
+<li><a href="#6-cds-view-pro-dynamické-proměnné">CDS View pro dynamické proměnné</a></li>
+<li><a href="#7-volání-e-mail-template-z-abapu-jednoduchý-případ">Volání z ABAPu – jednoduchý případ</a></li>
+<li><a href="#8-vícejazyčné-šablony">Vícejazyčné šablony</a></li>
+<li><a href="#9-vkládání-tabulky-s-více-záznamy-do-e-mailu">Vkládání tabulky s více záznamy</a></li>
+<li><a href="#10-e-mail-s-přílohou-pdfsoubor">E-mail s přílohou (PDF/soubor)</a></li>
+<li><a href="#11-napojení-na-output-management-a-brf">Napojení na Output Management a BRF+</a></li>
+<li><a href="#12-přehled-klíčových-abap-tříd">Přehled klíčových ABAP tříd</a></li>
+<li><a href="#13-rozdíl-mezi-render_bcs-a-render">Rozdíl render_bcs() vs render()</a></li>
+<li><a href="#14-doporučená-architektura-pro-hromadné-odesílání">Doporučená architektura pro hromadné odesílání</a></li>
+<li><a href="#15-troubleshooting">Troubleshooting</a></li>
+<li><a href="#16-příklad-exception-handlingu">Exception handling</a></li>
+<li><a href="#17-tipy-a-doporučení">Tipy a doporučení</a></li>
+<li><a href="#18-checklist--rychlý-přehled-kroků">Checklist</a></li>
+</ol>
+<hr />
+<h2 id="1-co-jsou-e-mail-templates">1. Co jsou E-Mail Templates?</h2>
+<p>SAP S/4HANA (Cloud i On-Premise) obsahuje nativní funkci <strong>E-Mail Templates</strong> jako součást Output Managementu.<br />
+Šablony umožňují:</p>
+<ul>
+<li>Definovat HTML nebo Plain Text obsah e-mailu přímo v systému (bez hardcodování v ABAPu).</li>
+<li>Udržovat e-mailový obsah ve <strong>více jazycích</strong>.</li>
+<li>Mapovat <strong>CDS view</strong> pro dynamické proměnné (datum, jméno zákazníka, číslo dokladu atd.).</li>
+<li>Propojit šablony s <strong>output typy přes BRF+</strong> nebo je volat zcela <strong>nezávisle na output managementu</strong> z vlastního ABAP programu.</li>
+<li>Jednoduše upravovat obsah e-mailu <strong>bez nutnosti ABAP změny a transportu kódu</strong>.</li>
+</ul>
+<hr />
+<h2 id="2-srovnani-stary-vs-novy-zpusob-odesilani">2. Srovnání: starý vs. nový způsob odesílání</h2>
+<table>
+<thead>
+<tr>
+<th>Aspekt</th>
+<th>Starý způsob (klasický ABAP)</th>
+<th>Nový způsob (E-Mail Templates)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Obsah e-mailu</td>
+<td>Hardcoded v kódu (stringy, WRITE)</td>
+<td>HTML/Plain Text šablona v SE80</td>
+</tr>
+<tr>
+<td>Vícejazyčnost</td>
+<td>Ruční podmínky v ABAP kódu</td>
+<td>Nativně v šabloně (záložka <em>Languages</em>)</td>
+</tr>
+<tr>
+<td>Dynamická data</td>
+<td>Concatenace stringů</td>
+<td>CDS view + <code>{{placeholder}}</code></td>
+</tr>
+<tr>
+<td>Úprava obsahu</td>
+<td>Nutná změna ABAP + transport</td>
+<td>Editace šablony, bez změny kódu</td>
+</tr>
+<tr>
+<td>HTML layout</td>
+<td>Složité sestavení v kódu</td>
+<td>Plnohodnotný HTML editor v SE80</td>
+</tr>
+<tr>
+<td>Testování</td>
+<td>Spuštění celého programu</td>
+<td>Preview přímo v SE80</td>
+</tr>
+<tr>
+<td>API třídy</td>
+<td><code>CL_BCS</code> + <code>CL_DOCUMENT_BCS</code> (vše ručně)</td>
+<td><code>CL_SMTG_EMAIL_API</code> + <code>CL_BCS</code></td>
+</tr>
+<tr>
+<td>Vhodnost pro business</td>
+<td>Minimální zapojení business side</td>
+<td>Business může sám upravovat texty</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-systemovy-predpoklad-scotsapconnect">3. Systémový předpoklad – SCOT/SAPconnect</h2>
+<blockquote>
+<p>⚠️ Bez funkční konfigurace SAPconnect <strong>žádný způsob odesílání e-mailů ze SAP nebude fungovat</strong> – ani šablony, ani klasický ABAP.</p>
+</blockquote>
+<h3 id="transakce-scot-nastaveni-smtp">Transakce SCOT – nastavení SMTP</h3>
+<ol>
+<li>Jdi do transakce <strong><code>SCOT</code></strong> (SAPconnect Administration).</li>
+<li>Zkontroluj, zda existuje <strong>node typu SMTP</strong> (sekce <em>Internet</em>).</li>
+<li>Pokud neexistuje, vytvoř ho: <code>Settings → Internet → SMTP Node</code>:<br />
+   - <strong>SMTP Mail Host</strong> – adresa mail serveru (např. <code>smtp.firma.cz</code>)<br />
+   - <strong>SMTP Port</strong> – typicky <code>25</code> nebo <code>587</code> (TLS)<br />
+   - <strong>Set Internet Address</strong> – e-mailová adresa, která bude vystupovat jako odesílatel SAP systému</li>
+<li>Nastav <strong>Send Job</strong>: tlačítko <code>Jobs</code> → <code>Start Send Process</code> → doporučeno spouštět každých 1–5 minut.</li>
+</ol>
+<h3 id="overovaci-transakce">Ověřovací transakce</h3>
+<table>
+<thead>
+<tr>
+<th>Transakce</th>
+<th>Popis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SCOT</code></td>
+<td>Administrace SAPconnect, nastavení SMTP node</td>
+</tr>
+<tr>
+<td><code>SOST</code></td>
+<td>Send queue – zobrazení čekajících/odeslaných/chybných zpráv</td>
+</tr>
+<tr>
+<td><code>SOSG</code></td>
+<td>Odeslání testovacího e-mailu přímo ze systému</td>
+</tr>
+<tr>
+<td><code>SOSB</code></td>
+<td>Nastavení schedulu odeslání (Send Job)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="relevantni-sap-notes">Relevantní SAP Notes</h3>
+<table>
+<thead>
+<tr>
+<th>SAP Note</th>
+<th>Popis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>455140</code></td>
+<td>Konfigurace e-mailu přes SMTP v SAPconnect</td>
+</tr>
+<tr>
+<td><code>1605242</code></td>
+<td>Troubleshooting SAPconnect SMTP</td>
+</tr>
+<tr>
+<td><code>191494</code></td>
+<td>SAPconnect – obecné nastavení</td>
+</tr>
+<tr>
+<td><code>786847</code></td>
+<td>SAPconnect – send job nespouští zprávy</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="4-predpoklady-znalosti">4. Předpoklady – znalosti</h2>
+<table>
+<thead>
+<tr>
+<th>Znalost</th>
+<th>Úroveň</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CDS Views</td>
+<td>Základní</td>
+</tr>
+<tr>
+<td>ABAP (OOP)</td>
+<td>Pokročilý</td>
+</tr>
+<tr>
+<td>HTML / CSS</td>
+<td>Základní</td>
+</tr>
+<tr>
+<td>SAPconnect (SCOT)</td>
+<td>Orientace</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5-vytvoreni-e-mail-template-v-se80">5. Vytvoření E-Mail Template v SE80</h2>
+<p>Neexistuje dedikovaná transakce – šablona se vytváří jako <strong>repository object v SE80</strong>:</p>
+<ol>
+<li>Otevři <strong>SE80</strong>.</li>
+<li>Vyber balík (nebo Local Objects <code>$TMP</code>) → pravý klik.</li>
+<li>Zvolte <strong>Create → More → Email Template</strong>.</li>
+<li>Zadej název (doporučen prefix <code>Z</code>, např. <code>ZBASIS_PENDING_TIME_SHEETS</code>).</li>
+<li>Vyplň popis a potvrď uložení do balíku nebo <code>$TMP</code>.</li>
+</ol>
+<blockquote>
+<p>💡 Existující šablony lze prohlížet a editovat přes program <strong><code>SMTG_WB_START</code></strong> (spusť jako <code>SA38</code>/<code>SE38</code>).</p>
+</blockquote>
+<h3 id="struktura-sablony-zalozky">Struktura šablony (záložky)</h3>
+<table>
+<thead>
+<tr>
+<th>Záložka</th>
+<th>Popis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Header</strong></td>
+<td>Název, popis, přiřazení CDS view</td>
+</tr>
+<tr>
+<td><strong>Languages</strong></td>
+<td>Správa šablony v různých jazycích (EN, DE, CS...)</td>
+</tr>
+<tr>
+<td><strong>CDS Fields</strong></td>
+<td>Výběr konkrétních polí z CDS view pro použití v obsahu</td>
+</tr>
+<tr>
+<td><strong>Email Subject</strong></td>
+<td>Předmět e-mailu – může obsahovat <code>{{placeholder}}</code></td>
+</tr>
+<tr>
+<td><strong>Body HTML</strong></td>
+<td>Tělo e-mailu jako HTML – může obsahovat <code>{{placeholder}}</code></td>
+</tr>
+<tr>
+<td><strong>Body Plain Text</strong></td>
+<td>Textová alternativa těla e-mailu</td>
+</tr>
+</tbody>
+</table>
+<h3 id="preview-sablony">Preview šablony</h3>
+<p>V SE80 je k dispozici tlačítko <strong>Preview</strong> – umožňuje zobrazit šablonu s testovacími hodnotami ještě před nasazením programu. Velmi užitečné pro ověření HTML layoutu.</p>
+<hr />
+<h2 id="6-cds-view-pro-dynamicke-promenne">6. CDS View pro dynamické proměnné</h2>
+<p>Pro dynamické proměnné je nutné vytvořit <strong>CDS view</strong>, která bude zdrojem dat.</p>
+<h3 id="pravidla-pro-cds-view">Pravidla pro CDS view</h3>
+<ul>
+<li>Musí mít <strong>key pole</strong> – podle nich se při volání předává CDS klíč (name/value páry).</li>
+<li>Nemusí být VDM view – postačí <code>@VDM.viewType: #BASIC</code> nebo bez anotace.</li>
+<li>Pole CDS view se referencují v šabloně jako <code>{{NazevPole}}</code> – název musí přesně odpovídat aliasu/názvu pole v CDS.</li>
+<li>CDS view musí být <strong>aktivní</strong> v systému.</li>
+</ul>
+<h3 id="priklad-cds-view-pro-fakturacni-doklad">Příklad CDS view pro fakturační doklad</h3>
+<pre><code class="language-abap">@AbapCatalog.sqlViewName: 'ZRSCDS_INVDATA'
+@AbapCatalog.compiler.compareFilter: true
+@AccessControl.authorizationCheck: #CHECK
+@EndUserText.label: 'Invoice Data Line Item wise'
+define view ZRSCDS_INVOICE_DATA
+as select from vbrk as zzrs_vbrk
+join vbrp as zzrs_vbrp
+    on zzrs_vbrk.vbeln = zzrs_vbrp.vbeln
+{
+  key zzrs_vbrk.vbeln,
+  key zzrs_vbrp.posnr,
+      zzrs_vbrk.fkart,
+      zzrs_vbrk.vbtyp,
+      @Semantics.currencyCode: true
+      zzrs_vbrk.waerk,
+      zzrs_vbrk.vkorg,
+      zzrs_vbrk.fkdat,
+      @Semantics.amount.currencyCode: 'waerk'
+      @DefaultAggregation: #SUM
+      zzrs_vbrk.netwr,
+      zzrs_vbrk.kunag as kunag,
+      zzrs_vbrp.fkimg,
+      zzrs_vbrp.vrkme,
+      zzrs_vbrp.meins,
+      zzrs_vbrp.matnr
+}
+</code></pre>
+<blockquote>
+<p>CDS view se přiřazuje v záložce <strong>Header</strong> šablony. Pole se pak přiřadí v záložce <strong>CDS Fields</strong> a referencují se v Body/Subject jako <code>{{matnr}}</code>, <code>{{fkdat}}</code> apod.</p>
+</blockquote>
+<hr />
+<h2 id="7-volani-e-mail-template-z-abapu-jednoduchy-pripad">7. Volání E-Mail Template z ABAPu (jednoduchý případ)</h2>
+<p>Použij tuto variantu, když potřebuješ odeslat e-mail s <strong>jednoduchou šablonou</strong> bez speciálních úprav HTML.</p>
+<h3 id="kompletni-vzorovy-kod">Kompletní vzorový kód</h3>
+<pre><code class="language-abap">TRY.
+    &quot; 1. Instance Email API
+    DATA(lo_email_api) = cl_smtg_email_api=&gt;get_instance(
+        iv_template_id = p_em_id   &quot; ID šablony, např. 'ZINVOICE_NOTIFICATION'
+    ).
+
+    &quot; 2. Instance BCS
+    DATA(lo_bcs) = cl_bcs=&gt;create_persistent( ).
+
+    &quot; 3. CDS klíč – name/value páry odpovídající key polím CDS view
+    DATA(lt_cds_key) = VALUE cl_smtg_email_api=&gt;ty_t_data_key(
+        ( name = 'VBELN' value = p_vbeln )
+    ).
+
+    &quot; 4. Render šablony do BCS (vloží subject + body automaticky)
+    lo_email_api-&gt;render_bcs(
+        io_bcs       = lo_bcs
+        iv_language  = p_spras     &quot; jazyk, např. sy-langu nebo 'E'
+        it_data_key  = lt_cds_key
+    ).
+
+    &quot; 5. Odesílatel
+    DATA(lo_sender) = cl_sapuser_bcs=&gt;create( sy-uname ).
+    lo_bcs-&gt;set_sender( i_sender = lo_sender ).
+
+    &quot; 6. Příjemce (internetová adresa)
+    DATA(lo_recipient) = cl_cam_address_bcs=&gt;create_internet_address( p_rec ).
+    lo_bcs-&gt;add_recipient( EXPORTING i_recipient = lo_recipient ).
+
+    &quot; 7. Odeslání
+    lo_bcs-&gt;send( ).
+    COMMIT WORK AND WAIT.
+
+CATCH cx_smtg_email_common INTO DATA(lx_email).
+    MESSAGE lx_email-&gt;get_text( ) TYPE 'E'.
+CATCH cx_send_req_bcs INTO DATA(lx_bcs).
+    MESSAGE lx_bcs-&gt;get_text( ) TYPE 'E'.
+CATCH cx_address_bcs INTO DATA(lx_addr).
+    MESSAGE lx_addr-&gt;get_text( ) TYPE 'E'.
+ENDTRY.
+</code></pre>
+<hr />
+<h2 id="8-vicejazycne-sablony">8. Vícejazyčné šablony</h2>
+<p>E-Mail Templates nativně podporují více jazyků – pro každý jazyk lze definovat odlišný předmět i tělo e-mailu.</p>
+<h3 id="jak-nastavit-vicejazycnou-sablonu-v-se80">Jak nastavit vícejazyčnou šablonu v SE80</h3>
+<ol>
+<li>V šabloně otevři záložku <strong>Languages</strong>.</li>
+<li>Přidej nový jazyk (tlačítko <code>New Language</code>).</li>
+<li>Pro každý jazyk zvlášť vyplň:<br />
+   - <strong>Email Subject</strong><br />
+   - <strong>Body HTML</strong><br />
+   - <strong>Body Plain Text</strong></li>
+</ol>
+<h3 id="jak-vybrat-jazyk-pri-volani">Jak vybrat jazyk při volání</h3>
+<pre><code class="language-abap">&quot; Jazyk se předává parametrem iv_language
+lo_email_api-&gt;render_bcs(
+    io_bcs       = lo_bcs
+    iv_language  = 'E'   &quot; 'E' = angličtina, 'D' = němčina, 'C' = čeština atd.
+    it_data_key  = lt_cds_key
+).
+</code></pre>
+<blockquote>
+<p>💡 Pokud pro požadovaný jazyk šablona neexistuje, SAP automaticky padne zpět na <strong>fallback jazyk</strong> (EN nebo první dostupný). Proto je vhodné vždy mít anglickou verzi jako zálohu.</p>
+</blockquote>
+<h3 id="doporuceni-pro-vicejazycne-nasazeni">Doporučení pro vícejazyčné nasazení</h3>
+<ul>
+<li>Udržuj <strong>EN jako základní jazyk</strong> – bude použit pokud cílový jazyk chybí.</li>
+<li>Jazyk příjemce lze načíst z user masteru: <code>cl_abap_syst=&gt;get_language( )</code> nebo z tabulky <code>USR01</code>.</li>
+<li>Pro zákazníky SAP: jazyk lze načíst z <code>KNA1-SPRAS</code>.</li>
+</ul>
+<hr />
+<h2 id="9-vkladani-tabulky-s-vice-zaznamy-do-e-mailu">9. Vkládání tabulky s více záznamy do e-mailu</h2>
+<blockquote>
+<p>Použij tuto variantu, když potřebuješ do jednoho e-mailu vložit <strong>dynamickou tabulku s proměnným počtem řádků</strong> (výpis položek, seznam projektů apod.).</p>
+</blockquote>
+<h3 id="princip">Princip</h3>
+<ol>
+<li>V HTML šabloně definuj tabulku s hlavičkou a <strong>HTML komentářem jako placeholderem</strong>:<br />
+   ```html<br />
+   <!--///MojeData--></li>
+</ol>
+<p><code>``
+2. V ABAPu dynamicky sestav HTML řádky tabulky jako string (</code>lv_content<code>).
+3. Použij</code>render()<code>místo</code>render_bcs()<code>– vrátí raw HTML string.
+4. Nahraď placeholder vygenerovaným HTML (</code>REPLACE ... WITH ... INTO<code>).
+5. Sestav multipart zprávu a odešli přes</code>CL_BCS`.</p>
+<h3 id="html-sablona-cast-s-tabulkou-vkladej-do-body-html">HTML šablona – část s tabulkou (vkládej do Body HTML)</h3>
+<pre><code class="language-html">&lt;!-- Dynamická tabulka s projekty --&gt;
+&lt;table border=&quot;1&quot; cellpadding=&quot;3&quot;
+       style=&quot;border-collapse:collapse; font-size:14px; width:100%&quot;&gt;
+  &lt;thead&gt;
+    &lt;tr style=&quot;background-color:#F16523; color:#ffffff;&quot;&gt;
+      &lt;th style=&quot;text-align:left; padding:5px;&quot;&gt;EmpID&lt;/th&gt;
+      &lt;th style=&quot;text-align:left; padding:5px;&quot;&gt;Employee&lt;/th&gt;
+      &lt;th style=&quot;text-align:left; padding:5px;&quot;&gt;Project&lt;/th&gt;
+      &lt;th style=&quot;text-align:left; padding:5px;&quot;&gt;Planned Hrs&lt;/th&gt;
+      &lt;th style=&quot;text-align:left; padding:5px;&quot;&gt;Approved Hrs&lt;/th&gt;
+      &lt;th style=&quot;text-align:left; padding:5px;&quot;&gt;Remaining Hrs&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;!--///EmpContent--&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+</code></pre>
+<blockquote>
+<p>💡 Vždy edituj HTML nejprve v <strong>VS Code</strong> – máš zvýraznění syntaxe, validaci a náhled. Do SE80 kopíruj až po otestování.</p>
+</blockquote>
+<h3 id="abap-kod-sestaveni-html-tabulky-a-odeslani">ABAP kód – sestavení HTML tabulky a odeslání</h3>
+<pre><code class="language-abap">CONSTANTS: c_template_id TYPE smtg_template_id VALUE 'ZBASIS_PENDING_TIMESHEETS',
+           c_english      TYPE spras             VALUE 'E'.
+
+&quot; -----------------------------------------------------------------------
+&quot; 1. Sestav unikátní seznam zaměstnanců
+&quot; -----------------------------------------------------------------------
+DATA(lt_emp) = i_output.
+SORT lt_emp BY pernr ASCENDING.
+DELETE ADJACENT DUPLICATES FROM lt_emp COMPARING pernr.
+
+&quot; -----------------------------------------------------------------------
+&quot; 2. Pro každého zaměstnance sestav HTML řádky všech jeho projektů
+&quot; -----------------------------------------------------------------------
+DATA lt_timsh TYPE TABLE OF zs_timesh_data.
+DATA lv_content TYPE string.
+
+LOOP AT lt_emp INTO DATA(ls_emp).
+    CLEAR lv_content.
+
+    LOOP AT i_output INTO DATA(ls_output) WHERE pernr = ls_emp-pernr.
+        lv_content = |{ lv_content }&lt;tr&gt;|.
+        lv_content = |{ lv_content }&lt;td style=&quot;padding:4px&quot;&gt;{ ls_output-pernr }&lt;/td&gt;|.
+        lv_content = |{ lv_content }&lt;td style=&quot;padding:4px&quot;&gt;{ ls_output-pernr_name }&lt;/td&gt;|.
+        lv_content = |{ lv_content }&lt;td style=&quot;padding:4px&quot;&gt;{ ls_output-prj_code } – { ls_output-prj_name }&lt;/td&gt;|.
+        lv_content = |{ lv_content }&lt;td style=&quot;padding:4px; text-align:right&quot;&gt;{ ls_output-workd }&lt;/td&gt;|.
+        lv_content = |{ lv_content }&lt;td style=&quot;padding:4px; text-align:right&quot;&gt;{ ls_output-cat_approved }&lt;/td&gt;|.
+        lv_content = |{ lv_content }&lt;td style=&quot;padding:4px; text-align:right&quot;&gt;{ ls_output-cat_remaining }&lt;/td&gt;|.
+        lv_content = |{ lv_content }&lt;/tr&gt;|.
+    ENDLOOP.
+
+    DATA(ls_timsh) = VALUE zs_timesh_data(
+        pernr       = ls_emp-pernr
+        pernr_name  = ls_emp-pernr_name
+        pmemail     = ls_emp-pmemail
+        emp_content = lv_content
+    ).
+    APPEND ls_timsh TO lt_timsh.
+ENDLOOP.
+
+&quot; -----------------------------------------------------------------------
+&quot; 3. Odešli jeden e-mail pro každého zaměstnance
+&quot; -----------------------------------------------------------------------
+LOOP AT lt_timsh INTO ls_timsh.
+
+    TRY.
+        DATA(oref_email_api) = cl_smtg_email_api=&gt;get_instance(
+            iv_template_id = c_template_id
+        ).
+        DATA(oref_bcs) = cl_bcs=&gt;create_persistent( ).
+
+        &quot; CDS klíč pro načtení dynamických proměnných ({{EmployeeName}}, {{TodaysDate}} atd.)
+        DATA(i_cds_key) = VALUE cl_smtg_email_api=&gt;ty_t_data_key(
+            ( name = 'EMPLOYEE' value = ls_timsh-pernr )
+        ).
+
+        &quot; Získej raw HTML – render() vrátí string, nikoli rovnou do BCS
+        oref_email_api-&gt;render(
+            EXPORTING
+                iv_language  = c_english
+                it_data_key  = i_cds_key
+            IMPORTING
+                ev_body_html    = DATA(body_html)
+                ev_subject      = DATA(lv_subject_tmpl)
+        ).
+
+        &quot; Nahraď placeholder dynamicky vygenerovanými řádky tabulky
+        REPLACE '&lt;!--///EmpContent--&gt;' WITH ls_timsh-emp_content INTO body_html.
+
+        &quot; Sestav multipart HTML zprávu
+        DATA(body_html_soli) = cl_bcs_convert=&gt;string_to_soli( body_html ).
+        DATA(multipart) = NEW cl_gbt_multirelated_service( ).
+        multipart-&gt;set_main_html(
+            EXPORTING
+                content     = body_html_soli
+                description = 'EmailBody'
+        ).
+
+        &quot; Předmět e-mailu (lze použít ze šablony nebo sestavit dynamicky)
+        DATA(lv_subject) = |Pending Time Sheets – { ls_timsh-pernr_name }|.
+
+        &quot; Vytvoř e-mailový dokument
+        DATA(doc_bcs) = cl_document_bcs=&gt;create_from_multirelated(
+            EXPORTING
+                i_subject          = lv_subject
+                i_multirel_service = multipart
+        ).
+        oref_bcs-&gt;set_document( doc_bcs ).
+
+        &quot; Odesílatel (systémový workflow user)
+        DATA(oref_sender) = cl_sapuser_bcs=&gt;create( 'SAP_WFRT' ).
+        oref_bcs-&gt;set_sender( i_sender = oref_sender ).
+
+        &quot; Příjemce
+        DATA(oref_recipient) = cl_cam_address_bcs=&gt;create_internet_address(
+            ls_timsh-pmemail
+        ).
+        oref_bcs-&gt;add_recipient( EXPORTING i_recipient = oref_recipient ).
+
+        &quot; Odeslání
+        oref_bcs-&gt;send( ).
+        COMMIT WORK AND WAIT.
+        WRITE / |&gt;&gt; OK: { ls_timsh-pernr } – { ls_timsh-pernr_name }|.
+
+    CATCH cx_smtg_email_common INTO DATA(lx_e).
+        WRITE / |&gt;&gt; CHYBA (šablona): { lx_e-&gt;get_text( ) }|.
+    CATCH cx_send_req_bcs INTO DATA(lx_b).
+        WRITE / |&gt;&gt; CHYBA (BCS): { lx_b-&gt;get_text( ) }|.
+    CATCH cx_address_bcs INTO DATA(lx_a).
+        WRITE / |&gt;&gt; CHYBA (adresa): { lx_a-&gt;get_text( ) }|.
+    ENDTRY.
+
+ENDLOOP.
+</code></pre>
+<hr />
+<h2 id="10-e-mail-s-prilohou-pdfsoubor">10. E-mail s přílohou (PDF/soubor)</h2>
+<p>E-Mail Templates lze kombinovat s přílohami. Přílohu je nutné přidat do instance <code>CL_BCS</code> jako binární dokument.</p>
+<h3 id="princip_1">Princip</h3>
+<pre><code class="language-abap">&quot; Předpokládáme, že lv_pdf_xstring obsahuje PDF jako xstring (např. z cl_rspo_pdf)
+DATA(lt_solix)  = cl_bcs_convert=&gt;xstring_to_solix( lv_pdf_xstring ).
+
+DATA(lo_attachment) = cl_document_bcs=&gt;create_document(
+    i_type        = 'PDF'
+    i_text        = lt_solix
+    i_length      = xstrlen( lv_pdf_xstring )
+    i_subject     = 'Invoice.pdf'
+).
+
+&quot; Přidání přílohy k hlavní zprávě
+lo_bcs-&gt;set_document( lo_main_doc ).
+lo_bcs-&gt;set_document( lo_attachment ).   &quot; ← přidá jako attachment
+</code></pre>
+<blockquote>
+<p>⚠️ Pořadí volání <code>set_document()</code> záleží: první dokument je tělo e-mailu, každý další je připojen jako příloha.</p>
+</blockquote>
+<h3 id="alternativa-multipartmixed-pristup">Alternativa: multipart/mixed přístup</h3>
+<pre><code class="language-abap">&quot; 1. Sestav HTML tělo
+DATA(multipart) = NEW cl_gbt_multirelated_service( ).
+multipart-&gt;set_main_html( EXPORTING content = body_html_soli ).
+
+&quot; 2. Přidej přílohu do multipart
+DATA(lo_att_service) = NEW cl_gbt_part_service( ).
+lo_att_service-&gt;set_content(
+    i_content_type = 'application/pdf'
+    i_content      = lt_solix
+).
+lo_att_service-&gt;set_content_disposition(
+    i_disposition = 'attachment'
+    i_filename    = 'report.pdf'
+).
+multipart-&gt;add_part( lo_att_service ).
+
+&quot; 3. Vytvoř dokument z multipart
+DATA(doc_bcs) = cl_document_bcs=&gt;create_from_multirelated(
+    EXPORTING
+        i_subject          = lv_subject
+        i_multirel_service = multipart
+).
+</code></pre>
+<hr />
+<h2 id="11-napojeni-na-output-management-a-brf">11. Napojení na Output Management a BRF+</h2>
+<p>E-Mail Templates jsou primárně navrženy pro použití s <strong>Output Managementem</strong> (Nemo Output Management) v S/4HANA. Lze je ale volat i zcela samostatně.</p>
+<h3 id="architektura-output-managementu">Architektura Output Managementu</h3>
+<pre><code>Obchodní doklad (FV, FI, SD...)
+       ↓
+Output Condition (BRF+)
+       ↓
+Output Type → přiřazena E-Mail Template
+       ↓
+Automatické odeslání e-mailu
+</code></pre>
+<h3 id="konfigurace-v-brf">Konfigurace v BRF+</h3>
+<ol>
+<li>Otevři <strong>BRF+ Workbench</strong> (transakce <code>BRF+</code>).</li>
+<li>Najdi příslušnou Output Condition aplikaci (např. <code>FIN_CUSINV_EMAIL_TEMPL</code> pro faktury).</li>
+<li>V Action části nastav:<br />
+   - <strong>Output Channel</strong>: EMAIL<br />
+   - <strong>E-Mail Template ID</strong>: ID tvé šablony<br />
+   - <strong>Language Determination</strong>: z dokladu nebo pevně</li>
+</ol>
+<h3 id="standardni-sablony-priklady">Standardní šablony (příklady)</h3>
+<table>
+<thead>
+<tr>
+<th>Template ID</th>
+<th>Oblast použití</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>FIN_CUSINV_EMAIL_TEMPL</code></td>
+<td>Zákaznické faktury (FI)</td>
+</tr>
+<tr>
+<td><code>SD_ORCO_EMAIL_TEMPL</code></td>
+<td>Potvrzení objednávky (SD)</td>
+</tr>
+<tr>
+<td><code>MM_PORDERS_EMAIL_TEMPL</code></td>
+<td>Objednávky (MM)</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>Pro vlastní custom šablony vždy používej prefix <code>Z</code>.</p>
+</blockquote>
+<hr />
+<h2 id="12-prehled-klicovych-abap-trid">12. Přehled klíčových ABAP tříd</h2>
+<table>
+<thead>
+<tr>
+<th>Třída</th>
+<th>Popis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CL_SMTG_EMAIL_API</code></td>
+<td>Hlavní API pro e-mail šablony. Metody: <code>get_instance()</code>, <code>render_bcs()</code>, <code>render()</code></td>
+</tr>
+<tr>
+<td><code>CL_BCS</code></td>
+<td>Business Communication Services – orchestrace odeslání e-mailu</td>
+</tr>
+<tr>
+<td><code>CL_SAPUSER_BCS</code></td>
+<td>Odesílatel jako SAP interní user</td>
+</tr>
+<tr>
+<td><code>CL_CAM_ADDRESS_BCS</code></td>
+<td>Odesílatel/příjemce jako internetová e-mailová adresa</td>
+</tr>
+<tr>
+<td><code>CL_DOCUMENT_BCS</code></td>
+<td>Vytvoření e-mailového dokumentu (tělo + přílohy)</td>
+</tr>
+<tr>
+<td><code>CL_BCS_CONVERT</code></td>
+<td>Konverze: <code>string_to_soli()</code>, <code>xstring_to_solix()</code></td>
+</tr>
+<tr>
+<td><code>CL_GBT_MULTIRELATED_SERVICE</code></td>
+<td>Sestavení multipart HTML zprávy (HTML tělo + inline obrázky)</td>
+</tr>
+<tr>
+<td><code>CL_GBT_PART_SERVICE</code></td>
+<td>Jednotlivá část multipart zprávy (příloha)</td>
+</tr>
+<tr>
+<td><code>IF_SMTG_EMAIL_API</code></td>
+<td>Interface k <code>CL_SMTG_EMAIL_API</code> (pro mock/test)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="typy-dat">Typy dat</h3>
+<table>
+<thead>
+<tr>
+<th>Typ</th>
+<th>Popis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SMTG_TEMPLATE_ID</code></td>
+<td>Typ pro ID šablony</td>
+</tr>
+<tr>
+<td><code>CL_SMTG_EMAIL_API=&gt;TY_T_DATA_KEY</code></td>
+<td>Interní tabulka pro CDS klíče (name/value)</td>
+</tr>
+<tr>
+<td><code>SOLI</code></td>
+<td>Interní formát textu (tabulka řetězců po 255 znacích)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="13-rozdil-mezi-render_bcs-a-render">13. Rozdíl mezi <code>render_bcs()</code> a <code>render()</code></h2>
+<table>
+<thead>
+<tr>
+<th>Parametr</th>
+<th><code>render_bcs()</code></th>
+<th><code>render()</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Vstup BCS</td>
+<td><code>io_bcs</code> (povinný)</td>
+<td>✗</td>
+</tr>
+<tr>
+<td>Výstup HTML</td>
+<td>Přímo do BCS</td>
+<td><code>ev_body_html</code> (string)</td>
+</tr>
+<tr>
+<td>Výstup Subject</td>
+<td>Přímo do BCS</td>
+<td><code>ev_subject</code> (volitelně)</td>
+</tr>
+<tr>
+<td>Možnost úpravy HTML</td>
+<td>✗ Nelze</td>
+<td>✅ Ano – před odesláním</td>
+</tr>
+<tr>
+<td>Vhodné pro</td>
+<td>Jednoduchý e-mail bez úprav</td>
+<td>Dynamické tabulky, replace placeholderů</td>
+</tr>
+<tr>
+<td>Nutný multipart</td>
+<td>✗</td>
+<td>✅ Ano (manuálně sestavit)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="14-doporucena-architektura-pro-hromadne-odesilani">14. Doporučená architektura pro hromadné odesílání</h2>
+<p>Při odesílání e-mailů většímu počtu příjemců (background job) doporučujeme tento pattern:</p>
+<pre><code>REPORT Z_SEND_EMAILS.
+
+SELECTION-SCREEN:
+  P_TEST  (testovací mode – nevysílá e-maily)
+  P_RECP  (alternativní příjemce pro testování)
+
+START-OF-SELECTION:
+  1. Načti vstupní data (SELECT / CDS view)
+  2. Agreguj data per příjemce (LOOP + DELETE DUPLICATES)
+  3. Pro každého příjemce:
+     a. Sestav dynamický HTML obsah (pokud je tabulka)
+     b. Inicializuj CL_SMTG_EMAIL_API + CL_BCS
+     c. render() → REPLACE placeholder
+     d. Sestav multipart zprávu
+     e. Nastav sender, recipient
+     f. IF p_test = abap_false → bcs-&gt;send()
+     g. COMMIT WORK AND WAIT
+     h. Loguj výsledek (WRITE, ALV, appl.log)
+  4. Naplánuj jako background job (SM36)
+</code></pre>
+<h3 id="doporuceni-pro-background-job">Doporučení pro background job</h3>
+<ul>
+<li>Používej systémového uživatele jako odesílatele (např. <code>SAP_WFRT</code>, ne dialog user).</li>
+<li>Spouštěj job pouze v produkci, v DEV/QA používej testovací mode s <code>P_RECP</code>.</li>
+<li>Loguj výsledky do <strong>Application Log</strong> (<code>CL_BAL_APPLICATION_LOG</code>) pro auditovatelnost.</li>
+<li>Nastav správný <strong>Send Job v SCOT</strong> – bez něho zůstanou e-maily ve frontě <code>SOST</code>.</li>
+</ul>
+<hr />
+<h2 id="15-troubleshooting">15. Troubleshooting</h2>
+<h3 id="151-sablona-neni-videt-v-smtg_wb_start">15.1 Šablona není vidět v SMTG_WB_START</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Příčina</th>
+<th>Řešení</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>Šablona není aktivována</strong></td>
+<td>V SE80 označ objekt → <code>Ctrl+F3</code> (Activate). Neaktivní objekty se v <code>SMTG_WB_START</code> nezobrazují.</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>Filtr na selection screenu</strong></td>
+<td>Spusť <code>SMTG_WB_START</code> s <strong>prázdnými</strong> filtry → F8.</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>Šablona uložena v <code>$TMP</code></strong></td>
+<td>Local objects lze vidět pouze v systému kde byly vytvořeny. Přesuň do transportovatelného balíku.</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>Chybí oprávnění</strong></td>
+<td>Zkontroluj auth. objekt <code>S_DEVELOP</code> (aktivita <code>16</code>) nebo <code>S_SMTG_API</code>.</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>Objekt zamčený v transportu</strong></td>
+<td>Zkontroluj v SE80 záložku <em>Properties</em> nebo přes <code>SE03</code>.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Rychlý test:</strong> Jdi do SE80 → v dropdown vyber <strong>Email Template</strong> → zadej název objektu ručně. Pokud ho SE80 najde a je <code>Active</code>, jde o problém s filtrem/oprávněním v <code>SMTG_WB_START</code>.</p>
+<h3 id="152-e-mail-se-neodesila-zustava-ve-fronte-sost">15.2 E-mail se neodesílá (zůstává ve frontě SOST)</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Příčina</th>
+<th>Řešení</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>Send Job v SCOT neběží</strong></td>
+<td><code>SCOT → Jobs → Start Send Process</code> nebo zkontroluj plánování jobu v <code>SM37</code>.</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>SMTP node není nakonfigurován</strong></td>
+<td>V <code>SCOT</code> zkontroluj SMTP node, otestuj přes <code>SOSG</code>.</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>Příjemce nemá e-mailovou adresu</strong></td>
+<td>Zkontroluj, zda <code>cl_cam_address_bcs::create_internet_address()</code> dostává neprázdnou hodnotu.</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>COMMIT WORK chybí</strong></td>
+<td>Po <code>bcs-&gt;send()</code> musí následovat <code>COMMIT WORK AND WAIT</code>.</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>Sandbox/dev system blokuje odeslání</strong></td>
+<td>Zkontroluj <code>SCOT → Settings → General Settings</code> – povolené domény odesílání.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="153-cds-view-nefunguje-placeholder-se-nenahrazuje">15.3 CDS view nefunguje / placeholder se nenahrazuje</h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Příčina</th>
+<th>Řešení</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>CDS view není aktivní</strong></td>
+<td>Aktivuj CDS v SE80 nebo ADT.</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>Název pole neodpovídá</strong></td>
+<td>Název v <code>{{placeholder}}</code> musí přesně odpovídat aliasu pole v CDS (case-insensitive, ale bez mezer).</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>CDS key nevrací data</strong></td>
+<td>Zkontroluj, zda předávaná hodnota v <code>it_data_key</code> odpovídá existujícímu záznamu v DB.</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>Špatný název CDS ve šabloně</strong></td>
+<td>V záložce Header šablony musí být správný technický název CDS view (ne sqlViewName).</td>
+</tr>
+</tbody>
+</table>
+<h3 id="154-exception-cx_smtg_email_common">15.4 Exception <code>CX_SMTG_EMAIL_COMMON</code></h3>
+<p>Nejčastější příčiny:<br />
+- Template ID neexistuje nebo není aktivní.<br />
+- CDS view přiřazená šabloně neexistuje v systému.<br />
+- Jazyk zadaný v <code>iv_language</code> nemá v šabloně variantu a ani fallback EN neexistuje.</p>
+<pre><code class="language-abap">CATCH cx_smtg_email_common INTO DATA(lx).
+    &quot; Detailní chybová zpráva:
+    WRITE / lx-&gt;get_text( ).
+    &quot; Nebo zaloguj do application logu pro background job
+ENDTRY.
+</code></pre>
+<hr />
+<h2 id="16-priklad-exception-handlingu">16. Příklad exception handlingu</h2>
+<pre><code class="language-abap">TRY.
+    &quot; ... kód pro odeslání e-mailu ...
+
+CATCH cx_smtg_email_common INTO DATA(lx_email).
+    &quot; Chyba šablony (neexistuje, neaktivní CDS, chybějící jazyk)
+    WRITE / |CHYBA šablony: { lx_email-&gt;get_text( ) }|.
+
+CATCH cx_send_req_bcs INTO DATA(lx_bcs).
+    &quot; Chyba BCS (odeslání, nastavení dokumentu)
+    DATA(ls_msg) = VALUE #(
+        msgid = sy-msgid msgno = sy-msgno
+        attr1 = sy-msgv1 attr2 = sy-msgv2
+        attr3 = sy-msgv3 attr4 = sy-msgv4
+    ).
+    WRITE / |CHYBA BCS: { ls_msg-msgid } { ls_msg-msgno }|.
+
+CATCH cx_address_bcs INTO DATA(lx_addr).
+    &quot; Chyba adresy příjemce/odesílatele
+    WRITE / |CHYBA adresy: { lx_addr-&gt;get_text( ) }|.
+
+ENDTRY.
+</code></pre>
+<hr />
+<h2 id="17-tipy-a-doporuceni">17. Tipy a doporučení</h2>
+<h3 id="html-sablona">HTML šablona</h3>
+<ul>
+<li>✅ HTML vždy <strong>připravuj a testuj v VS Code</strong> (Live Preview, Emmet) – teprve poté kopíruj do SE80.</li>
+<li>✅ Používej <strong>inline CSS</strong> – e-mailoví klienti (Outlook, Gmail) nepodporují stylesheets v <code>&lt;head&gt;</code>.</li>
+<li>✅ Testuj layout v různých e-mailových klientech (Outlook, Gmail, Thunderbird mají různé chování).</li>
+<li>⚠️ Vyhni se JavaScriptu v HTML – e-mailoví klienti ho blokují.</li>
+<li>⚠️ Obrázky z externích URL nemusí být zobrazeny (blokování obsahu) – preferuj inline Base64 nebo logo přímo v textu.</li>
+</ul>
+<h3 id="abap-a-vykon">ABAP a výkon</h3>
+<ul>
+<li>✅ Při hromadném odesílání vždy <strong>seskupuj záznamy per příjemce</strong> (jeden e-mail = jeden příjemce, více dat v těle).</li>
+<li>✅ Testuj vždy nejdříve s <strong>testovacím mode</strong> (parametr <code>P_TEST</code>, alternativní adresa <code>P_RECP</code>).</li>
+<li>✅ Po <code>send()</code> vždy volej <code>COMMIT WORK AND WAIT</code>.</li>
+<li>✅ Používej smysluplné pojmenování HTML placeholderů (<code>&lt;!--///EmpContent--&gt;</code>).</li>
+<li>⚠️ CDS view přiřazená šabloně musí existovat a být aktivní v každém systému (DEV/QA/PROD).</li>
+<li>⚠️ Dynamické proměnné <code>{{NazevPole}}</code> musí přesně odpovídat názvům/aliasům polí v CDS.</li>
+</ul>
+<h3 id="odesilani-a-provoz">Odesílání a provoz</h3>
+<ul>
+<li>✅ Pro odesílatele background jobů používej systémového uživatele (<code>SAP_WFRT</code> nebo vlastní batch user) – ne dialog usera.</li>
+<li>✅ Loguj výsledky odesílání do <code>SOST</code> nebo Application Logu pro auditovatelnost.</li>
+<li>✅ Monitoruj frontu <code>SOST</code> – zejména po prvním nasazení.</li>
+<li>✅ Před nasazením do PROD otestuj celý flow v QA s reálnými daty.</li>
+</ul>
+<hr />
+<h2 id="18-checklist-rychly-prehled-kroku">18. Checklist – rychlý přehled kroků</h2>
+<h3 id="priprava-systemu">Příprava systému</h3>
+<ul>
+<li><input type="checkbox" disabled> Ověřit konfiguraci SCOT (SMTP node, Send Job)</li>
+<li><input type="checkbox" disabled> Otestovat odesílání přes transakci <code>SOSG</code></li>
+</ul>
+<h3 id="vyvoj-sablony">Vývoj šablony</h3>
+<ul>
+<li><input type="checkbox" disabled> Vytvořit CDS view se zdrojovými daty a klíčovými poli</li>
+<li><input type="checkbox" disabled> Aktivovat CDS view v systému</li>
+<li><input type="checkbox" disabled> Napsat HTML obsah v VS Code, otestovat layout</li>
+<li><input type="checkbox" disabled> Vytvořit E-Mail Template v SE80 (nebo přes <code>SMTG_WB_START</code>)</li>
+<li><input type="checkbox" disabled> Přiřadit CDS view v záložce Header šablony</li>
+<li><input type="checkbox" disabled> Definovat CDS Fields (záložka CDS Fields)</li>
+<li><input type="checkbox" disabled> Vložit HTML do záložky Body HTML</li>
+<li><input type="checkbox" disabled> Přidat dynamické proměnné <code>{{NazevPole}}</code> do Subject/Body</li>
+<li><input type="checkbox" disabled> Pro tabulkový obsah přidat HTML placeholder <code>&lt;!--///NazevPlaceholderu--&gt;</code></li>
+<li><input type="checkbox" disabled> Přidat vícejazyčné varianty (záložka Languages), vždy EN jako základ</li>
+<li><input type="checkbox" disabled> Aktivovat šablonu (<code>Ctrl+F3</code>)</li>
+<li><input type="checkbox" disabled> Otestovat Preview přímo v SE80</li>
+</ul>
+<h3 id="vyvoj-abap-programu">Vývoj ABAP programu</h3>
+<ul>
+<li><input type="checkbox" disabled> Napsat program s voláním <code>CL_SMTG_EMAIL_API</code></li>
+<li><input type="checkbox" disabled> Implementovat testovací mode (bez odesílání / alternativní adresa)</li>
+<li><input type="checkbox" disabled> Implementovat exception handling (<code>CX_SMTG_EMAIL_COMMON</code>, <code>CX_SEND_REQ_BCS</code>, <code>CX_ADDRESS_BCS</code>)</li>
+<li><input type="checkbox" disabled> Otestovat v DEV systému s testovacím mode</li>
+<li><input type="checkbox" disabled> Otestovat v QA systému s reálnými daty</li>
+<li><input type="checkbox" disabled> Naplánovat jako background job (<code>SM36</code>) pokud je potřeba</li>
+</ul>
+<h3 id="provoz">Provoz</h3>
+<ul>
+<li><input type="checkbox" disabled> Monitorovat <code>SOST</code> po prvním spuštění</li>
+<li><input type="checkbox" disabled> Ověřit přijetí e-mailu a správné zobrazení v různých klientech</li>
+</ul>
+<hr />
+<p><em>Zpracováno: 2. dubna 2026 | Primární zdroj: SAP Community Blog Posts (prabhjotsingh14, shraddha_mundwadkar)</em></p>
+<hr />
+<h2 id="propojeni">🔗 Propojení</h2>
+<ul>
+<li>Vzniklo z: [[SAP Adobe Forms]] — Output Management v S/4HANA, BRF+ pro řízení výstupů; stejná architekturní vrstva</li>
+<li>Souvisí s: [[CDS - Core Data Services]] — CDS views jsou klíčový zdroj dat pro dynamické proměnné šablon</li>
+<li>Souvisí s: [[ABAP - report pro dohledani CDS]] — nástroj pro dohledávání CDS views používaných v šablonách</li>
+<li>Souvisí s: [[SAP Press - Workflow for SAP S4HANA]] — workflow triggery jako zdroj volání email šablon</li>
+<li>Použito v projektu: [[Innogy - iCE-CREAM B2B - EDM]] — EDM notifikace jako praktický use case pro email šablony</li>
+</ul>
+</div>
+
+<script>
+  // Init Mermaid
+  mermaid.initialize({ startOnLoad: true, theme: 'default', securityLevel: 'loose' });
+
+  // Init highlight.js on all code blocks
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('pre code').forEach(el => {
+      // Treat as ABAP if it looks like ABAP, otherwise auto-detect
+      if (!el.className && /\b(DATA|LOOP|TRY|CATCH|ENDTRY|ENDLOOP|REPORT|SELECT|INTO|FROM|WHERE)\b/.test(el.textContent)) {
+        el.classList.add('language-sql');  // closest approximation in hljs
+      }
+      hljs.highlightElement(el);
+    });
+
+    // Style [[wikilinks]]
+    document.querySelectorAll('p, li').forEach(el => {
+      el.innerHTML = el.innerHTML.replace(
+        /\[\[([^\]]+)\]\]/g,
+        '<span class="wikilink">⟦ $1 ⟧</span>'
+      );
+    });
+  });
+</script>
+
+</body>
+</html>
