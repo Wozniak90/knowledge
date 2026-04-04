@@ -7,450 +7,690 @@
   <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
   <style>
     :root {
-      --bg: #1a1a2e;
-      --surface: #16213e;
-      --surface2: #0f3460;
-      --accent: #e94560;
-      --accent2: #533483;
-      --text: #e0e0e0;
-      --text-dim: #a0a0b0;
-      --border: #2a2a4a;
-      --code-bg: #0d1117;
-      --green: #3fb950;
-      --yellow: #d29922;
-      --blue: #58a6ff;
+      --bg: #1a1a2e; --surface: #16213e; --surface2: #0f3460;
+      --accent: #e94560; --accent2: #533483;
+      --text: #e0e0e0; --text-dim: #a0a0b0;
+      --border: #2a2a4a; --code-bg: #0d1117;
+      --green: #3fb950; --yellow: #d29922; --blue: #58a6ff;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.7;
-      padding: 2rem 1rem;
+      background: var(--bg); color: var(--text); line-height: 1.7; padding: 2rem 1rem;
     }
-    .container {
-      max-width: 900px;
-      margin: 0 auto;
-    }
-    /* Header */
+    .container { max-width: 900px; margin: 0 auto; }
+
+    /* ── Header ── */
     .doc-header {
       background: linear-gradient(135deg, var(--surface2) 0%, var(--accent2) 100%);
-      border-radius: 12px;
-      padding: 2.5rem 2rem;
-      margin-bottom: 2rem;
+      border-radius: 12px; padding: 2.5rem 2rem; margin-bottom: 2rem;
       border-left: 5px solid var(--accent);
     }
-    .doc-header h1 {
-      font-size: 2rem;
-      font-weight: 700;
-      color: #fff;
-      margin-bottom: 0.5rem;
-    }
-    .doc-header .subtitle {
-      color: rgba(255,255,255,0.75);
-      font-size: 1rem;
-    }
-    .meta-badges {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-top: 1rem;
-    }
+    .doc-header h1 { font-size: 2rem; font-weight: 700; color: #fff; margin-bottom: 0.5rem; }
+    .doc-header .subtitle { color: rgba(255,255,255,0.75); font-size: 1rem; }
+    .meta-badges { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
     .badge {
-      background: rgba(255,255,255,0.15);
-      border: 1px solid rgba(255,255,255,0.25);
-      border-radius: 20px;
-      padding: 0.2rem 0.8rem;
-      font-size: 0.78rem;
-      color: #fff;
+      background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 20px; padding: 0.2rem 0.8rem; font-size: 0.78rem; color: #fff;
     }
-    /* Sections */
+
+    /* ── TOC ── */
+    .toc {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.5rem 2rem; margin-bottom: 2rem;
+    }
+    .toc h2 {
+      font-size: 1rem; text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--text-dim); margin-bottom: 1rem; border: none;
+    }
+    .toc ol { padding-left: 1.3rem; }
+    .toc li { margin-bottom: 0.4rem; }
+    .toc a { color: var(--blue); text-decoration: none; font-size: 0.95rem; }
+    .toc a:hover { color: var(--accent); text-decoration: underline; }
+    .toc-sub { padding-left: 1.2rem; margin-top: 0.3rem; }
+    .toc-sub li { margin-bottom: 0.25rem; }
+    .toc-sub a { font-size: 0.88rem; color: var(--text-dim); }
+    .toc-sub a:hover { color: var(--blue); }
+
+    /* ── Back to TOC ── */
+    .back-to-toc {
+      display: inline-block; margin-top: 1.5rem; font-size: 0.82rem;
+      color: var(--text-dim); text-decoration: none;
+      border: 1px solid var(--border); border-radius: 20px; padding: 0.2rem 0.8rem;
+      transition: all 0.2s;
+    }
+    .back-to-toc:hover { color: var(--blue); border-color: var(--blue); }
+
+    /* ── Headings ── */
     h2 {
-      font-size: 1.35rem;
-      color: var(--blue);
-      margin: 2.5rem 0 1rem;
-      padding-bottom: 0.4rem;
-      border-bottom: 2px solid var(--border);
+      font-size: 1.35rem; color: var(--blue); margin: 2.5rem 0 1rem;
+      padding-bottom: 0.4rem; border-bottom: 2px solid var(--border); scroll-margin-top: 1rem;
     }
-    h3 {
-      font-size: 1.1rem;
-      color: #c9d1d9;
-      margin: 1.5rem 0 0.7rem;
-    }
-    p { margin-bottom: 0.9rem; color: var(--text); }
-    ul, ol {
-      padding-left: 1.5rem;
-      margin-bottom: 1rem;
-    }
+    h3 { font-size: 1.1rem; color: #c9d1d9; margin: 1.5rem 0 0.7rem; }
+    p { margin-bottom: 0.9rem; }
+    ul, ol { padding-left: 1.5rem; margin-bottom: 1rem; }
     li { margin-bottom: 0.35rem; }
-    /* Tables */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 1.2rem 0;
-      font-size: 0.9rem;
-    }
-    thead tr {
-      background: var(--surface2);
-    }
-    th {
-      padding: 0.7rem 1rem;
-      text-align: left;
-      color: var(--blue);
-      font-weight: 600;
-      border-bottom: 2px solid var(--accent);
-    }
-    td {
-      padding: 0.6rem 1rem;
-      border-bottom: 1px solid var(--border);
-      vertical-align: top;
-    }
+
+    /* ── Tables ── */
+    table { width: 100%; border-collapse: collapse; margin: 1.2rem 0; font-size: 0.9rem; }
+    thead tr { background: var(--surface2); }
+    th { padding: 0.7rem 1rem; text-align: left; color: var(--blue); font-weight: 600; border-bottom: 2px solid var(--accent); }
+    td { padding: 0.6rem 1rem; border-bottom: 1px solid var(--border); vertical-align: top; }
     tr:nth-child(even) { background: rgba(255,255,255,0.03); }
-    /* Blockquote */
+
+    /* ── Blockquote ── */
     blockquote {
-      border-left: 4px solid var(--accent);
-      background: rgba(233,69,96,0.08);
-      padding: 0.8rem 1.2rem;
-      margin: 1rem 0;
-      border-radius: 0 8px 8px 0;
-      color: #ffb3be;
+      border-left: 4px solid var(--accent); background: rgba(233,69,96,0.08);
+      padding: 0.8rem 1.2rem; margin: 1rem 0; border-radius: 0 8px 8px 0; color: #ffb3be;
     }
-    /* Code */
+    blockquote.tip {
+      border-left-color: var(--green); background: rgba(63,185,80,0.08); color: #a5d6a7;
+    }
+
+    /* ── Code ── */
     code {
-      background: var(--code-bg);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      padding: 0.15rem 0.4rem;
-      font-family: "Fira Code", "Cascadia Code", monospace;
-      font-size: 0.85em;
-      color: #79c0ff;
+      background: var(--code-bg); border: 1px solid var(--border); border-radius: 4px;
+      padding: 0.15rem 0.4rem; font-family: "Fira Code","Cascadia Code",monospace;
+      font-size: 0.85em; color: #79c0ff;
     }
     pre {
-      background: var(--code-bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 1.2rem;
-      overflow-x: auto;
-      margin: 1rem 0;
+      background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px;
+      padding: 1.2rem; overflow-x: auto; margin: 1rem 0;
+      cursor: zoom-in; transition: border-color 0.2s; position: relative;
     }
-    pre code {
-      background: none;
-      border: none;
-      padding: 0;
-      color: #e6edf3;
+    pre:hover { border-color: var(--blue); }
+    pre::after {
+      content: "🔍 klik pro zoom & pohyb";
+      position: absolute; top: 0.4rem; right: 0.7rem;
+      font-size: 0.72rem; color: var(--text-dim); opacity: 0; transition: opacity 0.2s;
+      font-family: sans-serif;
     }
-    /* Mermaid */
+    pre:hover::after { opacity: 1; }
+    pre code { background: none; border: none; padding: 0; color: #e6edf3; cursor: zoom-in; }
+
+    /* ── Mermaid ── */
+    .mermaid-wrap {
+      cursor: zoom-in; position: relative; margin: 1.2rem 0;
+      transition: box-shadow 0.2s;
+    }
+    .mermaid-wrap:hover { box-shadow: 0 0 0 2px var(--blue); border-radius: 12px; }
+    .mermaid-wrap::after {
+      content: "🔍 klik pro zoom & pohyb";
+      position: absolute; top: 0.5rem; right: 0.8rem;
+      font-size: 0.72rem; color: var(--text-dim); opacity: 0; transition: opacity 0.2s;
+    }
+    .mermaid-wrap:hover::after { opacity: 1; }
     .mermaid {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.5rem;
-      margin: 1.2rem 0;
-      text-align: center;
-      overflow-x: auto;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 1.5rem; text-align: center; overflow-x: auto;
     }
-    /* PERFECT table special styling */
-    .perfect-table td:nth-child(2) {
-      font-weight: 700;
-      color: var(--accent);
-      font-size: 1.1em;
+
+    /* ── Images ── */
+    img.zoomable {
+      max-width: 100%; border-radius: 8px; cursor: zoom-in;
+      border: 1px solid var(--border); transition: border-color 0.2s;
+      display: block; margin: 1rem 0;
     }
-    .perfect-table td:nth-child(3) {
-      color: var(--blue);
-      font-weight: 600;
-    }
-    /* AI table */
+    img.zoomable:hover { border-color: var(--blue); }
+
+    /* ── Table classes ── */
+    .perfect-table td:nth-child(2) { font-weight: 700; color: var(--accent); font-size: 1.1em; }
+    .perfect-table td:nth-child(3) { color: var(--blue); font-weight: 600; }
     .ai-table td:first-child { font-weight: 700; color: var(--green); }
-    /* Checklist */
-    .checklist {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 1rem 1.5rem;
-      margin: 1rem 0;
-    }
-    .checklist li {
-      list-style: none;
-      padding-left: 0;
-    }
-    .checklist li::before {
-      content: "☐ ";
-      color: var(--accent);
-      font-size: 1.1em;
-    }
-    /* Log */
-    .log {
-      font-size: 0.85rem;
-      color: var(--text-dim);
-      border-top: 1px solid var(--border);
-      margin-top: 2rem;
-      padding-top: 1rem;
-    }
-    /* Links */
+    .abap-table td:first-child { font-weight: 700; color: var(--yellow); }
+
+    /* ── Checklist ── */
+    .checklist { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.5rem; margin: 1rem 0; }
+    .checklist-group { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-dim); margin: 0.8rem 0 0.3rem; }
+    .checklist li { list-style: none; padding-left: 0; }
+    .checklist li::before { content: "☐ "; color: var(--accent); font-size: 1.1em; }
+
+    /* ── Misc ── */
+    .log { font-size: 0.85rem; color: var(--text-dim); border-top: 1px solid var(--border); margin-top: 2rem; padding-top: 1rem; }
     a { color: var(--blue); text-decoration: none; }
     a:hover { text-decoration: underline; color: var(--accent); }
-    /* Section card */
-    .section-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.5rem;
-      margin: 1rem 0;
-    }
     strong { color: #f0f0f0; }
     hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+
+    /* ══════════════════════════════
+       MODAL
+    ══════════════════════════════ */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.88); z-index: 1000;
+      align-items: center; justify-content: center;
+      padding: 2vh 2vw;
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal-box {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+      width: 94vw; height: 94vh;
+      display: flex; flex-direction: column;
+      position: relative; overflow: hidden;
+    }
+
+    /* Top bar: controls + close */
+    .modal-topbar {
+      flex: 0 0 auto; display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.6rem 1rem; background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-btn {
+      background: rgba(255,255,255,0.1); color: var(--text); border: 1px solid var(--border);
+      border-radius: 6px; padding: 0.3rem 0.7rem; font-size: 1rem;
+      cursor: pointer; transition: background 0.15s; line-height: 1;
+    }
+    .modal-btn:hover { background: rgba(255,255,255,0.2); }
+    .modal-btn.close { background: var(--accent); border-color: var(--accent); color: #fff; margin-left: auto; }
+    .modal-btn.close:hover { background: #c73652; }
+    .modal-hint {
+      font-size: 0.78rem; color: var(--text-dim); margin-left: 0.5rem;
+      user-select: none;
+    }
+    .modal-scale-label {
+      font-size: 0.78rem; color: var(--text-dim); min-width: 3.5rem; text-align: center;
+    }
+
+    /* Viewport — clipping area */
+    .modal-viewport {
+      flex: 1; overflow: hidden; position: relative;
+      cursor: grab; user-select: none;
+    }
+    .modal-viewport.dragging { cursor: grabbing; }
+
+    /* Panzoom target — gets CSS transform */
+    #panzoom-target {
+      transform-origin: 0 0;
+      display: inline-block;
+      min-width: 100%; min-height: 100%;
+      padding: 1.5rem;
+    }
+    #panzoom-target svg { max-width: 100%; height: auto; display: block; margin: 0 auto; }
+    #panzoom-target pre { cursor: default; font-size: 1rem; line-height: 1.6; }
+    #panzoom-target pre::after { display: none; }
+    #panzoom-target img { max-width: 100%; border-radius: 8px; display: block; margin: 0 auto; }
+    #panzoom-target code { cursor: default; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="doc-header">
-      <h1>Code Review — PERFECT Framework</h1>
-      <p class="subtitle">Strukturovaný přístup k code review: principy, proces, AI nástroje a SAP/ABAP kontext</p>
-      <div class="meta-badges">
-        <span class="badge">📅 2026-04-03</span>
-        <span class="badge">✍️ Daniil Bastrich + doplněno</span>
-        <span class="badge">🏷️ area/learning</span>
-        <span class="badge">🏷️ area/work</span>
-        <span class="badge">🏷️ type/reference</span>
-      </div>
-    </div>
+<div class="container">
+
+  <!-- Header -->
+  <div class="doc-header">
     <h1>Code Review — PERFECT Framework</h1>
-<h2>💡 Hlavní myšlenka (1 věta)</h2>
-<p>Strukturovaný přístup k code review pomocí akronymu PERFECT snižuje kognitivní zátěž recenzentů, odstraňuje subjektivitu a dělá z review rutinní (ne vyčerpávající) proces — doplněný AI nástroji a měřitelnými metrikami.</p>
-<hr />
-<h2>🗺️ Mapa klíčových slov</h2>
-<div class="mermaid">graph TD
+    <p class="subtitle">Strukturovaný přístup k code review: principy, proces, AI nástroje a SAP/ABAP kontext</p>
+    <div class="meta-badges">
+      <span class="badge">📅 2026-04-04</span>
+      <span class="badge">✍️ Daniil Bastrich + doplněno</span>
+      <span class="badge">🏷️ area/learning</span>
+      <span class="badge">🏷️ area/work</span>
+      <span class="badge">🏷️ type/reference</span>
+    </div>
+  </div>
+
+  <!-- TOC -->
+  <nav class="toc" id="toc">
+    <h2>📋 Obsah</h2>
+    <ol>
+      <li><a href="#hlavni-myslenka">💡 Hlavní myšlenka</a></li>
+      <li><a href="#mapy">��️ Mapy klíčových slov</a></li>
+      <li><a href="#proc-review">Proč code review?</a></li>
+      <li><a href="#perfect-principy">PERFECT — prioritizovaný seznam principů</a></li>
+      <li><a href="#prakticka">Praktická doporučení &amp; PR workflow</a></li>
+      <li><a href="#conventional">Conventional Comments</a></li>
+      <li><a href="#ai-review">🤖 AI-asistovaný code review</a></li>
+      <li><a href="#metriky">📊 Metriky code review</a></li>
+      <li><a href="#sap-abap">🏗️ SAP/ABAP kontext</a>
+        <ol class="toc-sub">
+          <li><a href="#abap-mapping">PERFECT↔ABAP mapování</a></li>
+          <li><a href="#abap-checklist">Rozšířený checklist</a></li>
+          <li><a href="#abap-tools">Automatizace review v ABAP</a></li>
+          <li><a href="#abap-priority">Odlišné priority oproti SaaS</a></li>
+        </ol>
+      </li>
+      <li><a href="#reflexe">💭 Vlastní reflexe</a></li>
+      <li><a href="#propojeni">🔗 Propojení</a></li>
+      <li><a href="#zdroje">📚 Zdroje</a></li>
+    </ol>
+  </nav>
+
+  <!-- Hlavní myšlenka -->
+  <h2 id="hlavni-myslenka">💡 Hlavní myšlenka</h2>
+  <p>Strukturovaný přístup k code review pomocí akronymu PERFECT snižuje kognitivní zátěž recenzentů, odstraňuje subjektivitu a dělá z review rutinní (ne vyčerpávající) proces — doplněný AI nástroji a měřitelnými metrikami.</p>
+  <a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+  <hr>
+
+  <!-- Mapy -->
+  <h2 id="mapy">🗺️ Mapy klíčových slov</h2>
+  <h3>Mapa klíčových slov</h3>
+  <div class="mermaid-wrap" onclick="openModal(this)">
+    <div class="mermaid">graph TD
   root((Code Review)) --> A & B & C & D & E
   A[PERFECT Principy] --> A1[Purpose] & A2[Edge Cases] & A3[Reliability] & A4[Form] & A5[Evidence] & A6[Clarity] & A7[Taste]
   B[Proces] --> B1[Self-review] & B2[Peer review] & B3[Async vs Sync] & B4[PR workflow]
   C[Komunikace] --> C1[Conventional Comments] & C2[Konstruktivní feedback] & C3[LGTM anti-pattern]
   D[Metriky] --> D1[PR cycle time] & D2[Review throughput] & D3[Defect escape rate]
-  E[AI Review] --> E1[GitHub Copilot] & E2[CodeRabbit] & E3[Automatizace]
-</div>
-<h2>🧩 Tematická mapa</h2>
-<div class="mermaid">graph TD
+  E[AI Review] --> E1[GitHub Copilot] & E2[CodeRabbit] & E3[Automatizace]</div>
+  </div>
+  <h3>Tematická mapa</h3>
+  <div class="mermaid-wrap" onclick="openModal(this)">
+    <div class="mermaid">graph TD
   root((Témata)) --> T1 & T2 & T3 & T4
-  T1[Kvalita kódu] --> T1a[Business correctness] & T1b[Edge cases & bugs] & T1c[Perf & Security]
+  T1[Kvalita kódu] --> T1a[Business correctness] & T1b[Edge cases] & T1c[Perf &amp; Security]
   T2[Týmová dynamika] --> T2a[Sdílení znalostí] & T2b[Shared ownership] & T2c[Sjednocení stylu]
-  T3[Procesní design] --> T3a[Psané konvence] & T3b[SLA & pravidla] & T3c[Metriky]
-  T4[SAP & Enterprise] --> T4a[Compliance & audit] & T4b[Clean Core] & T4c[ABAP checklist]
+  T3[Procesní design] --> T3a[Psané konvence] & T3b[SLA &amp; pravidla] & T3c[Metriky]
+  T4[SAP &amp; Enterprise] --> T4a[Compliance &amp; audit] & T4b[Clean Core] & T4c[ABAP checklist]</div>
+  </div>
+  <a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+  <hr>
+
+  <!-- Proč review -->
+  <h2 id="proc-review">Proč code review?</h2>
+  <ul>
+    <li>Může zabrat <strong>20–30 % vývojářova času</strong> → vyplatí se jen strukturovaně</li>
+    <li>Cíle (dle Swarmia): sdílení znalostí, sdílená ownership, unifikace stylu, quality control</li>
+    <li>Pokud review existuje jen formálně (rubber stamp „LGTM") → lepší je self-review</li>
+    <li>Pokud odhaluje komunikační problémy → řeš příčinu, neruš review</li>
+  </ul>
+  <a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+  <hr>
+
+  <!-- PERFECT principy -->
+  <h2 id="perfect-principy">PERFECT — prioritizovaný seznam principů</h2>
+  <table class="perfect-table">
+    <thead><tr><th>#</th><th>Písmeno</th><th>Princip</th><th>Co kontrolovat</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td><strong>P</strong></td><td><strong>Purpose</strong></td><td>Řeší kód zadaný úkol? Rozumím problému i řešení?</td></tr>
+      <tr><td>2</td><td><strong>E</strong></td><td><strong>Edge Cases</strong></td><td>Boundary values, nullability, „impossible cases", neočekávané vstupy</td></tr>
+      <tr><td>3</td><td><strong>R</strong></td><td><strong>Reliability</strong></td><td>Perf (O-složitost), security, validace vstupů/výstupů, cache invalidation</td></tr>
+      <tr><td>4</td><td><strong>F</strong></td><td><strong>Form</strong></td><td>SOLID, DRY, KISS → ale hlavně: <strong>High Cohesion / Low Coupling</strong></td></tr>
+      <tr><td>5</td><td><strong>E</strong></td><td><strong>Evidence</strong></td><td>Testy + CI pipeline musí projít; testy review stejnými principy jako prod kód</td></tr>
+      <tr><td>6</td><td><strong>C</strong></td><td><strong>Clarity</strong></td><td>Jmenné konvence, délka bloků, čitelnost bez čtení každého řádku</td></tr>
+      <tr><td>7</td><td><strong>T</strong></td><td><strong>Taste</strong></td><td>Osobní preference — zaznamenat, ale <strong>neblokovat</strong> merge</td></tr>
+    </tbody>
+  </table>
+  <blockquote>⚠️ <strong>Pravidlo:</strong> Pořadí = priorita. Kód bez Purpose nemá hodnotu bez ohledu na čistotu.</blockquote>
+  <a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+  <hr>
+
+  <!-- Praktická doporučení -->
+  <h2 id="prakticka">Praktická doporučení &amp; PR workflow</h2>
+  <ol>
+    <li><strong>Psané konvence</strong> — definuj kritéria předem, aktualizuj po každém vzorci</li>
+    <li><strong>Self-review před peer review</strong> — šetří čas všem, zlepšuje schopnosti autora</li>
+    <li><strong>PR workflow:</strong> <code>DRAFT → READY FOR REVIEW → CHANGES REQUESTED → APPROVED → MERGED</code>
+      <ul>
+        <li>Diskutuj high-level přístup <strong>před</strong> implementací (draft PR jako PoC)</li>
+        <li>Optimalizuj pro rychlost <strong>týmu</strong>, ne jednotlivce (Google Engineering Practices)</li>
+      </ul>
+    </li>
+    <li><strong>Async vs. sync review</strong> — distribuované týmy preferují async; pair review pro komplexní změny</li>
+    <li><strong>Automatizuj</strong> — linting, CI, formatování → neplýtvej review čas na stroje</li>
+    <li><strong>Zastav „LGTM"</strong> — signál, že reviewer nepochopil změny</li>
+    <li><strong>Deliberate practice</strong> — review je skill, zlepšuje se tréninkem</li>
+  </ol>
+  <a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+  <hr>
+
+  <!-- Conventional Comments -->
+  <h2 id="conventional">Conventional Comments</h2>
+  <p>Strukturovaný formát komentářů snižuje nejasnosti a tón diskuse:</p>
+  <pre onclick="openModal(this)"><code>&lt;label&gt; [decorations]: &lt;subject&gt;
+[discussion]</code></pre>
+  <p><strong>Labely:</strong> <code>suggestion</code>, <code>issue</code>, <code>question</code>, <code>nitpick</code>, <code>thought</code>, <code>chore</code>, <code>praise</code><br>
+  <strong>Dekorace:</strong> <code>(non-blocking)</code>, <code>(blocking)</code>, <code>(ux)</code>, <code>(security)</code></p>
+  <p>Příklad:</p>
+  <pre onclick="openModal(this)"><code>issue (non-blocking): Tato metoda postrádá null check.
+Pokud bude volána z nového endpointu, může spadnout. Navrhuju přidat early return.</code></pre>
+  <a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+  <hr>
+
+  <!-- AI review -->
+  <h2 id="ai-review">🤖 AI-asistovaný code review (2026)</h2>
+  <p>AI nástroje mění způsob, jakým code review funguje — doplňují, ne nahrazují peer review:</p>
+  <table class="ai-table">
+    <thead><tr><th>Nástroj</th><th>Popis</th><th>Integrace</th></tr></thead>
+    <tbody>
+      <tr><td><strong>GitHub Copilot Code Review</strong></td><td>Inline AI review přímo v PR na GitHubu; navrhuje opravy</td><td>GitHub</td></tr>
+      <tr><td><strong>CodeRabbit</strong></td><td>Nejrozšířenější AI review bot (3M repozitářů, 75M nalezených defektů); summary diffu + architekturální diagram</td><td>GitHub, GitLab</td></tr>
+      <tr><td><strong>Copilot / LLM jako self-review</strong></td><td>Autor může před odesláním PR nechat AI projít kód → redukce triviálních chyb</td><td>IDE</td></tr>
+    </tbody>
+  </table>
+  <blockquote>
+    <strong>Doporučený přístup:</strong><br>
+    AI pokrývá PERFECT principy 3–6 (Reliability, Form, Evidence, Clarity).<br>
+    Lidský reviewer se zaměří na <strong>Purpose</strong> a <strong>Edge Cases</strong> — kde AI selhává.
+  </blockquote>
+  <a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+  <hr>
+
+  <!-- Metriky -->
+  <h2 id="metriky">📊 Metriky code review</h2>
+  <table>
+    <thead><tr><th>Metrika</th><th>Co měří</th><th>Zdravá hodnota</th></tr></thead>
+    <tbody>
+      <tr><td><strong>PR cycle time</strong></td><td>Doba od otevření PR po merge</td><td>&lt; 1 pracovní den (malé PR)</td></tr>
+      <tr><td><strong>Review throughput</strong></td><td>Počet PR reviewovaných za sprint</td><td>závisí na týmu</td></tr>
+      <tr><td><strong>Defect escape rate</strong></td><td>% bugů nalezených až v produkci</td><td>klesající trend</td></tr>
+      <tr><td><strong>Review coverage</strong></td><td>% PR s alespoň 1 reálným komentářem</td><td>&gt; 80 %</td></tr>
+      <tr><td><strong>Time to first review</strong></td><td>Jak rychle dostane PR první feedback</td><td>&lt; 4 hodiny</td></tr>
+    </tbody>
+  </table>
+  <a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+  <hr>
+
+  <!-- SAP/ABAP -->
+  <h2 id="sap-abap">🏗️ SAP/ABAP kontext — doplňující perspektiva</h2>
+  <p>Původní PERFECT framework je psán pro SaaS/product development. V enterprise SAP projektech platí navíc:</p>
+
+  <h3 id="abap-mapping">PERFECT↔ABAP mapování</h3>
+  <table class="abap-table">
+    <thead><tr><th>PERFECT</th><th>ABAP specifický fokus</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Purpose</strong></td><td>Řeší změna business případ? Je nutná modifikace standardu, nebo existuje BAdI/enhancement spot?</td></tr>
+      <tr><td><strong>Edge Cases</strong></td><td>Boundary values v SAP typech (DATE, NUMC, CURR); chování při prázdné tabulce; volání z batch job vs. dialog</td></tr>
+      <tr><td><strong>Reliability</strong></td><td>Authority checks, SELECT performance, lock objects (ENQUEUE/DEQUEUE), SM12 deadlocks</td></tr>
+      <tr><td><strong>Form</strong></td><td>Clean ABAP Style Guide; OOP vs. procedural; obsolete konstrukce (FORM, MOVE, WRITE)</td></tr>
+      <tr><td><strong>Evidence</strong></td><td>ABAP Unit Tests + ATC (ABAP Test Cockpit) green; transport testovaný na QA</td></tr>
+      <tr><td><strong>Clarity</strong></td><td>Naming conventions (Z/Y prefix, snake_case v OOP); komentáře v EN nebo DE dle konvence týmu</td></tr>
+      <tr><td><strong>Taste</strong></td><td>Přebytečné konvence z doby před ABAP 7.40 — neblokovat merge, zaznamenat do team guidelines</td></tr>
+    </tbody>
+  </table>
+
+  <h3 id="abap-checklist">Rozšířený checklist pro ABAP review</h3>
+  <div class="checklist">
+    <p class="checklist-group">Reliability &amp; Security</p>
+    <ul>
+      <li><code>SELECT *</code> → nahradit explicitním výběrem polí (výkon + přehlednost)</li>
+      <li>Authority checks — <code>AUTHORITY-CHECK</code> přítomno u všech citlivých READ/CHANGE operací?</li>
+      <li>SQL injekce — dynamické <code>WHERE</code> podmínky ošetřeny <code>CL_ABAP_DYN_PRG</code>?</li>
+      <li>Lock objects — souběžný přístup ošetřen ENQUEUE před změnou dat?</li>
+    </ul>
+    <p class="checklist-group">Clean Core &amp; Upgrade</p>
+    <ul>
+      <li>Modifikace standardu — je to nutné? Existuje extension point (BAdI, Customer Exit, Enhancement Spot)?</li>
+      <li>Backward compatibility — poruší změna existující interface nebo BAPI signaturu?</li>
+      <li>Deprecated API — používá kód <code>CALL FUNCTION</code> místo OOP alternativy?</li>
+      <li>Namespace — objekty ve správném Z/Y namespace?</li>
+    </ul>
+    <p class="checklist-group">Transport &amp; Process</p>
+    <ul>
+      <li>Transport request — správná kategorie (Workbench vs. Customizing), správný systém/klient?</li>
+      <li>Žádné hardcoded hodnoty závislé na systému (client ID, hostname, RFC destination)?</li>
+    </ul>
+  </div>
+
+  <h3 id="abap-tools">Automatizace review v ABAP světě</h3>
+  <table class="abap-table">
+    <thead><tr><th>Nástroj</th><th>Popis</th><th>Ekvivalent</th></tr></thead>
+    <tbody>
+      <tr><td><strong>ABAP Test Cockpit (ATC)</strong></td><td>SAP built-in statická analýza; security, performance, syntax; integrovaný v ADT/Eclipse</td><td>GitHub Actions</td></tr>
+      <tr><td><strong>Code Inspector (SCI/SCII)</strong></td><td>Starší, ale stále dostupný; spouštěn přes SE80 nebo jako batch</td><td>Linter</td></tr>
+      <tr><td><strong>Code Pal for ABAP</strong></td><td>Open-source (SAP, Apache 2.0) checky pro Clean ABAP Style Guide; integruje se do ATC/SCI; <a href="https://github.com/SAP/code-pal-for-abap-cloud" target="_blank">Cloud Edition</a></td><td>CodeRabbit</td></tr>
+      <tr><td><strong>abapLint</strong></td><td>Otevřený linter spustitelný v CI/CD (GitHub Actions) — funguje na exportovaném kódu přes abapGit</td><td>ESLint/RuboCop</td></tr>
+      <tr><td><strong>ABAP Unit Tests</strong></td><td>Vestavěné unit testy; povinné v Clean Core / ABAP Cloud; spustitelné z ATC</td><td>Jest / RSpec</td></tr>
+    </tbody>
+  </table>
+  <blockquote class="tip">
+    💡 <strong>Doporučení:</strong> ATC + Code Pal for ABAP pokrývá PERFECT principy 3–6. Lidský reviewer se soustředí na Purpose (business correctness) a Edge Cases (domain-specific).
+  </blockquote>
+
+  <h3 id="abap-priority">Odlišné priority oproti SaaS</h3>
+  <ul>
+    <li><strong>Compliance &amp; audit trail</strong> — zákonné požadavky &gt; estetika kódu (GDPR, SOX, GxP v pharma)</li>
+    <li><strong>Backward compatibility</strong> — upgrade readiness, clean core princip (S/4HANA Cloud)</li>
+    <li><strong>CI/CD omezení</strong> — ABAP Unit Test ≠ GitHub Actions; abapGit + abapLint umožňují částečnou automatizaci</li>
+    <li><strong>Transport landscape</strong> — DEV → QA → PROD je explicitní gate; review musí proběhnout před requestem</li>
+  </ul>
+  <a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+  <hr>
+
+  <!-- Reflexe -->
+  <h2 id="reflexe">💭 Vlastní reflexe</h2>
+  <ul>
+    <li>PERFECT pyramida: <strong>Taste</strong> na konci brání bikesheddingu — v hierarchických vztazích (klient/vendor) dvojnásob důležité</li>
+    <li>„Impossible cases" — nevědomé předpoklady v kódu jsou podceňovaná kategorie chyb</li>
+    <li>AI review (CodeRabbit, Copilot) pokrývá mechanické aspekty → uvolňuje lidi pro Purpose &amp; Edge Cases</li>
+    <li>V ABAP světě je F (Form) klíčový: Clean ABAP Style Guide + DSAG leitfaden = základ konvencí</li>
+    <li>Conventional Comments výrazně zlepšují tone of review, zejména v multi-kulturních týmech</li>
+  </ul>
+  <a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+  <hr>
+
+  <!-- Propojení -->
+  <h2 id="propojeni">🔗 Propojení</h2>
+  <ul>
+    <li>Vzniklo z: <em>The PERFECT Code Review — How to Reduce Cognitive Load While Improving Quality</em></li>
+    <li>Souvisí s: <em>GIT — Branching Strategies</em>, <em>GIT — GIT Deployments Alchemists</em></li>
+    <li>SAP kontext: <em>DSAG_ABAP_Leitfaden_translations_from_chat_EN</em>, <em>reference-abap-standards</em>, <em>Modernizing ABAP Code</em></li>
+  </ul>
+  <a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+  <hr>
+
+  <!-- Zdroje -->
+  <h2 id="zdroje">📚 Zdroje</h2>
+  <ul>
+    <li><strong>Hlavní:</strong> Daniil Bastrich — <a href="https://bastrich.tech/perfect-code-review/" target="_blank">bastrich.tech/perfect-code-review</a> (2026-01-03)</li>
+    <li>Swarmia — <a href="https://www.swarmia.com/blog/a-complete-guide-to-code-reviews/" target="_blank">A Complete Guide to Code Reviews</a> (2025-05)</li>
+    <li><a href="https://conventionalcomments.org/" target="_blank">Conventional Comments</a> — standard pro strukturované komentáře</li>
+    <li><a href="https://coderabbit.ai/" target="_blank">CodeRabbit</a> — AI code review nástroj</li>
+    <li><strong>SAP Clean ABAP Style Guide</strong> — <a href="https://github.com/SAP/styleguides/blob/main/clean-abap/CleanABAP.md" target="_blank">github.com/SAP/styleguides</a></li>
+    <li><strong>Code Pal for ABAP</strong> — <a href="https://github.com/SAP/code-pal-for-abap" target="_blank">github.com/SAP/code-pal-for-abap</a></li>
+    <li><strong>abapLint</strong> — <a href="https://github.com/abaplint/abaplint" target="_blank">github.com/abaplint/abaplint</a></li>
+    <li><strong>DSAG ABAP Leitfaden — Testing</strong> — <a href="https://1dsag.github.io/ABAP-Leitfaden/testing/" target="_blank">1dsag.github.io/ABAP-Leitfaden/testing</a></li>
+  </ul>
+  <a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+
+  <div class="log">
+    Log: 2026-04-02 vytvořeno · 2026-04-03 rozšířeno (AI review, metriky, ABAP checklist) · 2026-04-04 SAP/ABAP sekce přepracována + HTML s TOC, modal pan/zoom
+  </div>
 </div>
-<hr />
-<h2>Obsah</h2>
-<h3>Proč code review?</h3>
-<ul>
-<li>Může zabrat <strong>20–30 % vývojářova času</strong> → vyplatí se jen strukturovaně</li>
-<li>Cíle (dle Swarmia): sdílení znalostí, sdílená ownership, unifikace stylu, quality control</li>
-<li>Pokud review existuje jen formálně (rubber stamp "LGTM") → lepší je self-review</li>
-<li>Pokud odhaluje komunikační problémy → řeš příčinu, neruš review</li>
-</ul>
-<h3>PERFECT — prioritizovaný seznam principů</h3>
-<table>
-<thead>
-<tr>
-<th>#</th>
-<th>Písmeno</th>
-<th>Princip</th>
-<th>Co kontrolovat</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td><strong>P</strong></td>
-<td><strong>Purpose</strong></td>
-<td>Řeší kód zadaný úkol? Rozumím problému i řešení?</td>
-</tr>
-<tr>
-<td>2</td>
-<td><strong>E</strong></td>
-<td><strong>Edge Cases</strong></td>
-<td>Boundary values, nullability, "impossible cases", neočekávané vstupy</td>
-</tr>
-<tr>
-<td>3</td>
-<td><strong>R</strong></td>
-<td><strong>Reliability</strong></td>
-<td>Perf (O-složitost), security, validace vstupů/výstupů, cache invalidation</td>
-</tr>
-<tr>
-<td>4</td>
-<td><strong>F</strong></td>
-<td><strong>Form</strong></td>
-<td>SOLID, DRY, KISS → ale hlavně: <strong>High Cohesion / Low Coupling</strong></td>
-</tr>
-<tr>
-<td>5</td>
-<td><strong>E</strong></td>
-<td><strong>Evidence</strong></td>
-<td>Testy + CI pipeline musí projít; testy review stejnými principy jako prod kód</td>
-</tr>
-<tr>
-<td>6</td>
-<td><strong>C</strong></td>
-<td><strong>Clarity</strong></td>
-<td>Jmenné konvence, délka bloků, čitelnost bez čtení každého řádku</td>
-</tr>
-<tr>
-<td>7</td>
-<td><strong>T</strong></td>
-<td><strong>Taste</strong></td>
-<td>Osobní preference — zaznamenat, ale <strong>neblokovat</strong> merge</td>
-</tr>
-</tbody>
-</table>
-<blockquote>
-<p>⚠️ <strong>Pravidlo:</strong> Pořadí = priorita. Kód bez Purpose nemá hodnotu bez ohledu na čistotu.</p>
-</blockquote>
-<h3>Praktická doporučení &amp; PR workflow</h3>
-<ol>
-<li><strong>Psané konvence</strong> — definuj kritéria předem, aktualizuj je po každém vzorci (comment → diskuse → fix)</li>
-<li><strong>Self-review před peer review</strong> — šetří čas všem, zlepšuje schopnosti autora</li>
-<li><strong>PR workflow:</strong> <code>DRAFT → READY FOR REVIEW → CHANGES REQUESTED → APPROVED → MERGED</code></li>
-<li>Diskutuj high-level přístup <strong>před</strong> implementací (draft PR jako PoC)</li>
-<li>Optimalizuj pro rychlost <strong>týmu</strong>, ne jednotlivce (Google Engineering Practices)</li>
-<li><strong>Async vs. sync review</strong> — distribuované týmy preferují async (PR komentáře); pair review je alternativa pro komplexní změny</li>
-<li><strong>Automatizuj</strong> — linting, CI, formatování → neplýtvej review čas na stroje; viz sekce AI níže</li>
-<li><strong>Zastav "LGTM"</strong> — signál, že reviewer nepochopil změny; snižuje hodnotu procesu</li>
-<li><strong>Deliberate practice</strong> — review je skill, zlepšuje se tréninkem</li>
-</ol>
-<h3>Conventional Comments</h3>
-<p>Strukturovaný formát komentářů snižuje nejasnosti a tón diskuse:</p>
-<pre><code>&lt;label&gt; [decorations]: &lt;subject&gt;
-[discussion]
-</code></pre>
-<p><strong>Labely:</strong> <code>suggestion</code>, <code>issue</code>, <code>question</code>, <code>nitpick</code>, <code>thought</code>, <code>chore</code>, <code>praise</code><br />
-<strong>Dekorace:</strong> <code>(non-blocking)</code>, <code>(blocking)</code>, <code>(ux)</code>, <code>(security)</code></p>
-<p>Příklad:</p>
-<pre><code>issue (non-blocking): Tato metoda postrádá null check.
-Pokud bude volána z nového endpointu, může spadnout. Navrhuju přidat early return.
-</code></pre>
-<h3>🤖 AI-asistovaný code review (2026)</h3>
-<p>AI nástroje mění způsob, jakým code review funguje — doplňují, ne nahrazují peer review:</p>
-<table>
-<thead>
-<tr>
-<th>Nástroj</th>
-<th>Popis</th>
-<th>Integrace</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>GitHub Copilot Code Review</strong></td>
-<td>Inline AI review přímo v PR na GitHubu; navrhuje opravy</td>
-<td>GitHub</td>
-</tr>
-<tr>
-<td><strong>CodeRabbit</strong></td>
-<td>Nejrozšířenější AI review bot (3M repozitářů, 75M nalezených defektů); summary diffu + architekturální diagram</td>
-<td>GitHub, GitLab</td>
-</tr>
-<tr>
-<td><strong>Copilot / LLM jako self-review</strong></td>
-<td>Autor může před odesláním PR nechat AI projít kód → redukce triviálních chyb</td>
-<td>IDE</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Doporučený přístup:</strong>
-- AI pokrývá PERFECT principy 3–6 (Reliability, Form, Evidence, Clarity) — ty rutinní
-- Lidský reviewer se zaměří na <strong>Purpose</strong> a <strong>Edge Cases</strong> — kde AI selhává
-- AI review nenahrazuje business porozumění ani domain knowledge</p>
-<h3>📊 Metriky code review</h3>
-<p>Bez měření se proces zlepšuje jen náhodně. Klíčové metriky:</p>
-<table>
-<thead>
-<tr>
-<th>Metrika</th>
-<th>Co měří</th>
-<th>Zdravá hodnota</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>PR cycle time</strong></td>
-<td>Doba od otevření PR po merge</td>
-<td>&lt; 1 pracovní den (malé PR)</td>
-</tr>
-<tr>
-<td><strong>Review throughput</strong></td>
-<td>Počet PR reviewovaných za sprint</td>
-<td>závisí na týmu</td>
-</tr>
-<tr>
-<td><strong>Defect escape rate</strong></td>
-<td>% bugů nalezených až v produkci (ne v review)</td>
-<td>klesající trend</td>
-</tr>
-<tr>
-<td><strong>Review coverage</strong></td>
-<td>% PR s alespoň 1 reálným review komentářem</td>
-<td>&gt; 80 %</td>
-</tr>
-<tr>
-<td><strong>Time to first review</strong></td>
-<td>Jak rychle dostane PR první feedback</td>
-<td>&lt; 4 hodiny</td>
-</tr>
-</tbody>
-</table>
-<h3>🏗️ SAP/ABAP kontext — doplňující perspektiva</h3>
-<p>Původní PERFECT framework je psán pro SaaS/product development. V enterprise SAP projektech platí navíc:</p>
-<p><strong>Rozšířený checklist pro ABAP review:</strong>
-- [ ] <code>SELECT *</code> → nahradit explicitním výběrem polí
-- [ ] Authority checks — přítomny u všech citlivých operací?
-- [ ] Modifikace standardu — je to nutné? Je to clean core compatible?
-- [ ] Backward compatibility — poruší změna existující interface?
-- [ ] Transport request — správná kategorie, správný systém?</p>
-<p><strong>Odlišné priority oproti SaaS:</strong>
-- <strong>Compliance &amp; audit trail</strong> — zákonné požadavky &gt; estetika kódu
-- <strong>Backward compatibility</strong> — upgrade readiness, clean core princip
-- <strong>CI/CD omezení</strong> — ABAP Unit Test ≠ GitHub Actions; pipeline je složitější nastavit</p>
-<hr />
-<h2>💭 Vlastní reflexe</h2>
-<ul>
-<li>PERFECT pyramida: <strong>Taste</strong> na konci brání bikesheddingu — v hierarchických vztazích (klient/vendor) je to dvojnásob důležité</li>
-<li>"Impossible cases" — nevědomé předpoklady v kódu jsou podceňovaná kategorie chyb</li>
-<li>AI review (CodeRabbit, Copilot) pokrývá mechanické aspekty → uvolňuje lidi pro Purpose &amp; Edge Cases</li>
-<li>V ABAP světě je F (Form) klíčový: Clean ABAP Style Guide + DSAG leitfaden = základ konvencí</li>
-<li>Conventional Comments výrazně zlepšují tone of review, zejména v multi-kulturních týmech</li>
-</ul>
-<hr />
-<h2>🔗 Propojení</h2>
-<ul>
-<li>Vzniklo z: [[The PERFECT Code Review How to Reduce Cognitive Load While Improving Quality]]</li>
-<li>Souvisí s: [[GIT - Branching Strategies]], [[GIT - GIT Deployments Alchemists]]</li>
-<li>SAP kontext: [[DSAG_ABAP_Leitfaden_translations_from_chat_EN]], [[reference-abap-standards]]</li>
-</ul>
-<h2>📚 Zdroje</h2>
-<ul>
-<li>Hlavní: Daniil Bastrich — <a href="https://bastrich.tech/perfect-code-review/">bastrich.tech/perfect-code-review</a> (2026-01-03)</li>
-<li>Swarmia — <a href="https://www.swarmia.com/blog/a-complete-guide-to-code-reviews/">A Complete Guide to Code Reviews</a> (aktualizováno 2025-05)</li>
-<li><a href="https://conventionalcomments.org/">Conventional Comments</a> — standard pro strukturované komentáře v review</li>
-<li><a href="https://coderabbit.ai/">CodeRabbit</a> — AI code review nástroj</li>
-</ul>
-<h2>🕐 Log změn</h2>
-<ul>
-<li>2026-04-02 — vytvořeno</li>
-<li>2026-04-03 — rozšířeno dle recenze: AI review, metriky, ABAP checklist, async/sync, PR workflow přesunut</li>
-</ul>
-    <div class="log">
-      <p>Zdroj: <a href="https://bastrich.tech/perfect-code-review/">bastrich.tech/perfect-code-review</a> · 
-      <a href="https://www.swarmia.com/blog/a-complete-guide-to-code-reviews/">Swarmia Guide</a> ·
-      <a href="https://conventionalcomments.org/">Conventional Comments</a> ·
-      <a href="https://coderabbit.ai/">CodeRabbit</a></p>
+
+<!-- ══ MODAL ══ -->
+<div class="modal-overlay" id="modal" onclick="closeModalOnOverlay(event)">
+  <div class="modal-box">
+    <div class="modal-topbar">
+      <button class="modal-btn" onclick="pzZoom(1.25)" title="Přiblížit (nebo scroll nahoru)">＋</button>
+      <button class="modal-btn" onclick="pzZoom(0.8)"  title="Oddálit (nebo scroll dolů)">－</button>
+      <button class="modal-btn" onclick="pzReset()"    title="Obnovit (dvojklik)">⟳ reset</button>
+      <span class="modal-scale-label" id="scale-label">100 %</span>
+      <span class="modal-hint">scroll = zoom &nbsp;·&nbsp; tažení = pohyb &nbsp;·&nbsp; Esc = zavřít</span>
+      <button class="modal-btn close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-viewport" id="modal-viewport">
+      <div id="panzoom-target"></div>
     </div>
   </div>
-  <script>
-    mermaid.initialize({ startOnLoad: true, theme: 'dark', themeVariables: {
-      primaryColor: '#0f3460',
-      primaryTextColor: '#e0e0e0',
-      primaryBorderColor: '#533483',
-      lineColor: '#58a6ff',
-      secondaryColor: '#16213e',
-      tertiaryColor: '#1a1a2e'
-    } });
-  </script>
+</div>
+
+<script>
+  // ── Mermaid ──
+  mermaid.initialize({
+    startOnLoad: true, theme: 'dark',
+    themeVariables: {
+      primaryColor: '#0f3460', primaryTextColor: '#e0e0e0',
+      primaryBorderColor: '#533483', lineColor: '#58a6ff',
+      secondaryColor: '#16213e', tertiaryColor: '#1a1a2e'
+    }
+  });
+
+  // ══════════════════════════════
+  //  PAN / ZOOM ENGINE
+  // ══════════════════════════════
+  let pz = { scale: 1, x: 0, y: 0 };
+  let pzDrag = { active: false, startX: 0, startY: 0 };
+  let pzPinch = { active: false, dist: 0 };
+
+  function pzTarget() { return document.getElementById('panzoom-target'); }
+  function pzViewport() { return document.getElementById('modal-viewport'); }
+
+  function pzApply() {
+    const t = pzTarget();
+    t.style.transform = `translate(${pz.x}px, ${pz.y}px) scale(${pz.scale})`;
+    document.getElementById('scale-label').textContent = Math.round(pz.scale * 100) + ' %';
+  }
+
+  function pzZoom(factor, cx, cy) {
+    const vp = pzViewport();
+    const vpRect = vp.getBoundingClientRect();
+    // zoom around viewport center if no point given
+    const px = (cx !== undefined ? cx : vpRect.width / 2);
+    const py = (cy !== undefined ? cy : vpRect.height / 2);
+    const newScale = Math.min(Math.max(pz.scale * factor, 0.15), 10);
+    const ratio = newScale / pz.scale;
+    pz.x = px - ratio * (px - pz.x);
+    pz.y = py - ratio * (py - pz.y);
+    pz.scale = newScale;
+    pzApply();
+  }
+
+  function pzReset() {
+    pz = { scale: 1, x: 0, y: 0 };
+    pzApply();
+  }
+
+  // Wheel zoom
+  function onWheel(e) {
+    e.preventDefault();
+    const vp = pzViewport();
+    const rect = vp.getBoundingClientRect();
+    const cx = e.clientX - rect.left;
+    const cy = e.clientY - rect.top;
+    const factor = e.deltaY < 0 ? 1.12 : 0.89;
+    pzZoom(factor, cx, cy);
+  }
+
+  // Mouse drag
+  function onMouseDown(e) {
+    if (e.button !== 0) return;
+    pzDrag.active = true;
+    pzDrag.startX = e.clientX - pz.x;
+    pzDrag.startY = e.clientY - pz.y;
+    pzViewport().classList.add('dragging');
+    e.preventDefault();
+  }
+  function onMouseMove(e) {
+    if (!pzDrag.active) return;
+    pz.x = e.clientX - pzDrag.startX;
+    pz.y = e.clientY - pzDrag.startY;
+    pzApply();
+  }
+  function onMouseUp() {
+    pzDrag.active = false;
+    pzViewport().classList.remove('dragging');
+  }
+
+  // Touch drag + pinch
+  function touchDist(t) {
+    return Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+  }
+  function touchMid(t, rect) {
+    return {
+      x: ((t[0].clientX + t[1].clientX) / 2) - rect.left,
+      y: ((t[0].clientY + t[1].clientY) / 2) - rect.top
+    };
+  }
+  function onTouchStart(e) {
+    if (e.touches.length === 1) {
+      pzDrag.active = true;
+      pzDrag.startX = e.touches[0].clientX - pz.x;
+      pzDrag.startY = e.touches[0].clientY - pz.y;
+    } else if (e.touches.length === 2) {
+      pzDrag.active = false;
+      pzPinch.active = true;
+      pzPinch.dist = touchDist(e.touches);
+    }
+  }
+  function onTouchMove(e) {
+    e.preventDefault();
+    if (e.touches.length === 1 && pzDrag.active) {
+      pz.x = e.touches[0].clientX - pzDrag.startX;
+      pz.y = e.touches[0].clientY - pzDrag.startY;
+      pzApply();
+    } else if (e.touches.length === 2 && pzPinch.active) {
+      const dist = touchDist(e.touches);
+      const vp = pzViewport();
+      const mid = touchMid(e.touches, vp.getBoundingClientRect());
+      pzZoom(dist / pzPinch.dist, mid.x, mid.y);
+      pzPinch.dist = dist;
+    }
+  }
+  function onTouchEnd(e) {
+    if (e.touches.length === 0) { pzDrag.active = false; pzPinch.active = false; }
+  }
+
+  // Double-click to reset
+  function onDblClick() { pzReset(); }
+
+  function attachPanZoom() {
+    const vp = pzViewport();
+    vp.addEventListener('wheel',      onWheel,      { passive: false });
+    vp.addEventListener('mousedown',  onMouseDown);
+    vp.addEventListener('dblclick',   onDblClick);
+    vp.addEventListener('touchstart', onTouchStart, { passive: true });
+    vp.addEventListener('touchmove',  onTouchMove,  { passive: false });
+    vp.addEventListener('touchend',   onTouchEnd,   { passive: true });
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup',   onMouseUp);
+  }
+  function detachPanZoom() {
+    const vp = pzViewport();
+    vp.removeEventListener('wheel',      onWheel);
+    vp.removeEventListener('mousedown',  onMouseDown);
+    vp.removeEventListener('dblclick',   onDblClick);
+    vp.removeEventListener('touchstart', onTouchStart);
+    vp.removeEventListener('touchmove',  onTouchMove);
+    vp.removeEventListener('touchend',   onTouchEnd);
+    document.removeEventListener('mousemove', onMouseMove);
+    document.removeEventListener('mouseup',   onMouseUp);
+  }
+
+  // ══════════════════════════════
+  //  MODAL OPEN / CLOSE
+  // ══════════════════════════════
+  function openModal(el) {
+    const target = document.getElementById('panzoom-target');
+    target.innerHTML = '';
+    pzReset();
+
+    if (el.classList.contains('mermaid-wrap')) {
+      const svg = el.querySelector('svg');
+      if (svg) {
+        const clone = svg.cloneNode(true);
+        clone.style.cssText = 'max-width:none; width:auto; height:auto; display:block; margin:0 auto;';
+        target.appendChild(clone);
+      }
+    } else if (el.tagName === 'PRE') {
+      const clone = el.cloneNode(true);
+      target.appendChild(clone);
+    } else if (el.tagName === 'IMG') {
+      const img = document.createElement('img');
+      img.src = el.src; img.alt = el.alt;
+      target.appendChild(img);
+    }
+
+    document.getElementById('modal').classList.add('open');
+    attachPanZoom();
+    document.addEventListener('keydown', handleEsc);
+  }
+
+  function closeModal() {
+    document.getElementById('modal').classList.remove('open');
+    detachPanZoom();
+    document.removeEventListener('keydown', handleEsc);
+    setTimeout(() => {
+      document.getElementById('panzoom-target').innerHTML = '';
+    }, 200);
+  }
+
+  function closeModalOnOverlay(e) {
+    if (e.target === document.getElementById('modal')) closeModal();
+  }
+
+  function handleEsc(e) {
+    if (e.key === 'Escape') closeModal();
+  }
+</script>
 </body>
 </html>
