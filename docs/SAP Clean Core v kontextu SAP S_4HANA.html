@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAP Clean Core v kontextu SAP S/4HANA</title>
+<style>
+:root {
+  --bg: #1a1a2e; --surface: #16213e; --surface2: #0f3460;
+  --accent: #e94560; --accent2: #533483;
+  --text: #e0e0e0; --text-dim: #a0a0b0;
+  --border: #2a2a4a; --code-bg: #0d1117;
+  --green: #3fb950; --yellow: #d29922; --blue: #58a6ff;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif;
+  line-height: 1.7; font-size: 1rem; }
+a { color: var(--blue); text-decoration: none; }
+a:hover { color: var(--accent); }
+code { background: var(--code-bg); color: #79c0ff; font-family: 'Cascadia Code','Fira Code',monospace;
+  padding: .1em .35em; border-radius: 4px; font-size: .88em; }
+strong { color: #f0f6fc; }
+h2 { color: var(--blue); border-bottom: 1px solid var(--border);
+  padding-bottom: .4rem; margin: 2.5rem 0 1rem; scroll-margin-top: 1rem; }
+h3 { color: #c9d1d9; margin: 1.8rem 0 .7rem; scroll-margin-top: 1rem; }
+p { margin-bottom: .9rem; }
+ul { margin: .5rem 0 1rem 1.5rem; }
+li { margin-bottom: .4rem; }
+ol.sources-list { margin: .5rem 0 1rem 1.5rem; }
+ol.sources-list li { margin-bottom: .5rem; word-break: break-all; }
+ol.footnotes { margin: .5rem 0 1rem 1.5rem; font-size: .82rem; }
+ol.footnotes li { margin-bottom: .4rem; word-break: break-all; color: var(--text-dim); }
+ol.footnotes a { color: var(--text-dim); font-size: .82rem; }
+ol.footnotes a:hover { color: var(--blue); }
+.fn-ref { color: var(--blue); text-decoration: none; font-size: .75em; vertical-align: super; }
+.fn-ref:hover { color: var(--accent); }
+/* Doc header */
+.doc-header { background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
+  border-bottom: 2px solid var(--accent2); padding: 2.5rem 2rem 2rem;
+  margin-bottom: 0; }
+.doc-header h1 { font-size: 1.9rem; color: #f0f6fc; line-height: 1.3; margin-bottom: .7rem; }
+.doc-subtitle { color: var(--text-dim); font-size: .95rem; margin-bottom: 1rem; }
+.meta-badges { display: flex; flex-wrap: wrap; gap: .5rem; }
+.badge { background: var(--surface2); border: 1px solid var(--border); border-radius: 20px;
+  padding: .2rem .8rem; font-size: .78rem; color: var(--text-dim); }
+.badge.type { border-color: var(--accent2); color: #c4b5fd; }
+.badge.date { border-color: var(--blue); color: var(--blue); }
+/* Layout */
+.layout { display: flex; gap: 0; max-width: 1400px; margin: 0 auto; }
+/* TOC */
+.toc { width: 260px; min-width: 220px; flex-shrink: 0; background: var(--surface);
+  border-right: 1px solid var(--border); padding: 1.5rem 1rem;
+  position: sticky; top: 0; height: 100vh; overflow-y: auto;
+  scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+.toc ul { list-style: none; margin: 0; padding: 0; }
+.toc > ul > li { margin-bottom: .3rem; }
+.toc > ul > li > a { color: var(--text-dim); font-size: .88rem; display: block;
+  padding: .25rem .5rem; border-radius: 6px; transition: all .15s; }
+.toc > ul > li > a:hover { color: var(--blue); background: rgba(88,166,255,.08); }
+/* h3 TOC items */
+.toc ul li:has(+ li) { } 
+.toc li.toc-h3 > a { padding-left: 1.2rem; font-size: .82rem; color: #777; }
+.toc li.toc-h3 > a:hover { color: var(--blue); }
+/* Main content */
+.main-content { flex: 1; padding: 2rem 2.5rem; max-width: 900px; min-width: 0; }
+/* Back to TOC */
+.back-to-toc { display: inline-block; margin: 1.5rem 0 .5rem;
+  font-size: .82rem; color: var(--text-dim); border: 1px solid var(--border);
+  border-radius: 20px; padding: .2rem .8rem; transition: all .2s; }
+.back-to-toc:hover { color: var(--blue); border-color: var(--blue); }
+/* Mermaid */
+.mermaid-wrap { background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 1.5rem; margin: 1.5rem 0; cursor: zoom-in;
+  transition: border-color .2s; position: relative; overflow-x: auto; }
+.mermaid-wrap:hover { border-color: var(--blue); }
+.mermaid-wrap::after { content: "🔍 klik pro zoom & pohyb";
+  position: absolute; top: .5rem; right: .7rem; font-size: .72rem;
+  color: var(--text-dim); pointer-events: none; }
+/* Download grid */
+.download-grid { display: grid; grid-template-columns: 1fr; gap: .8rem; margin: 1rem 0 1.5rem; }
+.dl-card { display: flex; align-items: center; gap: 1rem; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.2rem;
+  transition: border-color .2s; }
+.dl-card:hover { border-color: var(--blue); }
+.dl-icon { font-size: 1.8rem; flex-shrink: 0; }
+.dl-info { flex: 1; min-width: 0; }
+.dl-name { font-weight: 600; color: #f0f6fc; margin-bottom: .2rem; font-size: .95rem; }
+.dl-desc { color: var(--text-dim); font-size: .82rem; }
+.dl-btn { flex-shrink: 0; background: var(--accent); color: #fff; border-radius: 8px;
+  padding: .45rem 1rem; font-size: .82rem; font-weight: 600; white-space: nowrap;
+  transition: opacity .15s; }
+.dl-btn:hover { opacity: .85; color: #fff; }
+/* Modal */
+.modal-overlay { display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.88); z-index: 1000;
+  align-items: center; justify-content: center; padding: 2vh 2vw; }
+.modal-overlay.open { display: flex; }
+.modal-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+  width: 94vw; height: 94vh; display: flex; flex-direction: column;
+  position: relative; overflow: hidden; }
+.modal-topbar { flex: 0 0 auto; display: flex; align-items: center; gap: .5rem;
+  padding: .6rem 1rem; background: var(--surface2); border-bottom: 1px solid var(--border); }
+.modal-btn { background: rgba(255,255,255,.1); color: var(--text); border: 1px solid var(--border);
+  border-radius: 6px; padding: .3rem .7rem; font-size: 1rem; cursor: pointer; }
+.modal-btn.close { background: var(--accent); border-color: var(--accent); color: #fff; margin-left: auto; }
+.modal-hint { font-size: .78rem; color: var(--text-dim); user-select: none; }
+.modal-scale-label { font-size: .78rem; color: var(--text-dim); min-width: 3.5rem; text-align: center; }
+.modal-viewport { flex: 1; overflow: hidden; position: relative; cursor: grab; user-select: none; }
+.modal-viewport.dragging { cursor: grabbing; }
+#panzoom-target { transform-origin: 0 0; display: inline-block; min-width: 100%; min-height: 100%; padding: 1.5rem; }
+#panzoom-target svg { max-width: 100%; height: auto; display: block; margin: 0 auto; }
+/* Log */
+.log { margin-top: 3rem; padding: 1rem 1.2rem; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 8px; font-size: .8rem; color: var(--text-dim); }
+.log strong { color: var(--text-dim); }
+/* Responsive */
+@media (max-width: 768px) {
+  .toc { display: none; }
+  .main-content { padding: 1rem; }
+  .dl-card { flex-wrap: wrap; }
+  .dl-btn { width: 100%; text-align: center; }
+}
+</style>
+</head>
+<body>
+<div class="doc-header">
+  <h1>SAP Clean Core v kontextu SAP S/4HANA</h1>
+  <p class="doc-subtitle">Deep research: architektura, extensibility model, tooling a migrace</p>
+  <div class="meta-badges">
+    <span class="badge type">deep-research</span>
+    <span class="badge type">SAP / S4HANA</span>
+    <span class="badge date">2026-04-11</span>
+    <span class="badge">79 citací</span>
+    <span class="badge">7 PDF zdrojů</span>
+  </div>
+</div>
+<div class="layout">
+<nav class="toc" id="toc">
+<h2 style="margin:0 0 0.8rem 0;font-size:1rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em">Obsah</h2>
+<ul>
+<li><a href="#proc-clean-core-vznikl-a-co-znamena-v-praxi">Proč Clean Core vznikl a co znamená v praxi</a></li>
+<li><a href="#principy-clean-core-jako-systemova-disciplina-pro-enterprise-architekturu">Principy Clean Core jako systémová disciplína pro enterprise architekturu</a></li>
+<li><a href="#extensibility-architektura-napric-edicemi-s4hana">Extensibility architektura napříč edicemi S/4HANA</a></li>
+  <li><a href="#zakladni-volby-inapp-onstack-developer-sidebyside">Základní volby: in‑app, on‑stack developer, side‑by‑side</a></li>
+  <li><a href="#co-se-lisi-mezi-onpremise-private-cloud-a-public-cloud">Co se liší mezi on‑premise, private cloud a public cloud</a></li>
+<li><a href="#technicke-stavebni-kameny-a-extensibility-model">Technické stavební kameny a extensibility model</a></li>
+  <li><a href="#abap-cloud-jako-guardrails-pro-clean-core">ABAP Cloud jako „guardrails“ pro Clean Core</a></li>
+  <li><a href="#cds-views-a-rap-jako-rozhrani-k-datum-a-chovani">CDS Views a RAP jako „rozhraní“ k datům a chování</a></li>
+  <li><a href="#sap-btp-cap-kyma-abap-environment-a-integracni-vrstva">SAP BTP: CAP, Kyma, ABAP environment a integrační vrstva</a></li>
+  <li><a href="#kde-jsou-klasicke-enhancementy-v-clean-core">Kde jsou „klasické“ enhancementy v Clean Core</a></li>
+<li><a href="#klasifikacni-ramec-ad-a-mapovani-prikladu">Klasifikační rámec A–D a mapování příkladů</a></li>
+  <li><a href="#definice-urovni-podle-sap">Definice úrovní podle SAP</a></li>
+  <li><a href="#mapovani-vami-pozadovanych-prikladu">Mapování vámi požadovaných příkladů</a></li>
+<li><a href="#tooling-a-assessment-jak-identifikovat-dirty-core">Tooling a assessment: jak identifikovat „dirty core“</a></li>
+  <li><a href="#co-je-dirty-core-v-terminologii-sap">Co je „dirty core“ v terminologii SAP</a></li>
+  <li><a href="#zakladni-nastrojova-sada-pro-mereni-a-planovani-remediation">Základní nástrojová sada pro měření a plánování remediation</a></li>
+  <li><a href="#doporuceny-assessment-workflow-pro-enterprise-architekta">Doporučený „assessment workflow“ pro enterprise architekta</a></li>
+<li><a href="#dopad-na-vyvoj-governance-a-devops-model">Dopad na vývoj, governance a DevOps model</a></li>
+  <li><a href="#zmena-mindsetu-z-ecc-delej-to-kdekoliv-na-s4-delej-to-v-povolenych-vrstvach">Změna mindsetu: z ECC „dělej to kdekoliv“ na S/4 „dělej to v povolených vrstvách“</a></li>
+  <li><a href="#doporucene-vzory-a-antivzory">Doporučené vzory a anti‑vzory</a></li>
+  <li><a href="#cicd-a-transportni-strategie-jako-soucast-clean-core">CI/CD a transportní strategie jako součást Clean Core</a></li>
+<li><a href="#tradeoffs-migracni-strategie-scenare-a-budouci-roadmap">Trade‑offs, migrační strategie, scénáře a budoucí roadmap</a></li>
+  <li><a href="#kdy-je-clean-core-tezke-nebo-nepohodlne">Kdy je Clean Core těžké nebo „nepohodlné“</a></li>
+  <li><a href="#migracni-strategie-z-dirty-core-na-clean-core">Migrační strategie z „dirty core“ na Clean Core</a></li>
+  <li><a href="#prakticke-scenare-s-jasnym-anone">Praktické scénáře s jasným ANO/NE</a></li>
+  <li><a href="#budouci-outlook-proc-je-clean-core-kriticky-pro-roadmap-a-ai">Budoucí outlook: proč je Clean Core kritický pro roadmap a AI</a></li>
+<li><a href="#zdroje">Zdroje</a></li>
+<li><a href="#ke-stazeni">📥 Ke stažení (PDF)</a></li>
+<li><a href="#poznamky">Poznámky (citace)</a></li>
+</ul>
+</nav>
+
+<main class="main-content">
+<h2 id="proc-clean-core-vznikl-a-co-znamena-v-praxi">Proč Clean Core vznikl a co znamená v praxi</h2>
+<p>Clean Core není „zákaz customizací“ ani ideologie „žádné Z objekty“. SAP jej definuje jako sadu řídicích principů, které mají podporovat průběžnou (kontinuální) transformaci a modernizaci ERP tím, že udrží digitální jádro agilní, inovativní a efektivní. V praxi to znamená systematicky zamezit tomu, aby se S/4HANA jádro v čase „zatížilo“ obtížně udržitelným kódem, nedokumentovanými zásahy a křehkými integracemi, které zpomalují upgrady a zvyšují TCO.<sup><a class="fn-ref" href="#fn-1" title="https://www.sap.com/cz/products/technology-platform/cloud-transport-management.html">[1]</a></sup><sup><a class="fn-ref" href="#fn-2" title="https://www.sap.com/resources/what-is-a-clean-core">[2]</a></sup><sup><a class="fn-ref" href="#fn-3" title="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf">[3]</a></sup></p>
+<p>Historický důvod je jednoduchý: tradiční on‑premise ERP (typicky s ECC‑mindsetem) byl často rozšiřován „nejkratší cestou“ přímo v jádře – implicitními enhancementy, přímými přístupy na tabulky, Z funkčními moduly volajícími interní objekty, modifikacemi standardu, atd. Takový přístup je rychlý v krátkém horizontu, ale dlouhodobě vytváří technický dluh a opakované náklady při každé transformaci (S/4 konverze, FPS, upgrady, retrofit, regresní testování).<sup><a class="fn-ref" href="#fn-4" title="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf">[4]</a></sup></p>
+<p>Ve světě S/4HANA se navíc mění „operační rytmus“ a očekávání: cloudové edice směřují k častějším inovacím a menším „big‑bang“ upgrade projektům. Clean Core je proto navržen tak, aby:</p>
+<ul>
+<li>držel jádro co nejblíže standardu,</li>
+<li>přesunul diferenciaci do řízených extension bodů a stabilních rozhraní,<sup><a class="fn-ref" href="#fn-5" title="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf">[5]</a></sup></li>
+<li>a umožnil rychlejší adopci inovací včetně AI bez toho, aby se každá inovace měnila v technický projekt „zachraňme custom code“.</li>
+</ul>
+<p>Důležité očekávání: Clean Core nezruší potřebu upgradů a testů; cílem je, aby upgradování bylo častější a levnější, protože core zůstává „čistý“ a extension architektura upgrade „neblokuje“.<sup><a class="fn-ref" href="#fn-6" title="https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1338599_20250411_CleanCoreExtensibilityWIthABAPCloud_SBN_upload.pdf?1744624017=">[6]</a></sup></p>
+<a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+<h2 id="principy-clean-core-jako-systemova-disciplina-pro-enterprise-architekturu">Principy Clean Core jako systémová disciplína pro enterprise architekturu</h2>
+<p>SAP rámuje Clean Core jako průřez pěti dimenzemi: procesy, rozšiřitelnost, data, integrace a provoz. Pro zkušeného architekta je zásadní vnímat, že „Clean Core pro extensibility“ je jen jedna dimenze – bez disciplíny ve zbytku se technický dluh vrátí „oklikou“.<sup><a class="fn-ref" href="#fn-7" title="https://www.sap.com/products/erp/rise/methodology/clean-core.html">[7]</a></sup></p>
+<p>Procesy – preferovat fit‑to‑standard a maximalizovat využití standardních best practices; diferenciaci dělat jen tam, kde má měřitelnou business hodnotu.<sup><a class="fn-ref" href="#fn-8" title="https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1349530_Accelerating_Innovation_with_RISE_with_SAP_Methodology_and_SAP_Activate.pdf?1746777514=">[8]</a></sup></p>
+<p>Extensibility – rozšíření mají být cloud‑kompatibilní, oddělená od standardního kódu a integrovaná přes stabilní rozhraní; v ideálu „BTP‑first“ (tj. preferovat side‑by‑side, pokud není nutná těsná vazba na core).<sup><a class="fn-ref" href="#fn-9" title="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf">[9]</a></sup></p>
+<p>Data – „clean core potřebuje clean data“: pokud data governance selhává, často se kompenzuje logikou v custom kódu a integracích. SAP explicitně zmiňuje potřebu spoléhat se na silnou kvalitu dat jako součást motivace Clean Core.<sup><a class="fn-ref" href="#fn-10" title="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf">[10]</a></sup></p>
+<p>Integrace – cílem je spolehlivá, flexibilní krajina s minimalizací integrační komplexity a customizací; jinak se integrace stává zdrojem „integration debt“.<sup><a class="fn-ref" href="#fn-8" title="https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1349530_Accelerating_Innovation_with_RISE_with_SAP_Methodology_and_SAP_Activate.pdf?1746777514=">[8]</a></sup></p>
+<p>Operations – provozní model má být efektivní, s governance strukturami, housekeeping procesy, a (prakticky) s automatizovanými quality gates a měřením Clean Core KPI.<sup><a class="fn-ref" href="#fn-11" title="https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1349530_Accelerating_Innovation_with_RISE_with_SAP_Methodology_and_SAP_Activate.pdf?1746777514=">[11]</a></sup></p>
+<p>Klíčový důraz: pro každou technickou dimenzi Clean Core je potřeba silná governance – nejen doporučení pro vývojáře.<sup><a class="fn-ref" href="#fn-12" title="https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1155868_20240417_SBN_Activate_for_RISE_with_SAP_and_Clean_Core.pdf?1713948110=">[12]</a></sup></p>
+<a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+<h2 id="extensibility-architektura-napric-edicemi-s4hana">Extensibility architektura napříč edicemi S/4HANA</h2>
+<h3 id="zakladni-volby-inapp-onstack-developer-sidebyside">Základní volby: in‑app, on‑stack developer, side‑by‑side</h3>
+<p>SAP dlouhodobě rozlišuje tři hlavní způsoby rozšiřování S/4HANA:</p>
+<ul>
+<li>In‑App Extensibility (Key User) : rozšíření přes Fiori „key user“ nástroje (typicky UI adaptace, custom fields, některé BAdI/logic, custom BO apod.).<sup><a class="fn-ref" href="#fn-13" title="https://help.sap.com/docs/SAP_S4HANA_CLOUD/0f69f8fb28ac4bf48d2b57b9637e81fa/3ccb50e724b045508fea8b2cf1774b2b.html?utm_source=chatgpt.com">[13]</a></sup></li>
+<li>On‑Stack Developer Extensibility (ABAP Cloud / embedded developer extensibility) : vývoj v ABAP na stacku S/4HANA, ale pod pravidly ABAP Cloud (released APIs, released extension points, upgrade‑stabilita).<sup><a class="fn-ref" href="#fn-14" title="https://help.sap.com/docs/SAP_S4HANA_CLOUD/6aa39f1ac05441e5a23f484f31e477e7/e1059ff581854a699f15734049f14293.html">[14]</a></sup></li>
+<li>Side‑by‑Side Extensibility (SAP BTP) : aplikace/servisy běží mimo core (na BTP), integrace probíhá přes stabilní API a/nebo business events; side‑by‑side má být nezávislé na verzi S/4HANA a vyžaduje remote komunikaci.<sup><a class="fn-ref" href="#fn-15" title="https://learning.sap.com/courses/expanding-sap-s-4hana-using-key-user-side-by-side-extensibility/explaining-side-by-side-extensibility_d0fbc6b1-cb98-4c00-8b34-e80bbe6bf7f2">[15]</a></sup></li>
+</ul>
+<p>SAP pro rozhodování doporučuje pokrýt use‑case často kombinací on‑stack i side‑by‑side (hybrid), pokud to dává architektonický smysl.<sup><a class="fn-ref" href="#fn-16" title="https://help.sap.com/doc/1e322967d9ef4d788c4165c9aed88c78/Cloud/en-US/892cd77faccc4c959ca87aa600e40eac.pdf">[16]</a></sup></p>
+<h3 id="co-se-lisi-mezi-onpremise-private-cloud-a-public-cloud">Co se liší mezi on‑premise, private cloud a public cloud</h3>
+<p>Rozdíly mezi edicemi nejsou jen licenční; jsou hlavně governance a povolené techniky :</p>
+<ul>
+<li>V public cloud je Clean Core vynucený: pravidla typu „no modifications“, „pouze stabilní veřejná API a extension points“ jsou povinná.<sup><a class="fn-ref" href="#fn-17" title="https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1338599_20250411_CleanCoreExtensibilityWIthABAPCloud_SBN_upload.pdf?1744624017=">[17]</a></sup></li>
+<li>V private cloud a on‑premise je Clean Core doporučený (ne vždy povinný), ale SAP explicitně doporučuje „řídit se pravidly public cloud kdykoli je to možné“, protože upgrade projekty nezmizí a cílem je snížit jejich dopad.<sup><a class="fn-ref" href="#fn-18" title="https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1338599_20250411_CleanCoreExtensibilityWIthABAPCloud_SBN_upload.pdf?1744624017=">[18]</a></sup></li>
+<li>ABAP Cloud jako vývojový model je dostupný napříč edicemi – a je povinný v public cloud pro nové zákazníky od 2208 , zatímco v private/on‑premise je doporučen jako „clean core extensibility model“.<sup><a class="fn-ref" href="#fn-19" title="https://pages.community.sap.com/topics/abap/abap-cloud-faq">[19]</a></sup><sup><a class="fn-ref" href="#fn-20" title="https://pages.community.sap.com/topics/abap/abap-cloud-faq">[20]</a></sup></li>
+<li>Release cadence: ABAP Cloud inovace přichází kvartálně v BTP ABAP environment, půlročně v public cloud a řádově pomaleji v private/on‑premise (SAP uvádí rozdílné cykly).</li>
+</ul>
+<p>Praktický dopad pro landscapy: stejný „business requirement“ může mít v public cloud jediné proveditelné řešení (side‑by‑side / released extension points), zatímco v on‑premise se dá „udělat cokoliv“ – ale za cenu horší budoucí udržitelnosti a rizika Level C/D dluhu.<sup><a class="fn-ref" href="#fn-21" title="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf">[21]</a></sup></p>
+<a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+<h2 id="technicke-stavebni-kameny-a-extensibility-model">Technické stavební kameny a extensibility model</h2>
+<h3 id="abap-cloud-jako-guardrails-pro-clean-core">ABAP Cloud jako „guardrails“ pro Clean Core</h3>
+<p>ABAP Cloud je cloud‑ready vývojový model, který omezuje jazyk a přístup k objektům tak, aby custom logika používala pouze released APIs a tím byla upgrade‑stabilní. V praxi to znamená:<sup><a class="fn-ref" href="#fn-22" title="https://help.sap.com/doc/abapdocu_cp_index_htm/CLOUD/en-US/ABENABAP_LANGUAGE_VERSIONS.html?utm_source=chatgpt.com">[22]</a></sup></p>
+<ul>
+<li>používáte omezenou jazykovou verzi („ABAP for Cloud Development“) a přístup k repository objektům je omezen na objekty se stavem release (released API).<sup><a class="fn-ref" href="#fn-23" title="https://help.sap.com/doc/abapdocu_cp_index_htm/CLOUD/en-US/ABENABAP_LANGUAGE_VERSIONS.html?utm_source=chatgpt.com">[23]</a></sup></li>
+<li>v ABAP Cloud se očekává RAP jako transakční programovací model pro vytváření business apps/services/extensions (Fiori/OData), nikoli klasický „procedurální report + BAPI + update tabulek“.<sup><a class="fn-ref" href="#fn-24" title="https://help.sap.com/docs/ABAP_PLATFORM_NEW/fc4c71aa50014fd1b43721701471913d/289477a81eec4d4e84c0302fb6835035.html?utm_source=chatgpt.com">[24]</a></sup><sup><a class="fn-ref" href="#fn-25" title="https://github.com/SAP-samples/abap-cheat-sheets/blob/main/19_ABAP_for_Cloud_Development.md?utm_source=chatgpt.com">[25]</a></sup></li>
+<li>vývoj je postaven na ADT a release state („API State“) a release kontrakty (např. C0/C1) jsou explicitní součástí lifecycle.</li>
+</ul>
+<p>SAP zároveň zdůrazňuje, že vývoj provedený pomocí ABAP Cloud „dodržuje clean core principy by default“.<sup><a class="fn-ref" href="#fn-26" title="https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1338599_20250411_CleanCoreExtensibilityWIthABAPCloud_SBN_upload.pdf?1744624017=">[26]</a></sup></p>
+<h3 id="cds-views-a-rap-jako-rozhrani-k-datum-a-chovani">CDS Views a RAP jako „rozhraní“ k datům a chování</h3>
+<ul>
+<li>CDS view entity je základní stavební blok datového modelu v ABAP CDS a typicky tvoří „contract“/VDM vrstvu, která je bezpečnější než přímé čtení aplikačních tabulek.<sup><a class="fn-ref" href="#fn-27" title="https://help.sap.com/doc/abapdocu_cp_index_htm/CLOUD/en-US/abencds_v2_views.html?utm_source=chatgpt.com">[27]</a></sup><sup><a class="fn-ref" href="#fn-28" title="https://help.sap.com/docs/ABAP_PLATFORM_NEW/fc4c71aa50014fd1b43721701471913d/289477a81eec4d4e84c0302fb6835035.html?utm_source=chatgpt.com">[28]</a></sup></li>
+<li>RAP definuje end‑to‑end architekturu pro transakční aplikace v ABAP Cloud: data model, CRUD, business logiku, transakční chování (locking/numbering), a obvykle OData exposure.</li>
+</ul>
+<p>Z pohledu Clean Core je podstatné, že RAP/CDS nejsou jen „moderní syntax“, ale způsob, jak vytvářet upgrade‑stabilní a verzovatelná rozhraní pro rozšíření.</p>
+<h3 id="sap-btp-cap-kyma-abap-environment-a-integracni-vrstva">SAP BTP: CAP, Kyma, ABAP environment a integrační vrstva</h3>
+<p>Side‑by‑side přístup staví na tom, že extension běží mimo core a komunikuje přes stabilní API nebo events. BTP pak poskytuje více runtime a modelů:<sup><a class="fn-ref" href="#fn-29" title="https://learning.sap.com/courses/expanding-sap-s-4hana-using-key-user-side-by-side-extensibility/explaining-side-by-side-extensibility_d0fbc6b1-cb98-4c00-8b34-e80bbe6bf7f2">[29]</a></sup></p>
+<ul>
+<li>pro pro‑code vývoj (např. CAP) a low/no‑code (SAP Build) – SAP toto uvádí jako typické technologie pro „nové extensions“ v Tier 1/Level A směru.<sup><a class="fn-ref" href="#fn-30" title="https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1338599_20250411_CleanCoreExtensibilityWIthABAPCloud_SBN_upload.pdf?1744624017=">[30]</a></sup><sup><a class="fn-ref" href="#fn-31" title="https://help.sap.com/docs/btp/sap-business-technology-platform/create-s4c-ext-service-instance-in-kyma-msg?utm_source=chatgpt.com">[31]</a></sup></li>
+<li>pro event‑driven integraci je běžný pattern s Event Mesh; SAP popisuje konfiguraci komunikace mezi S/4HANA Cloud a Event Mesh v Kyma prostředí jako součást kyma scénářů.</li>
+</ul>
+<h3 id="kde-jsou-klasicke-enhancementy-v-clean-core">Kde jsou „klasické“ enhancementy v Clean Core</h3>
+<p>SAP model A–D explicitně uvádí jako nejrizikovější (Level D) techniky: modifikace SAP objektů, write access na SAP tabulky a implicit enhancements . ABAP Cloud FAQ navíc přímo říká, že implicit enhancement spots by se měly vyhýbat podobně jako modifikacím.<sup><a class="fn-ref" href="#fn-32" title="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf">[32]</a></sup><sup><a class="fn-ref" href="#fn-33" title="https://pages.community.sap.com/topics/abap/abap-cloud-faq">[33]</a></sup></p>
+<p>To lze přeložit do praktických pravidel:</p>
+<ul>
+<li>User exits / implicit enhancements : typicky spadají do Level D (nebo minimálně mimo „clean“ doporučení), protože jsou blízko standardu, křehké a upgrade‑rizikové.<sup><a class="fn-ref" href="#fn-34" title="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf">[34]</a></sup></li>
+<li>BAdI : pokud je BAdI/release extension point oficiálně released (a používáte jej v rámci ABAP Cloud guardrails), míříte k Level A/B; pokud není released a saháte na interní objekty, sklouzáváte do C/D.<sup><a class="fn-ref" href="#fn-35" title="https://news.sap.com/2025/08/extend-sap-s4hana-cloud-right-way-clean-clear/">[35]</a></sup></li>
+</ul>
+<a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+<h2 id="klasifikacni-ramec-ad-a-mapovani-prikladu">Klasifikační rámec A–D a mapování příkladů</h2>
+<p>SAP „clean core level concept“ rozšiřuje původní 3‑tier model do čtyř úrovní (A–D) a hodnotí rozšíření podle toho, jak je postavené, jak je oddělené od core a jak upgrade‑stabilní je jeho životní cyklus. Úroveň A je cílový stav, ale model je záměrně pragmatický (uznává realitu komplexních landscape).<sup><a class="fn-ref" href="#fn-9" title="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf">[9]</a></sup><sup><a class="fn-ref" href="#fn-36" title="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf">[36]</a></sup></p>
+<h3 id="definice-urovni-podle-sap">Definice úrovní podle SAP</h3>
+<p>Úroveň SAP interpretace Praktický důsledek pro architekta</p>
+<p>A</p>
+<p>cílový standard pro nový vývoj; nízké upgrade riziko; nejvyšší „cloud‑readiness“</p>
+<p>plně compliant: pouze publicly released &amp; stabilní rozhraní s formální stabilitní smlouvou; on‑stack přes ABAP Cloud nebo side‑by‑side na BTP<sup><a class="fn-ref" href="#fn-32" title="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf">[32]</a></sup></p>
+<p>tolerovaná zóna – typicky pro bridging, dokud neexistuje released API; vyžaduje governance a</p>
+<p>B compliant: kromě A používá i „classic APIs/ technologie“ (dobře definované, dokumentované, obecně upgrade‑stabilní)<sup><a class="fn-ref" href="#fn-32" title="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf">[32]</a></sup></p>
+<p>roadmapu „B → A“</p>
+<p>C částečně compliant: přístup k interním objektům SAP; SAP zmiňuje snahu o changelog pro včasnou identifikaci změn</p>
+<p>vědomě podstupujete upgrade riziko; vyžaduje disciplínu: dokumentace, testy, proaktivní monitoring změn<sup><a class="fn-ref" href="#fn-32" title="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf">[32]</a></sup></p>
+<p>D nedoporučeno: noAPI objekty, modifikace, write access na SAP tabulky, implicit enhancements apod.</p>
+<p>technický dluh s nejvyšší prioritou eliminace; často blocker pro cloud‑operating model<sup><a class="fn-ref" href="#fn-32" title="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf">[32]</a></sup></p>
+<p>SAP také zdůrazňuje, že dává společný jazyk pro plánování investic do cleanup/modernizace a doporučuje prioritizovat odstranění Level D jako první.<sup><a class="fn-ref" href="#fn-37" title="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf">[37]</a></sup></p>
+<p>Důležitý detail z praxe (a typická „past“): při kvalifikaci rozšíření se posuzuje celá extension – i když je 90 % moderní, jeden Level D vzor ji může „shodit“. SAP Learning přímo uvádí princip: kvalifikace podle nejnižší použité technologie v extension.<sup><a class="fn-ref" href="#fn-38" title="https://learning.sap.com/courses/practicing-clean-core-extensibility-for-sap-s-4hana-cloud/explaining-extensibility-model-best-practices_e290f382-800e-40ef-a203-85a13115f487?utm_source=chatgpt.com">[38]</a></sup></p>
+<h3 id="mapovani-vami-pozadovanych-prikladu">Mapování vámi požadovaných příkladů</h3>
+<p>Níže uvádím mapování v čisté podobě (bez „it depends“), a hned pod tím hranice, kdy se klasifikace může změnit.</p>
+<p>Příklad Klasifikace Proč</p>
+<p>Custom table + RAP (ABAP Cloud, OData V4)</p>
+<p>A (ANO, clean‑core compliant)</p>
+<p>Vzniká upgrade‑stabilní on‑stack extension, která je oddělená od SAP standardu a může používat veřejná/ released rozhraní; Level A explicitně pokrývá on‑stack ABAP Cloud s publicly released APIs.<sup><a class="fn-ref" href="#fn-39" title="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf">[39]</a></sup></p>
+<p>Z‑function module</p>
+<p>B nebo C (podle volaných objektů)</p>
+<p>Samotná existence Z‑FM není problém; rozhoduje, zda volá pouze classic/released API (pak typicky B), nebo sahá na interní objekty/tabulky (pak C). Úrovně B/C jsou definované právě podle použití classic vs interních objektů.<sup><a class="fn-ref" href="#fn-40" title="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf">[40]</a></sup></p>
+<p>Příklad Klasifikace Proč</p>
+<p>D (NE, ne‑compliant) SAP explicitně uvádí modifikace jako příklad „not recommended“ Level D.</p>
+<p>Core modification (modifikace SAP objektu)<sup><a class="fn-ref" href="#fn-32" title="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf">[32]</a></sup></p>
+<p>Hraniční podmínky (kdy se to mění):</p>
+<ul>
+<li>U „Custom table + RAP“ spadnete do C/D, pokud v behavior implementaci čtete/zapisujete interní SAP objekty mimo released API, nebo pokud obcházíte pravidla a zapisujete do SAP tabulek / používáte implicit enhancements.<sup><a class="fn-ref" href="#fn-34" title="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf">[34]</a></sup></li>
+<li>U „Z‑FM“ může být cílem posun do A tak, že Z‑FM přestane být „integration surface“ a nahradíte jej release‑kontraktovaným rozhraním (např. released CDS/RAP interface), přičemž interní volání classic API je izolované/wrapped (viz dále).<sup><a class="fn-ref" href="#fn-41" title="https://github.com/SAP-samples/abap-platform-rap640/blob/main/exercises/GettingStarted/README.md?utm_source=chatgpt.com">[41]</a></sup></li>
+</ul>
+<a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+<h2 id="tooling-a-assessment-jak-identifikovat-dirty-core">Tooling a assessment: jak identifikovat „dirty core“</h2>
+<h3 id="co-je-dirty-core-v-terminologii-sap">Co je „dirty core“ v terminologii SAP</h3>
+<p>Prakticky lze „dirty core“ číst jako přítomnost Level D (a často i Level C) stop: modifikace, implicitní enhancements, write access na SAP tabulky, použití objektů označených jako noAPI, nebo přímé závislosti na interních SAP objektech.<sup><a class="fn-ref" href="#fn-32" title="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf">[32]</a></sup></p>
+<h3 id="zakladni-nastrojova-sada-pro-mereni-a-planovani-remediation">Základní nástrojová sada pro měření a plánování remediation</h3>
+<p>ABAP Test Cockpit (ATC) + Cloudification Repository Cloudification Repository poskytuje seznam released i non‑released objektů včetně successorů a ATC jej využívá v checku „Usage of Released APIs (Cloudification Repository)“ pro analýzu custom code napříč ECC/S/4HANA.<sup><a class="fn-ref" href="#fn-42" title="https://github.com/SAP/abap-atc-cr-cv-s4hc">[42]</a></sup></p>
+<p>Centralní governance přes ATC na BTP SAP (v materiálech k Clean Core extensibility) doporučuje ATC na BTP jako centrální nástroj pro governance (zejména pro private cloud a on‑premise) a zmiňuje konkrétní provozní schopnosti: custom code analýzy, práce s exemptions, baseline pro legacy code, plánování ATC běhů, a vazbu na transport/ change management.<sup><a class="fn-ref" href="#fn-43" title="https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1338599_20250411_CleanCoreExtensibilityWIthABAPCloud_SBN_upload.pdf?1744624017=">[43]</a></sup></p>
+<p>Custom Code Migration app Oficiální guide popisuje, že aplikace umí scope &amp; analyzovat custom code pro migraci na S/4HANA, umí identifikovat nepoužívaný kód na základě usage dat a vytvořit mazací transport pro odstranění nepoužívaného ABAP source code během konverze. Stejný guide také popisuje variantu, kdy jako „central check system“ funguje BTP ABAP environment a analyzuje on‑premise kód vzdáleně přes Cloud Connector; BTP ABAP environment má kvartální aktualizace a obsahuje nejnovější funkce CCM.<sup><a class="fn-ref" href="#fn-44" title="https://help.sap.com/doc/9dcbc5e47ba54a5cbb509afaa49dd5a1/2025.001/en-US/CustomCodeMigration_EndtoEnd.pdf">[44]</a></sup><sup><a class="fn-ref" href="#fn-45" title="https://help.sap.com/doc/9dcbc5e47ba54a5cbb509afaa49dd5a1/2025.001/en-US/CustomCodeMigration_EndtoEnd.pdf">[45]</a></sup></p>
+<p>SAP Readiness Check SAP Readiness Check umí vizualizovat dopady custom code a lze do něj nahrát výsledky ATC analýzy (ATC findings pak nahradí „high level“ výsledky v dashboardu). SAP navíc popisuje „Enhanced custom code analysis“ pro lepší viditelnost ATC findings vůči cílové S/4 verzi.<sup><a class="fn-ref" href="#fn-46" title="https://assets.dm.ux.sap.com/webinars/sap-user-groups-k4u/pdfs/200519_sap_readiness_check_2.0_for_sap_s4hana.pdf">[46]</a></sup><sup><a class="fn-ref" href="#fn-47" title="https://community.sap.com/t5/enterprise-resource-planning-blog-posts-by-sap/enhanced-custom-code-analysis-in-sap-readiness-check-for-sap-s-4hana/ba-p/13580469">[47]</a></sup></p>
+<h3 id="doporuceny-assessment-workflow-pro-enterprise-architekta">Doporučený „assessment workflow“ pro enterprise architekta</h3>
+<ul>
+<li>Inventarizace a klasifikace : získejte seznam Z* a add‑on objektů + určete jejich A/B/C/D profil pomocí ATC + Cloudification Repository (a/nebo CCM projekty).<sup><a class="fn-ref" href="#fn-48" title="https://github.com/SAP/abap-atc-cr-cv-s4hc">[48]</a></sup></li>
+</ul>
+<p>2.<sup><a class="fn-ref" href="#fn-43" title="https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1338599_20250411_CleanCoreExtensibilityWIthABAPCloud_SBN_upload.pdf?1744624017=">[43]</a></sup></p>
+<ul>
+<li>Baseline a exemptions politika : pro legacy code nastavte baseline tak, aby governance netrestala „historii“, ale vytvářela tlak na nové změny; zároveň stanovte politiku exemptions (kdo schvaluje, expirace, evidence). Prioritizace : jako první řešte Level D (nebo D‑stopy v kritických objektech), poté nejrizikovější C. To odpovídá doporučení SAP zaměřit se nejprve na highest‑risk extensions.<sup><a class="fn-ref" href="#fn-32" title="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf">[32]</a></sup><sup><a class="fn-ref" href="#fn-49" title="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf">[49]</a></sup></li>
+</ul>
+<ul>
+<li>Roadmapa „B → A“ : pro B‑profil (classic APIs) si zaveďte backlog na postupné nahrazování successor/released API, jakmile jsou dostupné.</li>
+</ul>
+<a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+<h2 id="dopad-na-vyvoj-governance-a-devops-model">Dopad na vývoj, governance a DevOps model</h2>
+<h3 id="zmena-mindsetu-z-ecc-delej-to-kdekoliv-na-s4-delej-to-v-povolenych-vrstvach">Změna mindsetu: z ECC „dělej to kdekoliv“ na S/4 „dělej to v povolených vrstvách“</h3>
+<p>V ABAP Cloud se vývoj posouvá k explicitnímu contract‑driven přístupu:</p>
+<ul>
+<li>nejdřív hledám released API / released extension point,</li>
+<li>teprve pak píšu kód (RAP/CDS),</li>
+<li>a dotýkám se standardu jen přes stabilní kontrakty.</li>
+</ul>
+<p>SAP také zdůrazňuje, že v public cloud je nutné držet se pravidel: žádné modifikace SAP objektů a používání jen stabilních veřejných API/extension points.<sup><a class="fn-ref" href="#fn-51" title="https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1338599_20250411_CleanCoreExtensibilityWIthABAPCloud_SBN_upload.pdf?1744624017=">[51]</a></sup></p>
+<h3 id="doporucene-vzory-a-antivzory">Doporučené vzory a anti‑vzory</h3>
+<p>Doporučené vzory</p>
+<ul>
+<li>RAP BO nad custom tabulkami + exposure přes OData (ideálně v ABAP Cloud guardrails) jako standardní transakční přístup.<sup><a class="fn-ref" href="#fn-52" title="https://help.sap.com/docs/ABAP_PLATFORM_NEW/fc4c71aa50014fd1b43721701471913d/289477a81eec4d4e84c0302fb6835035.html?utm_source=chatgpt.com">[52]</a></sup></li>
+<li>Wrapper/facade pattern : pokud chybí released SAP API, izolujte volání classic API do kontrolované vrstvy (Cloud API enablement / wrapper objekty), aby zbytek aplikace zůstal v Level A boundary. SAP sample explicitně ukazuje mitigaci chybějícího released API tím, že se obalí vhodné classic API (např. BAPI_PR_CREATE) a použije se v Level A aplikaci.<sup><a class="fn-ref" href="#fn-41" title="https://github.com/SAP-samples/abap-platform-rap640/blob/main/exercises/GettingStarted/README.md?utm_source=chatgpt.com">[41]</a></sup></li>
+<li>Side-by-side „data product / process extension“ pro scénáře s vlastním lifecyklem, vlastní škálou, nebo integrací více systémů – side‑by‑side má být nezávislé na verzi S/4HANA a běží mimo core.<sup><a class="fn-ref" href="#fn-53" title="https://learning.sap.com/courses/expanding-sap-s-4hana-using-key-user-side-by-side-extensibility/explaining-side-by-side-extensibility_d0fbc6b1-cb98-4c00-8b34-e80bbe6bf7f2">[53]</a></sup></li>
+</ul>
+<p>Zakázané / důrazně nedoporučené</p>
+<ul>
+<li>write access do SAP aplikačních tabulek (přímé UPDATE/INSERT do standardních tabulek) – SAP to uvádí jako Level D.<sup><a class="fn-ref" href="#fn-32" title="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf">[32]</a></sup></li>
+<li>implicit enhancements a modifikace standardu – rovněž Level D.<sup><a class="fn-ref" href="#fn-55" title="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf">[55]</a></sup></li>
+<li>neřízené volání interních objektů (třídy/tabulky/FMs mimo classic/released seznam) – typicky Level C s upgrade rizikem.</li>
+</ul>
+<h3 id="cicd-a-transportni-strategie-jako-soucast-clean-core">CI/CD a transportní strategie jako součást Clean Core</h3>
+<p>Clean Core governance není jen „code style“. Pokud nemáte CI a transportní disciplínu, vznikne „operational debt“ a do core se dostane Level C/D chování i při dobrých úmyslech.<sup><a class="fn-ref" href="#fn-56" title="https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1349530_Accelerating_Innovation_with_RISE_with_SAP_Methodology_and_SAP_Activate.pdf?1746777514=">[56]</a></sup></p>
+<p>Transport a změnové řízení</p>
+<ul>
+<li>Public cloud pracuje s 3‑system landscape a řízením transportů pro customizing, key user a developer změny; existuje k tomu oficiální SAP dokumentace.<sup><a class="fn-ref" href="#fn-57" title="https://help.sap.com/docs/SAP_S4HANA_CLOUD/a630d57fc5004c6383e7a81efee7a8bb/e022623ec1fc4d61abb398e411670200.html">[57]</a></sup><sup><a class="fn-ref" href="#fn-58" title="https://help.sap.com/docs/ABAP_PLATFORM_NEW/4a368c163b08418890a406d413933ba7/f319b168e87e42149e25e13c08d002b9.html">[58]</a></sup></li>
+<li>Pro moderní ABAP lifecycle existuje gCTS (Git‑enabled Change and Transport System), který propojuje CTS procesy s Git jako externím version managementem.<sup><a class="fn-ref" href="#fn-59" title="https://www.sap.com/cz/products/technology-platform/cloud-transport-management.html">[59]</a></sup></li>
+<li>V prostředí BTP se používá SAP Cloud Transport Management pro transport deliverables mezi BTP účty/runtimy (včetně ABAP prostředí).<sup><a class="fn-ref" href="#fn-60" title="https://help.sap.com/docs/sap-btp-abap-environment/abap-environment/working-with-abapgit">[60]</a></sup></li>
+<li>abapGit je oficiálně popsaný jako nástroj pro přenos source code assets mezi on‑premise a BTP ABAP environment (side‑by‑side vývoj).</li>
+</ul>
+<p>DevOps praktika pro ABAP environment na BTP SAP Learning uvádí, že pro ABAP na BTP je potřeba kombinovat Git flexibilitu s ABAP CTS, doporučuje Cloud Transport Management pro automatizovaný transport a zároveň upozorňuje, že pro CI pipeline se typicky používá third‑party (např. Jenkins).<sup><a class="fn-ref" href="#fn-61" title="https://learning.sap.com/courses/exploring-devops-with-sap-btp/explaining-your-sap-btp-account-model-for-devops_aeff6f9c-7049-4863-93d3-20dc9b2bbf2c">[61]</a></sup></p>
+<p>Mermaid náčrt „Clean Core pipeline“ (konceptuální):</p>
+<div class="mermaid-wrap" onclick="openModal(this)">
+  <div class="mermaid">flowchart LR
+    Dev[&quot;Developer workspace&quot;] --&gt; Git[&quot;Git / gCTS&quot;]
+    Git --&gt; CI[&quot;CI pipeline&quot;]
+    CI --&gt; ATC[&quot;ATC checks\nClean Core + cloud readiness&quot;]
+    ATC --&gt;|pass| Transport[&quot;Transport / cTMS&quot;]
+    Transport --&gt; QAS[&quot;Test tenant / QAS&quot;]
+    QAS --&gt;|approve| PRD[&quot;Production&quot;]
+    ATC --&gt;|fail| Fix[&quot;Refactor / redesign&quot;]
+    Fix --&gt; Dev</div>
+</div>
+<a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+<h2 id="tradeoffs-migracni-strategie-scenare-a-budouci-roadmap">Trade‑offs, migrační strategie, scénáře a budoucí roadmap</h2>
+<h3 id="kdy-je-clean-core-tezke-nebo-nepohodlne">Kdy je Clean Core těžké nebo „nepohodlné“</h3>
+<p>Chybějící released APIs / gaps ve standardu Nejčastější reálný problém: business potřebuje rozšířit proces, ale neexistuje vhodné released API/ extension point. SAP proto pracuje s pragmatickou cestou: Level B (classic APIs) a wrapper strategie jako přechodový most do Level A, až bude successor dostupný.<sup><a class="fn-ref" href="#fn-62" title="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf">[62]</a></sup></p>
+<p>Výkon a latence u side‑by‑side Side‑by‑side je upgrade‑výhodné, ale vyžaduje remote komunikaci a integraci přes API/events, což přináší latenci, monitoring a integrační náklady; SAP Learning explicitně říká, že side‑by‑side je mimo core a remote komunikace je nutná.<sup><a class="fn-ref" href="#fn-63" title="https://learning.sap.com/courses/expanding-sap-s-4hana-using-key-user-side-by-side-extensibility/explaining-side-by-side-extensibility_d0fbc6b1-cb98-4c00-8b34-e80bbe6bf7f2">[63]</a></sup></p>
+<p>Cena a organizační dopad BTP BTP‑first strategie znamená, že část diferenciace přesunete na platformu s vlastním lifecycle, runtime a governance; v praxi přibude cost center, skills (CAP/Kyma/integration), provozní dohled. SAP nicméně současně prezentuje BTP jako základ pro side‑by‑side a ABAP Cloud jako on‑stack model, který drží clean core pravidla.<sup><a class="fn-ref" href="#fn-64" title="https://news.sap.com/2025/08/extend-sap-s4hana-cloud-right-way-clean-clear/">[64]</a></sup></p>
+<h3 id="migracni-strategie-z-dirty-core-na-clean-core">Migrační strategie z „dirty core“ na Clean Core</h3>
+<p>Níže je praktický postup, který odpovídá logice SAP rámců: Clean Core je průběžná strategická aktivita a součást metodik (success plan, quality gates), nikoli jednorázový refactoring sprint.<sup><a class="fn-ref" href="#fn-65" title="https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1155868_20240417_SBN_Activate_for_RISE_with_SAP_and_Clean_Core.pdf?1713948110=">[65]</a></sup></p>
+<p>Krokový postup 1. Nastavte cílový stav a policy : definujte, co je pro vás Level A/B/C/D „tolerovaný“ stav, včetně doby expirace pro C/D výjimky. (SAP rámec umožňuje pragmatickou cestu, ale Level A je ideál a Level D je nejvyšší riziko.) 2. Zaveďte měření : ATC + Cloudification Repository jako povinný quality gate; pro landscape s více systémy centralizujte governance (ATC na BTP). 3. Racionalizujte custom code : použijte CCM scoping s usage daty a odstraňte nevyužívané objekty; minimalizujete objem, který musíte modernizovat. 4. Eliminujte Level D : modifikace/implicit enhancements/write access na SAP tabulky řešte jako blockers (redesign na released extension points, eventing, side‑by‑side, nebo wrapper). 5. Stabilizujte Level C : kde je C objektivně nutné (např. chybí API), udělejte z toho řízený „debt register“: dokumentace, test scope, upgrade playbook, owner. (SAP model C výslovně zmiňuje upgrade riziko a potřebu včasné identifikace změn.) 6. Budujte nový vývoj Level A : nové požadavky už neimplementujte „legacy style“; vynucujte ABAP Cloud/RAP a side‑by‑side, aby se dluh dál nezvětšoval.<sup><a class="fn-ref" href="#fn-32" title="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf">[32]</a></sup><sup><a class="fn-ref" href="#fn-66" title="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf">[66]</a></sup><sup><a class="fn-ref" href="#fn-67" title="https://github.com/SAP/abap-atc-cr-cv-s4hc">[67]</a></sup><sup><a class="fn-ref" href="#fn-68" title="https://help.sap.com/doc/9dcbc5e47ba54a5cbb509afaa49dd5a1/2025.001/en-US/CustomCodeMigration_EndtoEnd.pdf">[68]</a></sup><sup><a class="fn-ref" href="#fn-69" title="https://pages.community.sap.com/topics/abap/abap-cloud-faq">[69]</a></sup></p>
+<p>Vztah k brownfield/greenfield/selective data transition RISE metodika výslovně pracuje s různými „transition journeys“ (new implementation, system conversion, selective data transition). Clean Core policy (quality gates, success plan) by měla být konzistentní napříč těmito přístupy; liší se jen to, kolik legacy dluhu přenášíte.<sup><a class="fn-ref" href="#fn-70" title="https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1349530_Accelerating_Innovation_with_RISE_with_SAP_Methodology_and_SAP_Activate.pdf?1746777514=">[70]</a></sup><sup><a class="fn-ref" href="#fn-71" title="https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1349530_Accelerating_Innovation_with_RISE_with_SAP_Methodology_and_SAP_Activate.pdf?1746777514=">[71]</a></sup></p>
+<h3 id="prakticke-scenare-s-jasnym-anone">Praktické scénáře s jasným ANO/NE</h3>
+<p>Definice: „Clean‑core compliant“ zde beru jako SAP kategorizaci, kde A a B jsou compliant , C je částečně compliant a D není doporučeno.<sup><a class="fn-ref" href="#fn-72" title="https://news.sap.com/2025/08/extend-sap-s4hana-cloud-right-way-clean-clear/">[72]</a></sup></p>
+<p>Scénář Verdikt Úroveň Vysvětlení</p>
+<p>ANO A</p>
+<p>Custom RAP aplikace nad custom tabulkami v S/4</p>
+<p>Pokud je implementace v ABAP Cloud guardrails a integrace do standardu jde přes released API/extension points, jde o typický Level A on‑stack extension.<sup><a class="fn-ref" href="#fn-73" title="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf">[73]</a></sup></p>
+<p>NE D Přímý zápis do SAP tabulek je explicitně uveden jako Level D (nejvyšší riziko).</p>
+<p>„RAP app“, která uvnitř používá přímé UPDATE do SAP standardních tabulek<sup><a class="fn-ref" href="#fn-32" title="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf">[32]</a></sup></p>
+<p>Scénář Verdikt Úroveň Vysvětlení</p>
+<p>ANO pro Clean Core , ale architektonicky rizikové</p>
+<p>typicky A/B (podle dalších závislostí)</p>
+<p>Přímé DB update do vašich custom tabulek mimo RAP behavior (tj. obcházení behavior layer)</p>
+<p>Clean Core klasifikace primárně řeší vztah k SAP core. Zápis do vlastních tabulek není sám o sobě „dirty core“. Riziko je spíš doménové: obcházíte validace/locking/determinations a vytváříte nekonzistentní „backdoor“. Doporučení: držet jedinou transakční cestu přes RAP BO.<sup><a class="fn-ref" href="#fn-74" title="https://help.sap.com/docs/ABAP_PLATFORM_NEW/fc4c71aa50014fd1b43721701471913d/289477a81eec4d4e84c0302fb6835035.html?utm_source=chatgpt.com">[74]</a></sup></p>
+<p>ANO A nebo B</p>
+<p>Freestyle Fiori aplikace konzumující vaše custom OData</p>
+<p>UI technologie neklasifikuje clean core; rozhoduje, jaký je kontrakt OData a co je pod ním. Pokud je OData postavené nad released rozhraními (ideálně RAP/OData V4, případně kontrolovaně classic API), zůstáváte v A/B.<sup><a class="fn-ref" href="#fn-39" title="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf">[39]</a></sup></p>
+<h3 id="budouci-outlook-proc-je-clean-core-kriticky-pro-roadmap-a-ai">Budoucí outlook: proč je Clean Core kritický pro roadmap a AI</h3>
+<p>SAP přímo propojuje Clean Core s rychlejší adopcí inovací a „easier adoption of AI“. Dává to technický smysl:<sup><a class="fn-ref" href="#fn-75" title="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf">[75]</a></sup></p>
+<ul>
+<li>AI asistenti a agenti jsou nejefektivnější tam, kde mají konzistentní procesy, stabilní API kontrakty a čistá data – což je přesně to, co Clean Core prosazuje.<sup><a class="fn-ref" href="#fn-76" title="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf">[76]</a></sup><sup><a class="fn-ref" href="#fn-77" title="https://news.sap.com/2025/08/extend-sap-s4hana-cloud-right-way-clean-clear/">[77]</a></sup></li>
+<li>SAP zároveň uvádí, že Joule (AI copilot) podporuje produktivitu vývojářů (generování „clean“ kontextového kódu, automatizace) jako součást ekosystému okolo clean core strategie.</li>
+<li>V ABAP kontextu SAP zmiňuje plánované AI use‑cases pro custom code transformation (AI‑based vysvětlení legacy kódu, vysvětlení ATC findings a návrhy adaptace) integrované do ADT – což je<sup><a class="fn-ref" href="#fn-78" title="https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1338599_20250411_CleanCoreExtensibilityWIthABAPCloud_SBN_upload.pdf?1744624017=">[78]</a></sup></li>
+</ul>
+<ul>
+<li>prakticky přímá vazba „Clean Core governance ↔ AI akcelerace remediation“.</li>
+</ul>
+<p>Zjednodušeně: čím více se S/4HANA inovace (včetně AI) posouvají do „continuous“ režimu, tím méně je prostor pro Level C/D dluh – a tím více Clean Core přechází z „best practice“ na podmínku udržitelného provozu .<sup><a class="fn-ref" href="#fn-79" title="https://news.sap.com/2025/08/extend-sap-s4hana-cloud-right-way-clean-clear/">[79]</a></sup></p>
+<a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+<h2 id="ke-stazeni">📥 Ke stažení (PDF)</h2>
+<div class="download-grid">
+<div class="dl-card">
+  <div class="dl-icon">📄</div>
+  <div class="dl-info">
+    <div class="dl-name">SAP Clean Core – Přehled a metodika</div>
+    <div class="dl-desc">Hlavní SAP dokument: Clean Core strategie, level model A–D, extensibility best practices</div>
+  </div>
+  <a class="dl-btn" href="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf" target="_blank" download="20aece06-d87e-0010-bca6-c68f7e60039b.pdf" rel="noopener">Stáhnout PDF ↓</a>
+</div>
+<div class="dl-card">
+  <div class="dl-icon">📄</div>
+  <div class="dl-info">
+    <div class="dl-name">SBN: Clean Core Extensibility s ABAP Cloud</div>
+    <div class="dl-desc">SAP Basis Network prezentace o Clean Core extensibility a ABAP Cloud (duben 2025)</div>
+  </div>
+  <a class="dl-btn" href="https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1338599_20250411_CleanCoreExtensibilityWIthABAPCloud_SBN_upload.pdf?1744624017=" target="_blank" download="1338599_20250411_CleanCoreExtensibilityWIthABAPCloud_SBN_upload.pdf" rel="noopener">Stáhnout PDF ↓</a>
+</div>
+<div class="dl-card">
+  <div class="dl-icon">📄</div>
+  <div class="dl-info">
+    <div class="dl-name">RISE with SAP – Accelerating Innovation</div>
+    <div class="dl-desc">SBN dokument o metodice SAP Activate a RISE přístupu k inovacím</div>
+  </div>
+  <a class="dl-btn" href="https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1349530_Accelerating_Innovation_with_RISE_with_SAP_Methodology_and_SAP_Activate.pdf?1746777514=" target="_blank" download="1349530_Accelerating_Innovation_with_RISE_with_SAP_Methodology_and_SAP_Activate.pdf" rel="noopener">Stáhnout PDF ↓</a>
+</div>
+<div class="dl-card">
+  <div class="dl-icon">📄</div>
+  <div class="dl-info">
+    <div class="dl-name">SBN: Activate for RISE with SAP and Clean Core</div>
+    <div class="dl-desc">SAP Basis Network prezentace – Activate metodika pro RISE a Clean Core (2024)</div>
+  </div>
+  <a class="dl-btn" href="https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1155868_20240417_SBN_Activate_for_RISE_with_SAP_and_Clean_Core.pdf?1713948110=" target="_blank" download="1155868_20240417_SBN_Activate_for_RISE_with_SAP_and_Clean_Core.pdf" rel="noopener">Stáhnout PDF ↓</a>
+</div>
+<div class="dl-card">
+  <div class="dl-icon">📄</div>
+  <div class="dl-info">
+    <div class="dl-name">S/4HANA Cloud – Developer Extensibility Guide</div>
+    <div class="dl-desc">Oficiální SAP help.sap.com průvodce developer extensibility pro S/4HANA Cloud</div>
+  </div>
+  <a class="dl-btn" href="https://help.sap.com/doc/1e322967d9ef4d788c4165c9aed88c78/Cloud/en-US/892cd77faccc4c959ca87aa600e40eac.pdf" target="_blank" download="892cd77faccc4c959ca87aa600e40eac.pdf" rel="noopener">Stáhnout PDF ↓</a>
+</div>
+<div class="dl-card">
+  <div class="dl-icon">📄</div>
+  <div class="dl-info">
+    <div class="dl-name">Custom Code Migration – End to End Guide</div>
+    <div class="dl-desc">Komplexní průvodce migrací custom kódu na S/4HANA (Custom Code Migration app)</div>
+  </div>
+  <a class="dl-btn" href="https://help.sap.com/doc/9dcbc5e47ba54a5cbb509afaa49dd5a1/2025.001/en-US/CustomCodeMigration_EndtoEnd.pdf" target="_blank" download="CustomCodeMigration_EndtoEnd.pdf" rel="noopener">Stáhnout PDF ↓</a>
+</div>
+<div class="dl-card">
+  <div class="dl-icon">📄</div>
+  <div class="dl-info">
+    <div class="dl-name">SAP Readiness Check 2.0 pro S/4HANA</div>
+    <div class="dl-desc">Prezentace o SAP Readiness Check pro analýzu custom code dopadu při S/4HANA konverzi</div>
+  </div>
+  <a class="dl-btn" href="https://assets.dm.ux.sap.com/webinars/sap-user-groups-k4u/pdfs/200519_sap_readiness_check_2.0_for_sap_s4hana.pdf" target="_blank" download="200519_sap_readiness_check_2.0_for_sap_s4hana.pdf" rel="noopener">Stáhnout PDF ↓</a>
+</div>
+</div>
+<a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+<h2 id="zdroje">Zdroje</h2>
+<ol class="sources-list">
+<li><a href="https://www.sap.com/cz/products/technology-platform/cloud-transport-management.html" target="_blank" rel="noopener">https://www.sap.com/cz/products/technology-platform/cloud-transport-management.html</a></li>
+<li><a href="https://www.sap.com/resources/what-is-a-clean-core" target="_blank" rel="noopener">https://www.sap.com/resources/what-is-a-clean-core</a></li>
+<li><a href="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf" target="_blank" rel="noopener">https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf</a></li>
+<li><a href="https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1338599_20250411_CleanCoreExtensibilityWIthABAPCloud_SBN_upload.pdf?1744624017=" target="_blank" rel="noopener">https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1338599_20250411_CleanCoreExtensibilityWIthABAPCloud_SBN_upload.pdf?1744624017=</a></li>
+<li><a href="https://www.sap.com/products/erp/rise/methodology/clean-core.html" target="_blank" rel="noopener">https://www.sap.com/products/erp/rise/methodology/clean-core.html</a></li>
+<li><a href="https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1349530_Accelerating_Innovation_with_RISE_with_SAP_Methodology_and_SAP_Activate.pdf?1746777514=" target="_blank" rel="noopener">https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1349530_Accelerating_Innovation_with_RISE_with_SAP_Methodology_and_SAP_Activate.pdf?1746777514=</a></li>
+<li><a href="https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1155868_20240417_SBN_Activate_for_RISE_with_SAP_and_Clean_Core.pdf?1713948110=" target="_blank" rel="noopener">https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1155868_20240417_SBN_Activate_for_RISE_with_SAP_and_Clean_Core.pdf?1713948110=</a></li>
+<li><a href="https://help.sap.com/docs/SAP_S4HANA_CLOUD/0f69f8fb28ac4bf48d2b57b9637e81fa/3ccb50e724b045508fea8b2cf1774b2b.html?utm_source=chatgpt.com" target="_blank" rel="noopener">Key User Extensibility</a></li>
+<li><a href="https://help.sap.com/docs/SAP_S4HANA_CLOUD/6aa39f1ac05441e5a23f484f31e477e7/e1059ff581854a699f15734049f14293.html" target="_blank" rel="noopener">https://help.sap.com/docs/SAP_S4HANA_CLOUD/6aa39f1ac05441e5a23f484f31e477e7/e1059ff581854a699f15734049f14293.html</a></li>
+<li><a href="https://learning.sap.com/courses/expanding-sap-s-4hana-using-key-user-side-by-side-extensibility/explaining-side-by-side-extensibility_d0fbc6b1-cb98-4c00-8b34-e80bbe6bf7f2" target="_blank" rel="noopener">https://learning.sap.com/courses/expanding-sap-s-4hana-using-key-user-side-by-side-extensibility/explaining-side-by-side-extensibility_d0fbc6b1-cb98-4c00-8b34-e80bbe6bf7f2</a></li>
+<li><a href="https://help.sap.com/doc/1e322967d9ef4d788c4165c9aed88c78/Cloud/en-US/892cd77faccc4c959ca87aa600e40eac.pdf" target="_blank" rel="noopener">https://help.sap.com/doc/1e322967d9ef4d788c4165c9aed88c78/Cloud/en-US/892cd77faccc4c959ca87aa600e40eac.pdf</a></li>
+<li><a href="https://pages.community.sap.com/topics/abap/abap-cloud-faq" target="_blank" rel="noopener">https://pages.community.sap.com/topics/abap/abap-cloud-faq</a></li>
+<li><a href="https://help.sap.com/doc/abapdocu_cp_index_htm/CLOUD/en-US/ABENABAP_LANGUAGE_VERSIONS.html?utm_source=chatgpt.com" target="_blank" rel="noopener">ABAP Language Versions | ABAP Keyword Documentation</a></li>
+<li><a href="https://help.sap.com/docs/ABAP_PLATFORM_NEW/fc4c71aa50014fd1b43721701471913d/289477a81eec4d4e84c0302fb6835035.html?utm_source=chatgpt.com" target="_blank" rel="noopener">ABAP RESTful Application Programming Model</a></li>
+<li><a href="https://github.com/SAP-samples/abap-cheat-sheets/blob/main/19_ABAP_for_Cloud_Development.md?utm_source=chatgpt.com" target="_blank" rel="noopener">abap-cheat-sheets/19_ABAP_for_Cloud_Development.md ...</a></li>
+<li><a href="https://help.sap.com/doc/abapdocu_cp_index_htm/CLOUD/en-US/abencds_v2_views.html?utm_source=chatgpt.com" target="_blank" rel="noopener">ABAP CDS - View Entities | ABAP Keyword Documentation</a></li>
+<li><a href="https://help.sap.com/docs/btp/sap-business-technology-platform/create-s4c-ext-service-instance-in-kyma-msg?utm_source=chatgpt.com" target="_blank" rel="noopener">Create an SAP S/4HANA Cloud Extensibility Service ...</a></li>
+<li><a href="https://news.sap.com/2025/08/extend-sap-s4hana-cloud-right-way-clean-clear/" target="_blank" rel="noopener">https://news.sap.com/2025/08/extend-sap-s4hana-cloud-right-way-clean-clear/</a></li>
+<li><a href="https://learning.sap.com/courses/practicing-clean-core-extensibility-for-sap-s-4hana-cloud/explaining-extensibility-model-best-practices_e290f382-800e-40ef-a203-85a13115f487?utm_source=chatgpt.com" target="_blank" rel="noopener">Exploring Clean Core Extensibility Best Practices</a></li>
+<li><a href="https://github.com/SAP-samples/abap-platform-rap640/blob/main/exercises/GettingStarted/README.md?utm_source=chatgpt.com" target="_blank" rel="noopener">abap-platform-rap640/exercises/GettingStarted/README. ...</a></li>
+<li><a href="https://github.com/SAP/abap-atc-cr-cv-s4hc" target="_blank" rel="noopener">https://github.com/SAP/abap-atc-cr-cv-s4hc</a></li>
+<li><a href="https://help.sap.com/doc/9dcbc5e47ba54a5cbb509afaa49dd5a1/2025.001/en-US/CustomCodeMigration_EndtoEnd.pdf" target="_blank" rel="noopener">https://help.sap.com/doc/9dcbc5e47ba54a5cbb509afaa49dd5a1/2025.001/en-US/CustomCodeMigration_EndtoEnd.pdf</a></li>
+<li><a href="https://assets.dm.ux.sap.com/webinars/sap-user-groups-k4u/pdfs/200519_sap_readiness_check_2.0_for_sap_s4hana.pdf" target="_blank" rel="noopener">https://assets.dm.ux.sap.com/webinars/sap-user-groups-k4u/pdfs/200519_sap_readiness_check_2.0_for_sap_s4hana.pdf</a></li>
+<li><a href="https://community.sap.com/t5/enterprise-resource-planning-blog-posts-by-sap/enhanced-custom-code-analysis-in-sap-readiness-check-for-sap-s-4hana/ba-p/13580469" target="_blank" rel="noopener">https://community.sap.com/t5/enterprise-resource-planning-blog-posts-by-sap/enhanced-custom-code-analysis-in-sap-readiness-check-for-sap-s-4hana/ba-p/13580469</a></li>
+<li><a href="https://help.sap.com/docs/SAP_S4HANA_CLOUD/a630d57fc5004c6383e7a81efee7a8bb/e022623ec1fc4d61abb398e411670200.html" target="_blank" rel="noopener">https://help.sap.com/docs/SAP_S4HANA_CLOUD/a630d57fc5004c6383e7a81efee7a8bb/e022623ec1fc4d61abb398e411670200.html</a></li>
+<li><a href="https://help.sap.com/docs/ABAP_PLATFORM_NEW/4a368c163b08418890a406d413933ba7/f319b168e87e42149e25e13c08d002b9.html" target="_blank" rel="noopener">https://help.sap.com/docs/ABAP_PLATFORM_NEW/4a368c163b08418890a406d413933ba7/f319b168e87e42149e25e13c08d002b9.html</a></li>
+<li><a href="https://help.sap.com/docs/sap-btp-abap-environment/abap-environment/working-with-abapgit" target="_blank" rel="noopener">https://help.sap.com/docs/sap-btp-abap-environment/abap-environment/working-with-abapgit</a></li>
+<li><a href="https://learning.sap.com/courses/exploring-devops-with-sap-btp/explaining-your-sap-btp-account-model-for-devops_aeff6f9c-7049-4863-93d3-20dc9b2bbf2c" target="_blank" rel="noopener">https://learning.sap.com/courses/exploring-devops-with-sap-btp/explaining-your-sap-btp-account-model-for-devops_aeff6f9c-7049-4863-93d3-20dc9b2bbf2c</a></li>
+</ol>
+<a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+<h2 id="poznamky">Poznámky (citace)</h2>
+<ol class="footnotes">
+<li id="fn-1"><a href="https://www.sap.com/cz/products/technology-platform/cloud-transport-management.html" target="_blank" rel="noopener">https://www.sap.com/cz/products/technology-platform/cloud-transport-management.html</a></li>
+<li id="fn-2"><a href="https://www.sap.com/resources/what-is-a-clean-core" target="_blank" rel="noopener">https://www.sap.com/resources/what-is-a-clean-core</a></li>
+<li id="fn-3"><a href="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf" target="_blank" rel="noopener">https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf</a></li>
+<li id="fn-4"><a href="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf" target="_blank" rel="noopener">https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf</a></li>
+<li id="fn-5"><a href="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf" target="_blank" rel="noopener">https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf</a></li>
+<li id="fn-6"><a href="https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1338599_20250411_CleanCoreExtensibilityWIthABAPCloud_SBN_upload.pdf?1744624017=" target="_blank" rel="noopener">https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1338599_20250411_CleanCoreExtensibilityWIthABAPCloud_SBN_upload.pdf?1744624017=</a></li>
+<li id="fn-7"><a href="https://www.sap.com/products/erp/rise/methodology/clean-core.html" target="_blank" rel="noopener">https://www.sap.com/products/erp/rise/methodology/clean-core.html</a></li>
+<li id="fn-8"><a href="https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1349530_Accelerating_Innovation_with_RISE_with_SAP_Methodology_and_SAP_Activate.pdf?1746777514=" target="_blank" rel="noopener">https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1349530_Accelerating_Innovation_with_RISE_with_SAP_Methodology_and_SAP_Activate.pdf?1746777514=</a></li>
+<li id="fn-9"><a href="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf" target="_blank" rel="noopener">https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf</a></li>
+<li id="fn-10"><a href="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf" target="_blank" rel="noopener">https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf</a></li>
+<li id="fn-11"><a href="https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1349530_Accelerating_Innovation_with_RISE_with_SAP_Methodology_and_SAP_Activate.pdf?1746777514=" target="_blank" rel="noopener">https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1349530_Accelerating_Innovation_with_RISE_with_SAP_Methodology_and_SAP_Activate.pdf?1746777514=</a></li>
+<li id="fn-12"><a href="https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1155868_20240417_SBN_Activate_for_RISE_with_SAP_and_Clean_Core.pdf?1713948110=" target="_blank" rel="noopener">https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1155868_20240417_SBN_Activate_for_RISE_with_SAP_and_Clean_Core.pdf?1713948110=</a></li>
+<li id="fn-13"><a href="https://help.sap.com/docs/SAP_S4HANA_CLOUD/0f69f8fb28ac4bf48d2b57b9637e81fa/3ccb50e724b045508fea8b2cf1774b2b.html?utm_source=chatgpt.com" target="_blank" rel="noopener">https://help.sap.com/docs/SAP_S4HANA_CLOUD/0f69f8fb28ac4bf48d2b57b9637e81fa/3ccb50e724b045508fea8b2cf1774b2b.html?utm_source=chatgpt.com</a></li>
+<li id="fn-14"><a href="https://help.sap.com/docs/SAP_S4HANA_CLOUD/6aa39f1ac05441e5a23f484f31e477e7/e1059ff581854a699f15734049f14293.html" target="_blank" rel="noopener">https://help.sap.com/docs/SAP_S4HANA_CLOUD/6aa39f1ac05441e5a23f484f31e477e7/e1059ff581854a699f15734049f14293.html</a></li>
+<li id="fn-15"><a href="https://learning.sap.com/courses/expanding-sap-s-4hana-using-key-user-side-by-side-extensibility/explaining-side-by-side-extensibility_d0fbc6b1-cb98-4c00-8b34-e80bbe6bf7f2" target="_blank" rel="noopener">https://learning.sap.com/courses/expanding-sap-s-4hana-using-key-user-side-by-side-extensibility/explaining-side-by-side-extensibility_d0fbc6b1-cb98-4c00-8b34-e80bbe6bf7f2</a></li>
+<li id="fn-16"><a href="https://help.sap.com/doc/1e322967d9ef4d788c4165c9aed88c78/Cloud/en-US/892cd77faccc4c959ca87aa600e40eac.pdf" target="_blank" rel="noopener">https://help.sap.com/doc/1e322967d9ef4d788c4165c9aed88c78/Cloud/en-US/892cd77faccc4c959ca87aa600e40eac.pdf</a></li>
+<li id="fn-17"><a href="https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1338599_20250411_CleanCoreExtensibilityWIthABAPCloud_SBN_upload.pdf?1744624017=" target="_blank" rel="noopener">https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1338599_20250411_CleanCoreExtensibilityWIthABAPCloud_SBN_upload.pdf?1744624017=</a></li>
+<li id="fn-18"><a href="https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1338599_20250411_CleanCoreExtensibilityWIthABAPCloud_SBN_upload.pdf?1744624017=" target="_blank" rel="noopener">https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1338599_20250411_CleanCoreExtensibilityWIthABAPCloud_SBN_upload.pdf?1744624017=</a></li>
+<li id="fn-19"><a href="https://pages.community.sap.com/topics/abap/abap-cloud-faq" target="_blank" rel="noopener">https://pages.community.sap.com/topics/abap/abap-cloud-faq</a></li>
+<li id="fn-20"><a href="https://pages.community.sap.com/topics/abap/abap-cloud-faq" target="_blank" rel="noopener">https://pages.community.sap.com/topics/abap/abap-cloud-faq</a></li>
+<li id="fn-21"><a href="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf" target="_blank" rel="noopener">https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf</a></li>
+<li id="fn-22"><a href="https://help.sap.com/doc/abapdocu_cp_index_htm/CLOUD/en-US/ABENABAP_LANGUAGE_VERSIONS.html?utm_source=chatgpt.com" target="_blank" rel="noopener">https://help.sap.com/doc/abapdocu_cp_index_htm/CLOUD/en-US/ABENABAP_LANGUAGE_VERSIONS.html?utm_source=chatgpt.com</a></li>
+<li id="fn-23"><a href="https://help.sap.com/doc/abapdocu_cp_index_htm/CLOUD/en-US/ABENABAP_LANGUAGE_VERSIONS.html?utm_source=chatgpt.com" target="_blank" rel="noopener">https://help.sap.com/doc/abapdocu_cp_index_htm/CLOUD/en-US/ABENABAP_LANGUAGE_VERSIONS.html?utm_source=chatgpt.com</a></li>
+<li id="fn-24"><a href="https://help.sap.com/docs/ABAP_PLATFORM_NEW/fc4c71aa50014fd1b43721701471913d/289477a81eec4d4e84c0302fb6835035.html?utm_source=chatgpt.com" target="_blank" rel="noopener">https://help.sap.com/docs/ABAP_PLATFORM_NEW/fc4c71aa50014fd1b43721701471913d/289477a81eec4d4e84c0302fb6835035.html?utm_source=chatgpt.com</a></li>
+<li id="fn-25"><a href="https://github.com/SAP-samples/abap-cheat-sheets/blob/main/19_ABAP_for_Cloud_Development.md?utm_source=chatgpt.com" target="_blank" rel="noopener">https://github.com/SAP-samples/abap-cheat-sheets/blob/main/19_ABAP_for_Cloud_Development.md?utm_source=chatgpt.com</a></li>
+<li id="fn-26"><a href="https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1338599_20250411_CleanCoreExtensibilityWIthABAPCloud_SBN_upload.pdf?1744624017=" target="_blank" rel="noopener">https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1338599_20250411_CleanCoreExtensibilityWIthABAPCloud_SBN_upload.pdf?1744624017=</a></li>
+<li id="fn-27"><a href="https://help.sap.com/doc/abapdocu_cp_index_htm/CLOUD/en-US/abencds_v2_views.html?utm_source=chatgpt.com" target="_blank" rel="noopener">https://help.sap.com/doc/abapdocu_cp_index_htm/CLOUD/en-US/abencds_v2_views.html?utm_source=chatgpt.com</a></li>
+<li id="fn-28"><a href="https://help.sap.com/docs/ABAP_PLATFORM_NEW/fc4c71aa50014fd1b43721701471913d/289477a81eec4d4e84c0302fb6835035.html?utm_source=chatgpt.com" target="_blank" rel="noopener">https://help.sap.com/docs/ABAP_PLATFORM_NEW/fc4c71aa50014fd1b43721701471913d/289477a81eec4d4e84c0302fb6835035.html?utm_source=chatgpt.com</a></li>
+<li id="fn-29"><a href="https://learning.sap.com/courses/expanding-sap-s-4hana-using-key-user-side-by-side-extensibility/explaining-side-by-side-extensibility_d0fbc6b1-cb98-4c00-8b34-e80bbe6bf7f2" target="_blank" rel="noopener">https://learning.sap.com/courses/expanding-sap-s-4hana-using-key-user-side-by-side-extensibility/explaining-side-by-side-extensibility_d0fbc6b1-cb98-4c00-8b34-e80bbe6bf7f2</a></li>
+<li id="fn-30"><a href="https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1338599_20250411_CleanCoreExtensibilityWIthABAPCloud_SBN_upload.pdf?1744624017=" target="_blank" rel="noopener">https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1338599_20250411_CleanCoreExtensibilityWIthABAPCloud_SBN_upload.pdf?1744624017=</a></li>
+<li id="fn-31"><a href="https://help.sap.com/docs/btp/sap-business-technology-platform/create-s4c-ext-service-instance-in-kyma-msg?utm_source=chatgpt.com" target="_blank" rel="noopener">https://help.sap.com/docs/btp/sap-business-technology-platform/create-s4c-ext-service-instance-in-kyma-msg?utm_source=chatgpt.com</a></li>
+<li id="fn-32"><a href="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf" target="_blank" rel="noopener">https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf</a></li>
+<li id="fn-33"><a href="https://pages.community.sap.com/topics/abap/abap-cloud-faq" target="_blank" rel="noopener">https://pages.community.sap.com/topics/abap/abap-cloud-faq</a></li>
+<li id="fn-34"><a href="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf" target="_blank" rel="noopener">https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf</a></li>
+<li id="fn-35"><a href="https://news.sap.com/2025/08/extend-sap-s4hana-cloud-right-way-clean-clear/" target="_blank" rel="noopener">https://news.sap.com/2025/08/extend-sap-s4hana-cloud-right-way-clean-clear/</a></li>
+<li id="fn-36"><a href="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf" target="_blank" rel="noopener">https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf</a></li>
+<li id="fn-37"><a href="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf" target="_blank" rel="noopener">https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf</a></li>
+<li id="fn-38"><a href="https://learning.sap.com/courses/practicing-clean-core-extensibility-for-sap-s-4hana-cloud/explaining-extensibility-model-best-practices_e290f382-800e-40ef-a203-85a13115f487?utm_source=chatgpt.com" target="_blank" rel="noopener">https://learning.sap.com/courses/practicing-clean-core-extensibility-for-sap-s-4hana-cloud/explaining-extensibility-model-best-practices_e290f382-800e-40ef-a203-85a13115f487?utm_source=chatgpt.com</a></li>
+<li id="fn-39"><a href="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf" target="_blank" rel="noopener">https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf</a></li>
+<li id="fn-40"><a href="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf" target="_blank" rel="noopener">https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf</a></li>
+<li id="fn-41"><a href="https://github.com/SAP-samples/abap-platform-rap640/blob/main/exercises/GettingStarted/README.md?utm_source=chatgpt.com" target="_blank" rel="noopener">https://github.com/SAP-samples/abap-platform-rap640/blob/main/exercises/GettingStarted/README.md?utm_source=chatgpt.com</a></li>
+<li id="fn-42"><a href="https://github.com/SAP/abap-atc-cr-cv-s4hc" target="_blank" rel="noopener">https://github.com/SAP/abap-atc-cr-cv-s4hc</a></li>
+<li id="fn-43"><a href="https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1338599_20250411_CleanCoreExtensibilityWIthABAPCloud_SBN_upload.pdf?1744624017=" target="_blank" rel="noopener">https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1338599_20250411_CleanCoreExtensibilityWIthABAPCloud_SBN_upload.pdf?1744624017=</a></li>
+<li id="fn-44"><a href="https://help.sap.com/doc/9dcbc5e47ba54a5cbb509afaa49dd5a1/2025.001/en-US/CustomCodeMigration_EndtoEnd.pdf" target="_blank" rel="noopener">https://help.sap.com/doc/9dcbc5e47ba54a5cbb509afaa49dd5a1/2025.001/en-US/CustomCodeMigration_EndtoEnd.pdf</a></li>
+<li id="fn-45"><a href="https://help.sap.com/doc/9dcbc5e47ba54a5cbb509afaa49dd5a1/2025.001/en-US/CustomCodeMigration_EndtoEnd.pdf" target="_blank" rel="noopener">https://help.sap.com/doc/9dcbc5e47ba54a5cbb509afaa49dd5a1/2025.001/en-US/CustomCodeMigration_EndtoEnd.pdf</a></li>
+<li id="fn-46"><a href="https://assets.dm.ux.sap.com/webinars/sap-user-groups-k4u/pdfs/200519_sap_readiness_check_2.0_for_sap_s4hana.pdf" target="_blank" rel="noopener">https://assets.dm.ux.sap.com/webinars/sap-user-groups-k4u/pdfs/200519_sap_readiness_check_2.0_for_sap_s4hana.pdf</a></li>
+<li id="fn-47"><a href="https://community.sap.com/t5/enterprise-resource-planning-blog-posts-by-sap/enhanced-custom-code-analysis-in-sap-readiness-check-for-sap-s-4hana/ba-p/13580469" target="_blank" rel="noopener">https://community.sap.com/t5/enterprise-resource-planning-blog-posts-by-sap/enhanced-custom-code-analysis-in-sap-readiness-check-for-sap-s-4hana/ba-p/13580469</a></li>
+<li id="fn-48"><a href="https://github.com/SAP/abap-atc-cr-cv-s4hc" target="_blank" rel="noopener">https://github.com/SAP/abap-atc-cr-cv-s4hc</a></li>
+<li id="fn-49"><a href="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf" target="_blank" rel="noopener">https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf</a></li>
+<li id="fn-50"><a href="https://help.sap.com/doc/abapdocu_cp_index_htm/CLOUD/en-US/ABENABAP_LANGUAGE_VERSIONS.html?utm_source=chatgpt.com" target="_blank" rel="noopener">https://help.sap.com/doc/abapdocu_cp_index_htm/CLOUD/en-US/ABENABAP_LANGUAGE_VERSIONS.html?utm_source=chatgpt.com</a></li>
+<li id="fn-51"><a href="https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1338599_20250411_CleanCoreExtensibilityWIthABAPCloud_SBN_upload.pdf?1744624017=" target="_blank" rel="noopener">https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1338599_20250411_CleanCoreExtensibilityWIthABAPCloud_SBN_upload.pdf?1744624017=</a></li>
+<li id="fn-52"><a href="https://help.sap.com/docs/ABAP_PLATFORM_NEW/fc4c71aa50014fd1b43721701471913d/289477a81eec4d4e84c0302fb6835035.html?utm_source=chatgpt.com" target="_blank" rel="noopener">https://help.sap.com/docs/ABAP_PLATFORM_NEW/fc4c71aa50014fd1b43721701471913d/289477a81eec4d4e84c0302fb6835035.html?utm_source=chatgpt.com</a></li>
+<li id="fn-53"><a href="https://learning.sap.com/courses/expanding-sap-s-4hana-using-key-user-side-by-side-extensibility/explaining-side-by-side-extensibility_d0fbc6b1-cb98-4c00-8b34-e80bbe6bf7f2" target="_blank" rel="noopener">https://learning.sap.com/courses/expanding-sap-s-4hana-using-key-user-side-by-side-extensibility/explaining-side-by-side-extensibility_d0fbc6b1-cb98-4c00-8b34-e80bbe6bf7f2</a></li>
+<li id="fn-54"><a href="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf" target="_blank" rel="noopener">https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf</a></li>
+<li id="fn-55"><a href="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf" target="_blank" rel="noopener">https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf</a></li>
+<li id="fn-56"><a href="https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1349530_Accelerating_Innovation_with_RISE_with_SAP_Methodology_and_SAP_Activate.pdf?1746777514=" target="_blank" rel="noopener">https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1349530_Accelerating_Innovation_with_RISE_with_SAP_Methodology_and_SAP_Activate.pdf?1746777514=</a></li>
+<li id="fn-57"><a href="https://help.sap.com/docs/SAP_S4HANA_CLOUD/a630d57fc5004c6383e7a81efee7a8bb/e022623ec1fc4d61abb398e411670200.html" target="_blank" rel="noopener">https://help.sap.com/docs/SAP_S4HANA_CLOUD/a630d57fc5004c6383e7a81efee7a8bb/e022623ec1fc4d61abb398e411670200.html</a></li>
+<li id="fn-58"><a href="https://help.sap.com/docs/ABAP_PLATFORM_NEW/4a368c163b08418890a406d413933ba7/f319b168e87e42149e25e13c08d002b9.html" target="_blank" rel="noopener">https://help.sap.com/docs/ABAP_PLATFORM_NEW/4a368c163b08418890a406d413933ba7/f319b168e87e42149e25e13c08d002b9.html</a></li>
+<li id="fn-59"><a href="https://www.sap.com/cz/products/technology-platform/cloud-transport-management.html" target="_blank" rel="noopener">https://www.sap.com/cz/products/technology-platform/cloud-transport-management.html</a></li>
+<li id="fn-60"><a href="https://help.sap.com/docs/sap-btp-abap-environment/abap-environment/working-with-abapgit" target="_blank" rel="noopener">https://help.sap.com/docs/sap-btp-abap-environment/abap-environment/working-with-abapgit</a></li>
+<li id="fn-61"><a href="https://learning.sap.com/courses/exploring-devops-with-sap-btp/explaining-your-sap-btp-account-model-for-devops_aeff6f9c-7049-4863-93d3-20dc9b2bbf2c" target="_blank" rel="noopener">https://learning.sap.com/courses/exploring-devops-with-sap-btp/explaining-your-sap-btp-account-model-for-devops_aeff6f9c-7049-4863-93d3-20dc9b2bbf2c</a></li>
+<li id="fn-62"><a href="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf" target="_blank" rel="noopener">https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf</a></li>
+<li id="fn-63"><a href="https://learning.sap.com/courses/expanding-sap-s-4hana-using-key-user-side-by-side-extensibility/explaining-side-by-side-extensibility_d0fbc6b1-cb98-4c00-8b34-e80bbe6bf7f2" target="_blank" rel="noopener">https://learning.sap.com/courses/expanding-sap-s-4hana-using-key-user-side-by-side-extensibility/explaining-side-by-side-extensibility_d0fbc6b1-cb98-4c00-8b34-e80bbe6bf7f2</a></li>
+<li id="fn-64"><a href="https://news.sap.com/2025/08/extend-sap-s4hana-cloud-right-way-clean-clear/" target="_blank" rel="noopener">https://news.sap.com/2025/08/extend-sap-s4hana-cloud-right-way-clean-clear/</a></li>
+<li id="fn-65"><a href="https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1155868_20240417_SBN_Activate_for_RISE_with_SAP_and_Clean_Core.pdf?1713948110=" target="_blank" rel="noopener">https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1155868_20240417_SBN_Activate_for_RISE_with_SAP_and_Clean_Core.pdf?1713948110=</a></li>
+<li id="fn-66"><a href="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf" target="_blank" rel="noopener">https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf</a></li>
+<li id="fn-67"><a href="https://github.com/SAP/abap-atc-cr-cv-s4hc" target="_blank" rel="noopener">https://github.com/SAP/abap-atc-cr-cv-s4hc</a></li>
+<li id="fn-68"><a href="https://help.sap.com/doc/9dcbc5e47ba54a5cbb509afaa49dd5a1/2025.001/en-US/CustomCodeMigration_EndtoEnd.pdf" target="_blank" rel="noopener">https://help.sap.com/doc/9dcbc5e47ba54a5cbb509afaa49dd5a1/2025.001/en-US/CustomCodeMigration_EndtoEnd.pdf</a></li>
+<li id="fn-69"><a href="https://pages.community.sap.com/topics/abap/abap-cloud-faq" target="_blank" rel="noopener">https://pages.community.sap.com/topics/abap/abap-cloud-faq</a></li>
+<li id="fn-70"><a href="https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1349530_Accelerating_Innovation_with_RISE_with_SAP_Methodology_and_SAP_Activate.pdf?1746777514=" target="_blank" rel="noopener">https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1349530_Accelerating_Innovation_with_RISE_with_SAP_Methodology_and_SAP_Activate.pdf?1746777514=</a></li>
+<li id="fn-71"><a href="https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1349530_Accelerating_Innovation_with_RISE_with_SAP_Methodology_and_SAP_Activate.pdf?1746777514=" target="_blank" rel="noopener">https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1349530_Accelerating_Innovation_with_RISE_with_SAP_Methodology_and_SAP_Activate.pdf?1746777514=</a></li>
+<li id="fn-72"><a href="https://news.sap.com/2025/08/extend-sap-s4hana-cloud-right-way-clean-clear/" target="_blank" rel="noopener">https://news.sap.com/2025/08/extend-sap-s4hana-cloud-right-way-clean-clear/</a></li>
+<li id="fn-73"><a href="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf" target="_blank" rel="noopener">https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf</a></li>
+<li id="fn-74"><a href="https://help.sap.com/docs/ABAP_PLATFORM_NEW/fc4c71aa50014fd1b43721701471913d/289477a81eec4d4e84c0302fb6835035.html?utm_source=chatgpt.com" target="_blank" rel="noopener">https://help.sap.com/docs/ABAP_PLATFORM_NEW/fc4c71aa50014fd1b43721701471913d/289477a81eec4d4e84c0302fb6835035.html?utm_source=chatgpt.com</a></li>
+<li id="fn-75"><a href="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf" target="_blank" rel="noopener">https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf</a></li>
+<li id="fn-76"><a href="https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf" target="_blank" rel="noopener">https://www.sap.com/docs/download/2024/09/20aece06-d87e-0010-bca6-c68f7e60039b.pdf</a></li>
+<li id="fn-77"><a href="https://news.sap.com/2025/08/extend-sap-s4hana-cloud-right-way-clean-clear/" target="_blank" rel="noopener">https://news.sap.com/2025/08/extend-sap-s4hana-cloud-right-way-clean-clear/</a></li>
+<li id="fn-78"><a href="https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1338599_20250411_CleanCoreExtensibilityWIthABAPCloud_SBN_upload.pdf?1744624017=" target="_blank" rel="noopener">https://d1da7yrcucvk6m.cloudfront.net/sites/572/media/1338599_20250411_CleanCoreExtensibilityWIthABAPCloud_SBN_upload.pdf?1744624017=</a></li>
+<li id="fn-79"><a href="https://news.sap.com/2025/08/extend-sap-s4hana-cloud-right-way-clean-clear/" target="_blank" rel="noopener">https://news.sap.com/2025/08/extend-sap-s4hana-cloud-right-way-clean-clear/</a></li>
+</ol>
+<a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+<div class="log">
+  <strong>Log změn:</strong><br>
+  2026-04-11 — Vygenerováno z PDF deep research (SAP Clean Core v kontextu SAP S/4HANA), 11 stran, 79 citací, 7 PDF zdrojů ke stažení.
+</div>
+
+<div class="modal-overlay" id="modal" onclick="closeModalOnOverlay(event)">
+  <div class="modal-box">
+    <div class="modal-topbar">
+      <button class="modal-btn" onclick="pzZoom(1.25)">+</button>
+      <button class="modal-btn" onclick="pzZoom(0.8)">−</button>
+      <button class="modal-btn" onclick="pzReset()">⟳</button>
+      <span class="modal-scale-label" id="scale-label">100 %</span>
+      <span class="modal-hint">scroll = zoom &nbsp;|&nbsp; tažení = pohyb &nbsp;|&nbsp; dblclick = reset</span>
+      <button class="modal-btn close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-viewport" id="modal-viewport">
+      <div id="panzoom-target"></div>
+    </div>
+  </div>
+</div>
+</main>
+</div>
+<script type="module">
+import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+mermaid.initialize({ startOnLoad: true, theme: 'dark',
+  themeVariables: { primaryColor: '#0f3460', primaryTextColor: '#e0e0e0',
+    edgeLabelBackground: '#16213e', lineColor: '#58a6ff' }});
+</script>
+<script>
+let pz = {scale:1,x:0,y:0};
+let pzDrag = {active:false,startX:0,startY:0};
+let pzPinch = {active:false,dist:0};
+function pzTarget(){return document.getElementById('panzoom-target');}
+function pzViewport(){return document.getElementById('modal-viewport');}
+function pzApply(){
+  pzTarget().style.transform=`translate(${pz.x}px,${pz.y}px) scale(${pz.scale})`;
+  document.getElementById('scale-label').textContent=Math.round(pz.scale*100)+' %';
+}
+function pzZoom(factor,cx,cy){
+  const vp=pzViewport(),r=vp.getBoundingClientRect();
+  const px=cx!==undefined?cx:r.width/2, py=cy!==undefined?cy:r.height/2;
+  const ns=Math.min(Math.max(pz.scale*factor,0.15),10);
+  const ratio=ns/pz.scale;
+  pz.x=px-ratio*(px-pz.x); pz.y=py-ratio*(py-pz.y); pz.scale=ns; pzApply();
+}
+function pzReset(){pz={scale:1,x:0,y:0};pzApply();}
+function onWheel(e){e.preventDefault();const r=pzViewport().getBoundingClientRect();pzZoom(e.deltaY<0?1.12:0.89,e.clientX-r.left,e.clientY-r.top);}
+function onMouseDown(e){if(e.button!==0)return;pzDrag.active=true;pzDrag.startX=e.clientX-pz.x;pzDrag.startY=e.clientY-pz.y;pzViewport().classList.add('dragging');e.preventDefault();}
+function onMouseMove(e){if(!pzDrag.active)return;pz.x=e.clientX-pzDrag.startX;pz.y=e.clientY-pzDrag.startY;pzApply();}
+function onMouseUp(){pzDrag.active=false;pzViewport().classList.remove('dragging');}
+function touchDist(t){return Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);}
+function onTouchStart(e){if(e.touches.length===1){pzDrag.active=true;pzDrag.startX=e.touches[0].clientX-pz.x;pzDrag.startY=e.touches[0].clientY-pz.y;}else if(e.touches.length===2){pzDrag.active=false;pzPinch.active=true;pzPinch.dist=touchDist(e.touches);}}
+function onTouchMove(e){e.preventDefault();if(e.touches.length===1&&pzDrag.active){pz.x=e.touches[0].clientX-pzDrag.startX;pz.y=e.touches[0].clientY-pzDrag.startY;pzApply();}else if(e.touches.length===2&&pzPinch.active){const dist=touchDist(e.touches);const r=pzViewport().getBoundingClientRect();const mx=((e.touches[0].clientX+e.touches[1].clientX)/2)-r.left;const my=((e.touches[0].clientY+e.touches[1].clientY)/2)-r.top;pzZoom(dist/pzPinch.dist,mx,my);pzPinch.dist=dist;}}
+function onTouchEnd(e){if(e.touches.length===0){pzDrag.active=false;pzPinch.active=false;}}
+function attachPanZoom(){const vp=pzViewport();vp.addEventListener('wheel',onWheel,{passive:false});vp.addEventListener('mousedown',onMouseDown);vp.addEventListener('dblclick',pzReset);vp.addEventListener('touchstart',onTouchStart,{passive:true});vp.addEventListener('touchmove',onTouchMove,{passive:false});vp.addEventListener('touchend',onTouchEnd,{passive:true});document.addEventListener('mousemove',onMouseMove);document.addEventListener('mouseup',onMouseUp);}
+function detachPanZoom(){const vp=pzViewport();vp.removeEventListener('wheel',onWheel);vp.removeEventListener('mousedown',onMouseDown);vp.removeEventListener('dblclick',pzReset);vp.removeEventListener('touchstart',onTouchStart);vp.removeEventListener('touchmove',onTouchMove);vp.removeEventListener('touchend',onTouchEnd);document.removeEventListener('mousemove',onMouseMove);document.removeEventListener('mouseup',onMouseUp);}
+function openModal(el){
+  const target=document.getElementById('panzoom-target');
+  target.innerHTML='';pzReset();
+  if(el.classList.contains('mermaid-wrap')){
+    const svg=el.querySelector('svg');
+    if(svg){const clone=svg.cloneNode(true);clone.style.cssText='max-width:none;width:auto;height:auto;display:block;margin:0 auto;';target.appendChild(clone);}
+  }else if(el.tagName==='PRE'){target.appendChild(el.cloneNode(true));}
+  else if(el.tagName==='IMG'){const img=document.createElement('img');img.src=el.src;img.alt=el.alt;target.appendChild(img);}
+  document.getElementById('modal').classList.add('open');
+  attachPanZoom();
+  document.addEventListener('keydown',handleEsc);
+}
+function closeModal(){document.getElementById('modal').classList.remove('open');detachPanZoom();document.removeEventListener('keydown',handleEsc);setTimeout(()=>{document.getElementById('panzoom-target').innerHTML='';},200);}
+function closeModalOnOverlay(e){if(e.target===document.getElementById('modal'))closeModal();}
+function handleEsc(e){if(e.key==='Escape')closeModal();}
+</script>
+</body>
+</html>
