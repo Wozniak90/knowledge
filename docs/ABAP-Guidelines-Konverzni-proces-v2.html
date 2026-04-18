@@ -1,0 +1,2227 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Konverzní proces: Legacy ABAP → S/4 Clean Core (v2)</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+mermaid.initialize({
+  startOnLoad: true,
+  theme: 'dark',
+  themeVariables: {
+    primaryColor: '#0f3460',
+    primaryTextColor: '#e0e0e0',
+    primaryBorderColor: '#533483',
+    lineColor: '#58a6ff',
+    secondaryColor: '#16213e',
+    tertiaryColor: '#1a1a2e'
+  }
+});
+</script>
+<style>
+:root {
+  --bg: #1a1a2e;
+  --surface: #16213e;
+  --surface2: #0f3460;
+  --accent: #e94560;
+  --accent2: #533483;
+  --text: #e0e0e0;
+  --text-dim: #a0a0b0;
+  --border: #2a2a4a;
+  --code-bg: #0d1117;
+  --green: #3fb950;
+  --yellow: #d29922;
+  --blue: #58a6ff;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  line-height: 1.7;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+.doc-header {
+  border-bottom: 2px solid var(--border);
+  padding-bottom: 1.5rem;
+  margin-bottom: 2rem;
+}
+.doc-header h1 {
+  font-size: 1.75rem;
+  color: var(--text);
+  margin-bottom: 0.5rem;
+  line-height: 1.3;
+}
+.doc-header .subtitle {
+  color: var(--text-dim);
+  font-size: 0.95rem;
+  margin-bottom: 0.8rem;
+}
+.meta-badges { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.8rem; }
+.badge {
+  background: var(--surface2);
+  color: var(--blue);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.15rem 0.6rem;
+  font-size: 0.75rem;
+  font-family: monospace;
+}
+.badge.version { background: var(--accent2); color: #e0e0e0; }
+.badge.date { background: var(--surface); color: var(--text-dim); }
+
+/* Intro box */
+.intro-box {
+  background: rgba(83,52,131,0.15);
+  border: 1px solid var(--accent2);
+  border-radius: 10px;
+  padding: 1.2rem 1.5rem;
+  margin: 1.5rem 0;
+}
+.intro-box h3 { color: #c9a6ff; margin-bottom: 0.8rem; }
+
+/* TOC */
+.toc {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.5rem 2rem;
+  margin: 2rem 0;
+}
+.toc h2 {
+  color: var(--blue);
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  border: none;
+  padding: 0;
+  scroll-margin-top: 0;
+}
+.toc ol { padding-left: 1.5rem; }
+.toc li { margin: 0.3rem 0; }
+.toc a { color: var(--blue); text-decoration: none; font-size: 0.9rem; }
+.toc a:hover { color: var(--accent); text-decoration: underline; }
+.toc-sub { padding-left: 1.5rem; }
+.toc-sub li { margin: 0.15rem 0; }
+.toc-sub a { font-size: 0.83rem; color: var(--text-dim); }
+
+/* Headings */
+h2 {
+  color: var(--blue);
+  font-size: 1.4rem;
+  margin: 2.5rem 0 1rem 0;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+  scroll-margin-top: 1rem;
+}
+h3 {
+  color: #c9d1d9;
+  font-size: 1.15rem;
+  margin: 1.8rem 0 0.8rem 0;
+  scroll-margin-top: 1rem;
+}
+h4 {
+  color: #a0b0c0;
+  font-size: 1rem;
+  margin: 1.4rem 0 0.6rem 0;
+}
+p { margin: 0.7rem 0; }
+strong { color: #f0f0f0; }
+em { color: #c9d1d9; font-style: italic; }
+a { color: var(--blue); }
+a:hover { color: var(--accent); }
+
+/* Code */
+code {
+  background: var(--code-bg);
+  color: #79c0ff;
+  font-family: 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+  font-size: 0.88em;
+  padding: 0.1em 0.4em;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem 1.2rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  cursor: zoom-in;
+  position: relative;
+  transition: border-color 0.2s;
+}
+pre:hover { border-color: var(--blue); }
+pre::after {
+  content: '🔍 klik pro zoom';
+  position: absolute;
+  top: 0.4rem;
+  right: 0.6rem;
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+pre:hover::after { opacity: 1; }
+pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.85rem;
+  color: #c9d1d9;
+}
+
+/* Blockquotes */
+blockquote {
+  border-left: 3px solid var(--accent);
+  background: rgba(233,69,96,0.08);
+  color: #ffb3be;
+  padding: 0.8rem 1.2rem;
+  margin: 1rem 0;
+  border-radius: 0 6px 6px 0;
+}
+blockquote.tip {
+  border-left-color: var(--green);
+  background: rgba(63,185,80,0.08);
+  color: #a5d6a7;
+}
+blockquote.warning {
+  border-left-color: var(--yellow);
+  background: rgba(210,153,34,0.08);
+  color: #f0d070;
+}
+blockquote p { margin: 0.3rem 0; }
+
+/* Tables */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1rem 0;
+  font-size: 0.875rem;
+  overflow-x: auto;
+  display: block;
+}
+th, td {
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  vertical-align: top;
+}
+th {
+  background: var(--surface2);
+  color: var(--blue);
+  font-weight: 600;
+}
+tr:nth-child(even) { background: rgba(255,255,255,0.02); }
+tr:hover { background: rgba(88,166,255,0.05); }
+
+/* Lists */
+ul, ol {
+  padding-left: 1.5rem;
+  margin: 0.6rem 0;
+}
+li { margin: 0.3rem 0; }
+
+/* HR */
+hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+
+/* Back to TOC */
+.back-to-toc {
+  display: inline-block;
+  margin-top: 1.5rem;
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  text-decoration: none;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 0.2rem 0.8rem;
+  transition: all 0.2s;
+}
+.back-to-toc:hover { color: var(--blue); border-color: var(--blue); }
+
+/* Log */
+.log {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.2rem 1.5rem;
+  margin-top: 3rem;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+.log h3 { color: var(--text-dim); margin-bottom: 0.6rem; font-size: 0.95rem; }
+.log ul { padding-left: 1.2rem; }
+.log li { margin: 0.2rem 0; }
+
+/* Modal */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.88); z-index: 1000;
+  align-items: center; justify-content: center; padding: 2vh 2vw;
+}
+.modal-overlay.open { display: flex; }
+.modal-box {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+  width: 94vw; height: 94vh;
+  display: flex; flex-direction: column;
+  position: relative; overflow: hidden;
+}
+.modal-topbar {
+  flex: 0 0 auto; display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.6rem 1rem; background: var(--surface2); border-bottom: 1px solid var(--border);
+}
+.modal-btn {
+  background: rgba(255,255,255,0.1); color: var(--text); border: 1px solid var(--border);
+  border-radius: 6px; padding: 0.3rem 0.7rem; font-size: 1rem; cursor: pointer;
+}
+.modal-btn.close { background: var(--accent); border-color: var(--accent); color: #fff; margin-left: auto; }
+.modal-hint { font-size: 0.78rem; color: var(--text-dim); user-select: none; }
+.modal-scale-label { font-size: 0.78rem; color: var(--text-dim); min-width: 3.5rem; text-align: center; }
+.modal-viewport { flex: 1; overflow: hidden; position: relative; cursor: grab; user-select: none; }
+.modal-viewport.dragging { cursor: grabbing; }
+#panzoom-target {
+  transform-origin: 0 0; display: inline-block; min-width: 100%; min-height: 100%; padding: 1.5rem;
+}
+#panzoom-target svg { max-width: 100%; height: auto; display: block; margin: 0 auto; }
+#panzoom-target pre {
+  cursor: default; font-size: 1rem; line-height: 1.6;
+  background: var(--code-bg); border-radius: 8px; padding: 1rem;
+  color: #c9d1d9; font-family: 'Fira Code', 'Cascadia Code', monospace;
+  white-space: pre; overflow: visible;
+}
+#panzoom-target pre::after { display: none; }
+#panzoom-target img { max-width: 100%; border-radius: 8px; display: block; margin: 0 auto; }
+</style>
+</head>
+<body>
+
+<div class="doc-header">
+  <h1>Konverzní proces: Legacy ABAP Guidelines → S/4 Clean Core Standard (v2)</h1>
+  <p class="subtitle">Behind-the-scenes dokumentace procesu tvorby nových ABAP guidelines pro S/4HANA Clean Core</p>
+  <div class="meta-badges">
+    <span class="badge version">v2.0</span>
+    <span class="badge date">created: 2026-04-17</span>
+    <span class="badge date">updated: 2026-04-17</span>
+    <span class="badge">type/reference</span> <span class="badge">area/sap</span> <span class="badge">topic/clean-core</span> <span class="badge">topic/guidelines</span>
+  </div>
+</div>
+
+<div class="intro-box">
+<h3 id="jak-st-tato-pravidla-v2">📌 Jak číst tato pravidla (v2)</h3>
+<p>Každé pravidlo v sekci 4 nese klasifikační štítek:</p>
+<table>
+<tr><th>Štítek</th><th>Kdy platí</th></tr>
+<tr><td>🔴 <strong>POVINNÉ — Public Cloud</strong></td><td>Bez tohoto S/4HANA Public Cloud nespustí kód nebo odmítne aktivaci. Žádná výjimka.</td></tr>
+<tr><td>🟡 <strong>DOPORUČENO</strong></td><td>SAP best practice pro nový vývoj. Legitimní důvod od pravidla ustoupit existuje — ale musí být vědomé rozhodnutí, ne zvyk.</td></tr>
+<tr><td>🟢 <strong>TOLEROVÁNO pro existující kód</strong></td><td>Existující kód který toto nedodržuje není nutně problém — přechod probíhá inkrementálně při dotčení objektu.</td></tr>
+</table>
+<blockquote>
+<p><strong>Upřímná poznámka:</strong> KernSeife a Weber Index měří <em>soulad s SAP architektonickým směrem</em>, nikoliv absolutní kvalitu kódu. Kód s vysokým KernSeife skóre může být dokonale funkční a stabilní — jen není kompatibilní s Public Cloud nebo novými SAP AI nástroji. Migrujte proto, kde vám to přináší byznysovou hodnotu, ne proto, aby číslo kleslo.</p>
+</blockquote>
+</div>
+
+<nav class="toc" id="toc">
+<h2>📋 Obsah</h2>
+<ol>
+<ol class="toc-sub">
+<li><a href="#jak-st-tato-pravidla-v2">📌 Jak číst tato pravidla (v2)</a></li>
+</ol></li>
+<li><a href="#proc">1. Proč vůbec měnit guidelines</a>
+<ol class="toc-sub">
+<li><a href="#ti-vnj-tlaky-ivan-radulovic-sap-emeamee-webin">Tři vnější tlaky (Ivan Radulovic, SAP EMEA/MEE webinář)</a></li>
+<li><a href="#nae-pidan-hodnota-jako-partner">Naše přidaná hodnota jako partner</a></li>
+</ol></li>
+<li><a href="#analyza">2. Co jsme zkoumali — vstupní analýza</a>
+<ol class="toc-sub">
+<li><a href="#identifikace-legacy-vzor">Identifikace legacy vzorů</a></li>
+<li><a href="#referenn-zdroje-pro-nov-pravidla">Referenční zdroje pro nová pravidla</a></li>
+</ol></li>
+<li><a href="#ramec">3. Rozhodovací rámec — čím se řídíme</a>
+<ol class="toc-sub">
+<li><a href="#ti-otzky-pro-kad-star-pravidlo">Tři otázky pro každé staré pravidlo</a></li>
+<li><a href="#pragmatick-filtr">Pragmatický filtr</a></li>
+</ol></li>
+<li><a href="#pravidla">4. Pravidlo po pravidle — co a proč se změnilo</a>
+<ol class="toc-sub">
+<li><a href="#41-pstup-k-datm">4.1 Přístup k datům</a></li>
+<li><a href="#42-uivatelsk-rozhran">4.2 Uživatelské rozhraní</a></li>
+<li><a href="#43-roziitelnost">4.3 Rozšiřitelnost</a></li>
+<li><a href="#44-integrace">4.4 Integrace</a></li>
+<li><a href="#45-function-modules-abap-classes">4.5 Function Modules → ABAP Classes</a></li>
+<li><a href="#46-testovn">4.6 Testování</a></li>
+<li><a href="#47-autorizace-a-bezpenost">4.7 Autorizace a bezpečnost</a></li>
+<li><a href="#48-tiskov-formule-a-output-management">4.8 Tiskové formuláře a output management</a></li>
+<li><a href="#49-workflow-a-business-procesy">4.9 Workflow a business procesy</a></li>
+<li><a href="#410-background-jobs-a-batch-processing">4.10 Background jobs a batch processing</a></li>
+<li><a href="#411-exception-handling">4.11 Exception handling</a></li>
+<li><a href="#412-kdov-kvalita-a-styl">4.12 Kódová kvalita a styl</a></li>
+</ol></li>
+<li><a href="#zachovano">5. Co jsme nechali beze změny (a proč)</a>
+<ol class="toc-sub">
+<li><a href="#naming-konvence-zy-prefix">Naming konvence Z/Y prefix</a></li>
+<li><a href="#classic-alv-pro-existujc-zreporty-onpremise">Classic ALV pro existující Z-reporty (on-premise)</a></li>
+<li><a href="#bapi-pro-integrace-bez-released-rest-alternativy">BAPI pro integrace bez released REST alternativy</a></li>
+<li><a href="#ddic-slovnk-domny-datov-elementy-struktury-zkaznickch-tabule">DDIC slovník — domény, datové elementy, struktury zákaznických tabulek</a></li>
+<li><a href="#intern-tabulky-a-open-sql-zkladn-syntax">Interní tabulky a Open SQL základní syntax</a></li>
+<li><a href="#message-classes-se91">Message classes (SE91)</a></li>
+<li><a href="#customizing-img-spro-konfiguran-vrstvy">Customizing / IMG (SPRO) konfigurační vrstvy</a></li>
+<li><a href="#transport-management-a-package-struktura">Transport management a package struktura</a></li>
+</ol></li>
+<li><a href="#limity">5a. Kde Clean Core přístup nedává smysl</a>
+<ol class="toc-sub">
+<li><a href="#ekonomicky-nevhodn-pepis">Ekonomicky nevýhodný přepis</a></li>
+<li><a href="#kde-sap-zatm-nenahradil-legacy-api">Kde SAP zatím nenahradil legacy API</a></li>
+<li><a href="#metriky-maj-slep-msta">Metriky mají slepá místa</a></li>
+<li><a href="#legitimn-onpremise-scn">Legitimní on-premise scénář</a></li>
+</ol></li>
+<li><a href="#implementace">6. Jak implementovat přechod u zákazníka</a>
+<ol class="toc-sub">
+<li><a href="#fze-1-inventura-24-tdny">Fáze 1 — Inventura (2–4 týdny)</a></li>
+<li><a href="#fze-2-guidelines-a-governance-12-tdny">Fáze 2 — Guidelines a governance (1–2 týdny)</a></li>
+<li><a href="#fze-3-get-clean-prbn-618-msc">Fáze 3 — Get Clean (průběžně, 6–18 měsíců)</a></li>
+<li><a href="#fze-4-stay-clean-kontinuln">Fáze 4 — Stay Clean (kontinuálně)</a></li>
+<li><a href="#komunikace-vi-zkaznkovi">Komunikace vůči zákazníkovi</a></li>
+</ol></li>
+<li><a href="#rizika">7. Rizika a upřímná varování</a>
+<ol class="toc-sub">
+<li><a href="#released-badi-neexistuje">⚠️ Released BAdI neexistuje</a></li>
+<li><a href="#atc-quick-fix-nen-vdy-sprvn">⚠️ ATC quick fix není vždy správný</a></li>
+<li><a href="#joule-pro-legacy-kd-je-omezen">⚠️ Joule pro legacy kód je omezený</a></li>
+<li><a href="#pli-ambicizn-cle-varovn-z-praxe-patrick-weber">⚠️ Příliš ambiciózní cíle — varování z praxe (Patrick Weber)</a></li>
+<li><a href="#smartforms-sapscript-adobe-forms-chyb-tmov-expertza">⚠️ SmartForms / SAPScript → Adobe Forms — chybí týmová expertíza</a></li>
+<li><a href="#background-joby-kaskdov-zvislosti-na-unreleased-tabulkch">⚠️ Background joby — kaskádové závislosti na unreleased tabulkách</a></li>
+<li><a href="#partnersk-systmy-nejsou-pipraveny-na-restodata">⚠️ Partnerské systémy nejsou připraveny na REST/OData</a></li>
+<li><a href="#btp-licencovn-neekan-nklady">⚠️ BTP licencování — nečekané náklady</a></li>
+<li><a href="#hr-a-payroll-oblasti-s-extrmn-malm-potem-released-api">⚠️ HR a Payroll — oblasti s extrémně malým počtem released API</a></li>
+<li><a href="#implicit-enhancements-neviditeln-v-standardnm-code-inspector">⚠️ Implicit enhancements — neviditelné v standardním Code Inspector</a></li>
+<li><a href="#unit-testy-neexistuj-refaktoring-bez-zchytn-st">⚠️ Unit testy neexistují — refaktoring bez záchytné sítě</a></li>
+<li><a href="#kernseife-score-0-neznamen-automaticky-v-podku">⚠️ KernSeife score 0 neznamená automaticky „v pořádku&quot;</a></li>
+</ol></li>
+<li><a href="#metriky">8. Metriky úspěchu</a>
+<ol class="toc-sub">
+<li><a href="#project-kernseife-automatizovan-atc-men-doporueno">Project KernSeife — automatizované ATC měření (doporučeno)</a></li>
+<li><a href="#clean-core-index-patrick-weber-historick-manuln-index">Clean Core Index (Patrick Weber) — historický manuální index</a></li>
+<li><a href="#atc-distribuce-ad">ATC distribuce A–D</a></li>
+<li><a href="#upgrade-readiness">Upgrade readiness</a></li>
+</ol></li>
+<li><a href="#priklady-moduly">9. Příklady objektů podle modulu — Level A–D a KernSeife mapping</a>
+<ol class="toc-sub">
+<li><a href="#modul-fi-financial-accounting">Modul: FI — Financial Accounting</a></li>
+<li><a href="#modul-mm-materials-management">Modul: MM — Materials Management</a></li>
+<li><a href="#modul-sd-sales-distribution">Modul: SD — Sales &amp; Distribution</a></li>
+<li><a href="#modul-co-controlling">Modul: CO — Controlling</a></li>
+<li><a href="#modul-hr-human-capital-management">Modul: HR — Human Capital Management</a></li>
+<li><a href="#crosscutting-extensibility-vechny-moduly">Cross-cutting: Extensibility (všechny moduly)</a></li>
+</ol></li>
+<li><a href="#propojení">🔗 Propojení</a>
+</li>
+</ol>
+</nav>
+
+<p># Konverzní proces: Legacy ABAP Guidelines → S/4 Clean Core Standard (v2)</p>
+<blockquote>
+<p>Tento dokument popisuje myšlenkový proces a praktický postup,  </p>
+<p>jak a proč přecházíme od legacy guidelines k Clean Core standardu.  </p>
+<p>Slouží jako "behind the scenes" k dvojici dokumentů:  </p>
+<p>← <em>ABAP-Guidelines-Legacy</em> | <em>ABAP-Guidelines-S4-CleanCore</em> →</p>
+</blockquote>
+<a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+<hr>
+<h2 id="proc">1. Proč vůbec měnit guidelines</h2>
+<h3 id="ti-vnj-tlaky-ivan-radulovic-sap-emeamee-webin">Tři vnější tlaky (Ivan Radulovic, SAP EMEA/MEE webinář)</h3>
+<p>Zákazníci ke změně netlačíme z ideologických důvodů — tlačí je tři reálné síly:</p>
+<p><strong>1. Rychlost byznysových změn</strong></p>
+<p>Supply chain disruption, AI adopce, nové regulace — silně customizovaný ERP neumí reagovat rychle. Každá změna procesu = projekt. Každý projekt = riziko.</p>
+<p><strong>2. Uzavřená cesta k AI (Joule)</strong></p>
+<p>SAP Joule je trénovaný na SAP standardu. Systém s tisíci modifikacemi a Z-objekty, které přepisují core logiku, nebude Joule umět používat. Špatná data nebo modifikovaná logika = AI halucinace. Clean Core je předpoklad pro SAP AI.</p>
+<p><strong>3. Narůstající komplexita — cloud lock-in</strong></p>
+<p>S/4HANA Public Cloud (SaaS) odmítá zákazníky s D-level kódem. Pokud chce zákazník přejít na SaaS, musí nejdříve svůj kód přiblížit standardu. Každá modifikace je technický dluh, který bude dražší čím déle čekáme.</p>
+<h3 id="nae-pidan-hodnota-jako-partner">Naše přidaná hodnota jako partner</h3>
+<p>Legacy guidelines nebyly špatné pro svůj čas — byly optimální pro ECC/GUI svět. Svět se změnil. Naší rolí není kritizovat minulost, ale pomoct zákazníkovi pochopit:</p>
+<ul>
+<li>Kde jsou jeho guidelines zastaralé</li>
+<li>Co konkrétně má změnit a v jakém pořadí</li>
+<li>Jak na to nástroji, které SAP dnes nabízí</li>
+</ul>
+<a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+<hr>
+<h2 id="analyza">2. Co jsme zkoumali — vstupní analýza</h2>
+<h3 id="identifikace-legacy-vzor">Identifikace legacy vzorů</h3>
+<p>Při analýze zákaznického kódu (nebo při přípravě guidelines) jsme hledali tyto signály:</p>
+<table>
+<tr><th>Signál</th><th>Nástroj</th><th>Co odhalí</th><th>KernSeife kód</th></tr>
+<tr><td>Přímý <code>SELECT FROM BKPF/BSEG</code></td><td>ATC Cloudification Repository</td><td>Unreleased finanční tabulky — Level D</td><td><code>TBLSEL</code> score 5 / <code>TBLUPD</code> score 10</td></tr>
+<tr><td>Přímý <code>SELECT FROM MARA/MARC/MARD</code></td><td>ATC Cloudification Repository</td><td>Unreleased materiálové tabulky — Level D</td><td><code>TBLSEL</code> score 5</td></tr>
+<tr><td><code>SELECT FROM EKKO/EKPO/EBAN</code></td><td>ATC Cloudification Repository</td><td>Unreleased nákupní tabulky — Level D</td><td><code>TBLSEL</code> score 5</td></tr>
+<tr><td><code>SELECT FROM VBAK/VBAP/LIKP/LIPS</code></td><td>ATC Cloudification Repository</td><td>Unreleased prodejní tabulky — Level D</td><td><code>TBLSEL</code> score 5</td></tr>
+<tr><td><code>CALL FUNCTION ... DESTINATION</code> přes RFC</td><td>SCMON + code search</td><td>Integrační dluh — proprietární protokol</td><td><code>BF5</code> score 5</td></tr>
+<tr><td><code>WRITE:</code> / <code>SELECT-OPTIONS:</code> / Dynpro screen</td><td>ATC + code inspection</td><td>GUI závislosti — nefunguje v cloudu</td><td><code>FW9</code> score 9</td></tr>
+<tr><td><code>CALL CUSTOMER-FUNCTION</code> / User-Exit</td><td>SCMON</td><td>Enhancement model dluh — SAP je odstraňuje</td><td><code>EF5</code> score 5</td></tr>
+<tr><td>Implicitní enhancementy (<code>ENHANCEMENT ... ENDENHANCEMENT</code>)</td><td>SCMON</td><td>Nejvyšší upgrade riziko — neviditelné v diff</td><td><code>EF9</code> score 10</td></tr>
+<tr><td><code>REUSE_ALV_GRID_DISPLAY</code> / <code>REUSE_ALV_LIST_DISPLAY</code></td><td>ATC</td><td>Obsolete UI technologie</td><td><code>BF9</code> score 9</td></tr>
+<tr><td><code>CALL FUNCTION &#x27;HR_...</code> / přímý přístup na PA-tabulky</td><td>ATC Cloudification</td><td>Unreleased HR API — Level C/D</td><td><code>BF5</code>/<code>BF9</code></td></tr>
+<tr><td>SAPScript form / SmartForms (transakce SE71, SF01)</td><td>SCMON + code search</td><td>Výstupní management bez cloud náhrady</td><td><code>FW9</code> score 9</td></tr>
+<tr><td><code>ABAP2XLSX</code> nebo RFC volání pro Office výstupy</td><td>Code search</td><td>3rd-party závislosti bez cloud support</td><td>manuální</td></tr>
+</table>
+<h3 id="referenn-zdroje-pro-nov-pravidla">Referenční zdroje pro nová pravidla</h3>
+<p>Při psaní nového standardu jsme se opřeli o:</p>
+<ol>
+<li><strong>SAP Clean Core Extensibility Redefinition</strong> — nový Level A-D model (nahradil 3-tier)</li>
+<li><strong>ABAP for Cloud Development language version</strong> — technická vynucená množina povolených objektů  </li>
+<li><strong>api.sap.com</strong> — katalog released APIs jako pevný referenční bod (4 400+ API, 3 800+ integrací)</li>
+<li><strong>Cloudification Repository</strong> (GitHub: <a href="https://github.com/SAP/abap-atc-cr-cv-s4hc" target="_blank">SAP/abap-atc-cr-cv-s4hc</a>) — živý seznam Released/Classic/noAPI objektů; nový formát <code>objectClassifications_SAP.json</code> pro ATC Note 3565942; 20 000+ Level A data elements pro Private Cloud</li>
+<li><strong>Patrick Weber — Clean Core série</strong> (SAP Community, 3 díly) — reálná zkušenost 30 let legacy systému, 8 měsíců implementace; index klesl z ~47 000 na ~35 000</li>
+<li><strong>Project KernSeife</strong> (GitHub: <a href="https://github.com/SAP/project-kernseife" target="_blank">SAP/project-kernseife</a>) — open-source ATC check od SAP (v1.5.0, duben 2026); automatizované skórování clean core dluhu s JSON klasifikací</li>
+<li><strong>SAP EMEA/MEE webináře</strong> (duben 2026) — aktuální stance SAP k Level modelu</li>
+<li><strong>SAP/code-pal-for-abap</strong> (GitHub) — 62+ open-source pravidel pro Clean ABAP styleguide; integrace s ATC</li>
+</ol>
+<a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+<hr>
+<h2 id="ramec">3. Rozhodovací rámec — čím se řídíme</h2>
+<h3 id="ti-otzky-pro-kad-star-pravidlo">Tři otázky pro každé staré pravidlo</h3>
+<p>Při každém legacy pravidle jsme si kladli:</p>
+<ol>
+<li><strong>Funguje toto v S/4HANA Public Cloud?</strong>  </li>
+</ol>
+<p>Pokud ne → typicky vyžaduje změnu při cíli Public Cloud. Pro čistě on-premise zákazníka bez cloud plánu: vědomý technický dluh s upgrade-risk flaggingem.</p>
+<ol>
+<li><strong>Je závislé na SAP interním objektu bez stability kontraktu?</strong>  </li>
+</ol>
+<p>Pokud ano → Level C nebo D → doporučeno mít plán migrace.</p>
+<ol>
+<li><strong>Blokuje toto adopci AI nástrojů (Joule, SAP Build)?</strong>  </li>
+</ol>
+<p>Pokud ano → prioritizovat jako high-impact pro zákazníka s AI roadmapou.</p>
+<h3 id="pragmatick-filtr">Pragmatický filtr</h3>
+<p>Nepřepsali jsme vše najednou. Rozdělili jsme na:</p>
+<table>
+<tr><th>Kategorie</th><th>Přístup</th></tr>
+<tr><td><strong>Nový vývoj</strong></td><td>Výhradně Level A — dokumentovat výjimky kde released API neexistuje (Level C s tech debt kartou)</td></tr>
+<tr><td><strong>Stávající Level D kód</strong></td><td>Prioritizovat přepis, začít od nejvíce volaných (UPL)</td></tr>
+<tr><td><strong>Stávající Level B/C kód</strong></td><td>Changelog monitoring, plán migrace, nemigrovat najednou</td></tr>
+<tr><td><strong>Kód, který se nepoužívá</strong></td><td>UPL → identifikovat → archivovat nebo smazat</td></tr>
+</table>
+<a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+<hr>
+<h2 id="pravidla">4. Pravidlo po pravidle — co a proč se změnilo</h2>
+<h3 id="41-pstup-k-datm">4.1 Přístup k datům</h3>
+<blockquote>
+<p>🔴 <strong>POVINNÉ — Public Cloud</strong> | 🟡 <strong>DOPORUČENO pro nový vývoj on-premise</strong>  </p>
+<p>🟢 <strong>TOLEROVÁNO</strong> pro existující <code>SELECT FROM BKPF/BSEG</code> v on-premise bez cloud plánu — přechod při dotčení objektu.</p>
+</blockquote>
+<p><strong>Staré pravidlo:</strong> <code>SELECT FROM BKPF JOIN BSEG ON...</code></p>
+<p><strong>Nové pravidlo:</strong> <code>SELECT FROM I_JournalEntry</code></p>
+<p><strong>Proč:</strong></p>
+<p><code>BKPF</code> a <code>BSEG</code> jsou SAP interní tabulky — bez stability kontraktu. SAP je v S/4HANA restrukturalizoval (Universal Journal — <code>ACDOCA</code>). Zákaznický kód psaný na <code>BKPF/BSEG</code> buď selže nebo vrátí nesprávná data na S/4HANA. Released CDS view <code>I_JournalEntry</code> abstrahuje tuto změnu — kód zůstane funkční i po datové restrukturalizaci.</p>
+<p><strong>Jak jsme to ověřili:</strong></p>
+<p>ATC S/4 Readiness Check na pilotním projektu ukázal <code>SELECT FROM BKPF</code> jako Error (Level D). Custom Code Migration App nabídla quick fix na <code>I_JournalEntryItem</code>.</p>
+<a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+<hr>
+<h3 id="42-uivatelsk-rozhran">4.2 Uživatelské rozhraní</h3>
+<blockquote>
+<p>🔴 <strong>POVINNÉ — Public Cloud</strong> (<code>WRITE:</code> statement nefunguje, SAP GUI není podporováno)  </p>
+<p>🟢 <strong>TOLEROVÁNO</strong> pro existující ALV/Dynpro reporty u zákazníka bez cloud plánu — žádný nový vývoj.</p>
+</blockquote>
+<p><strong>Staré pravidlo:</strong> Dynpro screens + <code>WRITE:</code> statement + ALV Grid</p>
+<p><strong>Nové pravidlo:</strong> CDS + OData V4 + Fiori Elements</p>
+<p><strong>Proč:</strong></p>
+<p>SAP GUI neznamená konec světa v on-premise. Ale:</p>
+<ul>
+<li>Public Cloud SAP GUI nepodporuje vůbec</li>
+<li><code>WRITE:</code> statement je deprecated v ABAP for Cloud language version</li>
+<li>Fiori je jediné UI podporované ve všech deployment modelech (on-prem, private cloud, public cloud)</li>
+<li>Fiori Elements s CDS anotacemi = UI generované automaticky — méně práce, víc standardu</li>
+</ul>
+<p><strong>Pragmatická poznámka:</strong></p>
+<p>Existující <code>WRITE:</code> reporty v on-premise, které zákazník denně používá a neplánuje migraci do cloudu — <strong>nemigrovat hned</strong>. Investice se vrátí až při cloud přechodu. Ale žádný nový vývoj nesmí <code>WRITE:</code> používat.</p>
+<a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+<hr>
+<h3 id="43-roziitelnost">4.3 Rozšiřitelnost</h3>
+<blockquote>
+<p>🔴 <strong>POVINNÉ — Public Cloud</strong> pro nový vývoj (implicit enhancement zakázán)  </p>
+<p>🟡 <strong>DOPORUČENO</strong> pro nový vývoj on-premise  </p>
+<p>🟢 <strong>TOLEROVÁNO</strong> pro existující User-Exits kde released BAdI náhradník neexistuje — Level C s changelog monitoringem.</p>
+</blockquote>
+<p><strong>Staré pravidlo:</strong> User-Exit jako první volba, implicit enhancements pro „nenápadné" změny</p>
+<p><strong>Nové pravidlo:</strong> BAdI jako první volba, implicit enhancements zakázány</p>
+<p><strong>Proč:</strong></p>
+<p>User-Exits jsou technicky funk ční ale:</p>
+<ul>
+<li>SAP je aktivně odstraňuje bez náhrady (SAP Note 3414378)</li>
+<li>Implicit enhancements jsou po upgradu neviditelné — vývojář neví, že tam jsou, dokud se něco nerozbije</li>
+<li>BAdI je formalizovaný kontrakt — SAP garantuje zpětnou kompatibilitu released BAdI</li>
+</ul>
+<p><strong>Kde jsme narazili na limit:</strong></p>
+<p>Pro část funkcionalit released BAdI náhradník prostě neexistuje. V takovém případě:</p>
+<ol>
+<li>Zkontroluj SAP Influence program — požádej o release</li>
+<li>Použij Level C s changelog monitoringem, zdokumentuj jako technical debt</li>
+<li>Hlídej ATC výsledky před každým upgradem</li>
+</ol>
+<a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+<hr>
+<h3 id="44-integrace">4.4 Integrace</h3>
+<blockquote>
+<p>🟡 <strong>DOPORUČENO</strong> pro nový vývoj  </p>
+<p>🟢 <strong>TOLEROVÁNO</strong> pro existující RFC integrace kde protistrana REST nepodporuje — BAPI jako Level B přechodné řešení.</p>
+</blockquote>
+<p><strong>Staré pravidlo:</strong> RFC jako primární mechanismus integrace, IDoc pro async</p>
+<p><strong>Nové pravidlo:</strong> HTTP/OData REST jako primární, SAP Integration Suite pro orchestraci</p>
+<p><strong>Proč:</strong></p>
+<p>RFC je proprietární SAP protokol — funguje jen SAP-to-SAP. Každý moderní systém mluví HTTP. Released OData API na api.sap.com jsou:</p>
+<ul>
+<li>Dokumentovány</li>
+<li>Versionovány (V2, V4)</li>
+<li>Dostupné z jakéhokoliv tech stacku (BTP, Node.js, Python, mobilní app)</li>
+</ul>
+<p><strong>Zachováváme BAPI:</strong></p>
+<p>Kde existující BAPI nebyly nahrazeny released REST API, zůstávají jako Level B přechodné řešení. Nevolat přes RFC destination pokud možno — obalit do CAP / Integration Suite proxy.</p>
+<a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+<hr>
+<h3 id="45-function-modules-abap-classes">4.5 Function Modules → ABAP Classes</h3>
+<blockquote>
+<p>🔴 <strong>POVINNÉ — Public Cloud</strong> (<code>FORM</code> rutiny a nové FM zakázány v ABAP Cloud language version)  </p>
+<p>🟡 <strong>DOPORUČENO</strong> pro nový vývoj on-premise  </p>
+<p>🟢 <strong>TOLEROVÁNO</strong> pro existující Z-FM volané pouze lokálně — migrovat postupně.</p>
+</blockquote>
+<p><strong>Staré pravidlo:</strong> Function Module jako zapouzdření logiky</p>
+<p><strong>Nové pravidlo:</strong> ABAP Class s Interface jako zapouzdření logiky</p>
+<p><strong>Proč:</strong></p>
+<p>Function Modules v ABAP Cloud Development language version nelze použít pro on-stack clean core vývoj (jen global class FM přes released API). ABAP třídy podporují:</p>
+<ul>
+<li>Dependency Injection — testovatelnost</li>
+<li>Polymorfismus přes Interface — vzájemná zaměnitelnost</li>
+<li>Finalization / Singleton vzory</li>
+</ul>
+<p><strong>Zachováváme existující Z-FM:</strong></p>
+<p>Existující Z-FM které jsou volány pouze lokálně a pracují se standardním ABAP — Level B nebo C. Migrovat postupně při každém dotčení objektu.</p>
+<a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+<hr>
+<h3 id="46-testovn">4.6 Testování</h3>
+<blockquote>
+<p>🟡 <strong>DOPORUČENO</strong> — silně doporučeno pro každý nový nebo refaktorovaný kód; bez testů je bezpečný refaktoring nemožný.</p>
+</blockquote>
+<p><strong>Staré pravidlo:</strong> Unit testy doporučené, v praxi vzácné</p>
+<p><strong>Nové pravidlo:</strong> Unit testy povinné pro každou třídu s business logikou</p>
+<p><strong>Proč:</strong></p>
+<p>Refaktoring legacy kódu na Clean Core je bezpečný jen s testy. Bez testů nevíme, zda přepsaný kód dělá totéž co původní. ATC quality gate s unit test variantou blokuje transport objektu bez testů.</p>
+<a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+<hr>
+<h3 id="47-autorizace-a-bezpenost">4.7 Autorizace a bezpečnost</h3>
+<blockquote>
+<p>🟡 <strong>DOPORUČENO</strong> pro nový vývoj s CDS/RAP vrstvou  </p>
+<p>🟢 <strong>TOLEROVÁNO</strong> existující <code>AUTHORITY-CHECK</code> v legacy kódu — funkční, bezpečný, Level B.</p>
+</blockquote>
+<p><strong>Staré pravidlo:</strong> <code>AUTHORITY-CHECK OBJECT &#x27;...&#x27; ID &#x27;ACTVT&#x27; FIELD &#x27;...&#x27;</code> rozptýlené v kódu; přístup k datům filtrovaný ABAP podmínkami</p>
+<p><strong>Nové pravidlo:</strong> CDS Access Control (DCL) pro datovou vrstvu; <code>AUTHORITY-CHECK</code> jen pro released autorizační objekty ve vystavených RAP akcích</p>
+<p><strong>Proč:</strong></p>
+<p>V Clean Core modelu je autorizace záležitostí <strong>datové vrstvy</strong> — CDS anotace <code>@AccessControl.authorizationCheck: #CHECK</code> s DCL podmínkami. Výhody:</p>
+<ul>
+<li>Autorizace deklarativní a centralizovaná — ne rozptýlená v každém selectu</li>
+<li>DCL se aplikuje automaticky na všechny konzumenty CDS view (Fiori, OData, direct ABAP)</li>
+<li>Konec scénáře: „zapomněl jsem AUTHORITY-CHECK v tomto selectu"</li>
+</ul>
+<p><strong>Kde jsme narazili na limit:</strong></p>
+<p>Ne každý autorizační objekt je Released API. Zákaznické autorizační objekty (SU21) jsou samozřejmě v rukou zákazníka a <code>AUTHORITY-CHECK</code> na ně je legitimní i v Clean Core.</p>
+<a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+<hr>
+<h3 id="48-tiskov-formule-a-output-management">4.8 Tiskové formuláře a output management</h3>
+<blockquote>
+<p>🟡 <strong>DOPORUČENO</strong> pro nový vývoj  </p>
+<p>🟢 <strong>TOLEROVÁNO</strong> existující SAPScript/SmartForms v on-premise dokud zákazník neplánuje cloud — migration je náročná na specialistu, viz sekce 7.</p>
+</blockquote>
+<p><strong>Staré pravidlo:</strong> SAPScript (transakce SE71) nebo SmartForms (SF01) pro tisk a PDF výstupy</p>
+<p><strong>Nové pravidlo:</strong> Adobe Document Services (ADS) přes SAP BTP; nové formuláře ve SFP (Adobe Forms) nebo Output Management Framework</p>
+<p><strong>Proč:</strong></p>
+<p>SmartForms jsou v SAP Cloud ERP v maintenance mode — SAP nepřidává nové funkce, neinterprétuje je v Public Cloud verzi. Adobe Forms (SFP) a cloudový ADS jsou aktivně rozvíjené. Navíc:</p>
+<ul>
+<li>ADS produkuje PDF/A a digitálně podepsatelné dokumenty — regulatorní požadavky</li>
+<li>Output Management Framework (BTP) odděluje template od triggeru — lepší governance</li>
+</ul>
+<p><strong>Reálný kontext:</strong></p>
+<p>Patrick Weber ve svém 8měsíčním projektu identifikoval SAPScript/SmartForms migraci jako jednu z nejnáročnějších — tým neměl dostatek formulářové expertízy (ve svém blogu SAP Community 2024, díl 2). Doporučujeme tuto oblast plánovat s delším časovým horizontem a případně zapojit specialistu na ADS.</p>
+<a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+<hr>
+<h3 id="49-workflow-a-business-procesy">4.9 Workflow a business procesy</h3>
+<blockquote>
+<p>🟡 <strong>DOPORUČENO</strong> pro nový vývoj  </p>
+<p>🟢 <strong>TOLEROVÁNO</strong> existující SAP Business Workflow — Level C, ne D; nemigrovat násilně.</p>
+</blockquote>
+<p><strong>Staré pravidlo:</strong> SAP Business Workflow (SWDD, SWIA) nebo workflow v pozadí přes vlastní stavové automaty</p>
+<p><strong>Nové pravidlo:</strong> SAP Build Process Automation (BTP) pro nové procesy; SAP Flexible Workflow pro jednodušší S/4 integrované scénáře</p>
+<p><strong>Proč:</strong></p>
+<p>SAP Business Workflow je v maintenance mode — SAP přestalo přidávat nové funkce a aktivně zákazníky nasměrovává na BTP Process Automation. Klíčový argument:</p>
+<ul>
+<li>Workflow jako cloud service = žádná závislost na ABAP stack upgradu</li>
+<li>Low-code tvorba procesů (i non-ABAP administrátor může upravit workflow)</li>
+<li>Integrace s Teams, e-mailem, SAP Build Work Zone nativně</li>
+</ul>
+<p><strong>Pragmatická poznámka:</strong></p>
+<p>Existující SAP Business Workflow zákazníkovi nemigrujeme násilně — je to Level C, ne Level D. Ale nové schvalovací procesy a procesy spuštěné po Clean Core projektu navrhujeme vždy na BTP PA.</p>
+<a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+<hr>
+<h3 id="410-background-jobs-a-batch-processing">4.10 Background jobs a batch processing</h3>
+<blockquote>
+<p>🔴 <strong>POVINNÉ — Public Cloud</strong> (<code>JOB_OPEN/CLOSE</code> zakázány v ABAP Cloud language version)  </p>
+<p>🟡 <strong>DOPORUČENO</strong> pro nový vývoj on-premise.</p>
+</blockquote>
+<p><strong>Staré pravidlo:</strong> SM36/SM37 + klasický ABAP program spuštěný jako job; <code>JOB_OPEN</code> / <code>JOB_SUBMIT</code> / <code>JOB_CLOSE</code> volání</p>
+<p><strong>Nové pravidlo:</strong> SAP Application Job Framework — interface <code>IF_APJ_RT_RUN</code>, definice jobů přes <code>CL_APJ_DT_CREATE_CONTENT</code>; scheduling přes Application Jobs UI (Fiori)</p>
+<p><strong>Proč:</strong></p>
+<p>Klasické SM36 joby mají technická omezení v cloud deploymentu:</p>
+<ul>
+<li><code>JOB_OPEN/CLOSE</code> funkce jsou v ABAP for Cloud language version zakázány (Level D)</li>
+<li>Application Job Framework je released API — <code>IF_APJ_RT_RUN</code> a <code>IF_APJ_DT_EXEC_OBJECT</code></li>
+<li>Fiori-based scheduling UI = zákazník nepotřebuje BASIS přístup pro správu jobů</li>
+<li>V BTP ABAP Environment je Job Scheduling Service dostupný jako managed service</li>
+</ul>
+<p><strong>Kde jsme narazili na limit:</strong></p>
+<p>Zákaznické Z-programy volané jako joby typicky obsahují desítky <code>SELECT FROM</code> unreleased tabulek — migrace jobu = migrace celého programu. Plánovat jako součást datové vrstvy migrace (sekce 4.1).</p>
+<a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+<hr>
+<h3 id="411-exception-handling">4.11 Exception handling</h3>
+<blockquote>
+<p>🟡 <strong>DOPORUČENO</strong> — <code>sy-subrc</code> je funkční, ale náchylný k přepsání v komplexním kódu; class-based exceptions povinné v ABAP Cloud.</p>
+</blockquote>
+<p><strong>Staré pravidlo:</strong> <code>sy-subrc</code> kontrola po každém volání; <code>EXCEPTIONS</code> parametr na FM voláních; <code>MESSAGE ... TYPE &#x27;E&#x27;</code> pro chyby</p>
+<p><strong>Nové pravidlo:</strong> Class-based exceptions <code>cx_*</code> s <code>RAISE EXCEPTION TYPE</code>; <code>TRY...CATCH...ENDTRY</code> bloky; vlastní zákaznické exception třídy dědící z <code>cx_static_check</code> nebo <code>cx_dynamic_check</code></p>
+<p><strong>Proč:</strong></p>
+<p><code>sy-subrc</code> je globální proměnná — na prvním volání ji může přepsat jiný kód. Je to architektonická past. Class-based exceptions:</p>
+<ul>
+<li>Přenáší context (message, cause, previous) — debuggování rychlejší</li>
+<li>ABAP for Cloud language version vynucuje class-based exceptions pro released API volání</li>
+<li>code-pal-for-abap check <code>PREFER_RAISE_EXCEPTION_NEW</code> flaguje starý styl automaticky v ATC</li>
+</ul>
+<p><strong>Reálný příklad:</strong></p>
+<p>Cloudification Repository <code>abap-atc-cr-cv-s4hc</code> označuje <code>FM_FUNCTION_MODULE_NAME</code> (vrací <code>sy-subrc</code>) jako BF9 — avoid. Nástupce je <code>cl_abap_module_names</code> class-based API.</p>
+<a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+<hr>
+<h3 id="412-kdov-kvalita-a-styl">4.12 Kódová kvalita a styl</h3>
+<blockquote>
+<p>🔴 <strong>POVINNÉ — Public Cloud</strong> (<code>FORM</code> rutiny zakázány v ABAP Cloud)  </p>
+<p>🟡 <strong>DOPORUČENO</strong> code-pal-for-abap pro nový kód — nástroj pro zlepšení, ne soudce.</p>
+</blockquote>
+<p><strong>Staré pravidlo:</strong> Žádný vynucený styl; FORM routiny (<code>FORM ... ENDFORM</code>) jako organizační jednotka kódu; komentáře v češtině nebo němčině</p>
+<p><strong>Nové pravidlo:</strong> Clean ABAP styleguide (GitHub: SAP/styleguides) vynucený přes code-pal-for-abap (62+ ATC checks); výhradně ABAP OO třídy; angličtina pro identifikátory</p>
+<p><strong>Proč:</strong></p>
+<p>Clean ABAP styleguide SAP vydal jako otevřený standard (2019, průběžně aktualizován). <code>FORM</code> rutiny jsou v ABAP for Cloud language version zakázány — nelze vytvořit nové. code-pal-for-abap automatizuje styl jako ATC check:</p>
+<ul>
+<li>62+ pravidel pokrývá naming, struktura, OO principy, exception handling</li>
+<li>Cloud Edition (<code>code-pal-for-abap-cloud</code>) pro ABAP Environment na BTP</li>
+<li>Default severity: Notification (Priority 3) — nablokuje transport ale reportuje stav</li>
+</ul>
+<p><strong>Reálný kontext:</strong></p>
+<p>Patrick Weber ve svém projektu nastavil code-pal jako povinný ATC a systém okamžitě hlásil <strong>2,4 milionu finding</strong> na 30 let legacy kódu. Klíčové poučení: nespouštět na celém systému najednou — vždy omezit scope na nový nebo migrovaný kód.</p>
+<a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+<hr>
+<h2 id="zachovano">5. Co jsme nechali beze změny (a proč)</h2>
+<h3 id="naming-konvence-zy-prefix">Naming konvence Z/Y prefix</h3>
+<p><strong>Zachováno.</strong> S/4HANA i ABAP Cloud stále používají customer namespace s Z/Y. Prefix se doplnil o strukturované přípony (ZI_, ZC_, ZCL_) ale základní Z namespace zůstává.</p>
+<h3 id="classic-alv-pro-existujc-zreporty-onpremise">Classic ALV pro existující Z-reporty (on-premise)</h3>
+<p><strong>Zachováno pro existující kód.</strong> Zákazníci mají stovky ALV reportů. Přepsat je všechny najednou na Fiori je nerealistické. Mají-li zákazníci plán zůstat on-premise, nemigrujeme funkční ALV.</p>
+<h3 id="bapi-pro-integrace-bez-released-rest-alternativy">BAPI pro integrace bez released REST alternativy</h3>
+<p><strong>Zachováno jako Level B.</strong> Část BAPIs nemá released OData náhradu. Dokud SAP nereleasuje, BAPI zůstávají legitimní — ale s monitoringem Cloudification Repository.</p>
+<h3 id="ddic-slovnk-domny-datov-elementy-struktury-zkaznickch-tabule">DDIC slovník — domény, datové elementy, struktury zákaznických tabulek</h3>
+<p><strong>Zachováno.</strong> ABAP Dictionary objekty (domény, datové elementy, struktury, zákaznické Z-tabulky) jsou Clean Core beze změny — zákaznická tabulka v Z namespace patří zákazníkovi. Přesouváme jen to, jak k datům <strong>přistupujeme</strong> (Section 4.1), ne jak jsou data definována v DDIC.</p>
+<p><strong>Pozor na:</strong> Výjimkou jsou DDIC objekty odkazující SAP interní struktury (INCLUDE structure do BKPF atp.) — ty jsou Level D.</p>
+<h3 id="intern-tabulky-a-open-sql-zkladn-syntax">Interní tabulky a Open SQL základní syntax</h3>
+<p><strong>Zachováno.</strong> <code>LOOP AT ... INTO</code>, <code>READ TABLE ... WITH KEY</code>, <code>APPEND</code>, <code>COLLECT</code>, <code>SORT</code>, <code>DELETE</code> — syntaxe a sémantika beze změny. Open SQL SELECT se rozšířil o nové klauzule (GROUP BY inline, UNION, subquery), ale existující syntaxe je zpětně kompatibilní. Kód čtoucí z released CDS views funguje na všech deployment modelech.</p>
+<h3 id="message-classes-se91">Message classes (SE91)</h3>
+<p><strong>Zachováno pro existující kód.</strong> Zprávy (SE91, <code>MESSAGE ... TYPE</code>) jsou stále platné v on-premise S/4HANA. V ABAP Cloud se preferují class-based exceptions nesoucí message (<code>cx_...</code> s <code>IF_T100_MESSAGE</code>), ale existující message classes nevyžadují okamžitou migraci. KernSeife scoring pro Message Class (<code>MSG</code>) = score 1 — Level B, bez blokovacího efektu.</p>
+<h3 id="customizing-img-spro-konfiguran-vrstvy">Customizing / IMG (SPRO) konfigurační vrstvy</h3>
+<p><strong>Zachováno.</strong> Clean Core se týká ABAP kódu a jeho závislostí — ne konfiguračních nastavení zákazníka. Customizing přes SPRO/IMG, parametrizace přes tabulkové hodnoty a konfigurační objekty jsou beze změny. Zákaznické konfigurace jsou naopak explicitně podporovány jako „Customizing Extensibility".</p>
+<h3 id="transport-management-a-package-struktura">Transport management a package struktura</h3>
+<p><strong>Zachováno.</strong> Package concept, transport request workflow a CTS jsou beze změny. ABAP Cloud přidává package property <code>ABAP for Cloud Development</code> jako novou dimenzi — ale to je rozšíření, ne nahrazení. Zákazník nepotřebuje přeorganizovat transport workflow, jen přiřadit správné package atributy novým objektům.</p>
+<a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+<hr>
+<h2 id="limity">5a. Kde Clean Core přístup nedává smysl</h2>
+<blockquote>
+<p>Tato sekce záměrně hraje <em>advocata diaboli</em>. Clean Core je správný směr — ale není odpověď na všechny problémy.</p>
+</blockquote>
+<h3 id="ekonomicky-nevhodn-pepis">Ekonomicky nevýhodný přepis</h3>
+<p>Přepis legacy kódu typicky nedává smysl, pokud:</p>
+<ul>
+<li><strong>Objekt je volán < 10× ročně</strong> (UPL data) — technický dluh je teoretický, riziko nízké</li>
+<li><strong>Zákazník nemá cloudový plán na 5+ let</strong> — investice do přepisu se nevrátí</li>
+<li><strong>Náklad přepisu > 3× náklad jednoho upgradu</strong> s tímto objektem — ekonomicky neobhajitelné</li>
+<li><strong>Kód řeší business kritickou logiku bez unit testů</strong> — přepis bez testů je riziko, ne zlepšení</li>
+</ul>
+<h3 id="kde-sap-zatm-nenahradil-legacy-api">Kde SAP zatím nenahradil legacy API</h3>
+<p>SAP Released API pokrytí není uniformní. Oblasti kde je Level C vědomé a legitimní rozhodnutí:</p>
+<ul>
+<li><strong>HR/HCM infotypy</strong> (PA0001–PA0xxx) — released náhrada chybí pro velkou část scénářů; SuccessFactors vyžaduje licenci; Level C je vědomé, akceptované rozhodnutí</li>
+<li><strong>CO interní tabulky</strong> (COSP, COSS, COEP) — released CDS views existují ale nepokrývají všechny analytické scénáře</li>
+<li><strong>Niche FM</strong> v legacy modulech (IS-Retail, IS-Banking) — released náhrada neexistuje</li>
+<li><strong>Část SD pricing</strong> (podmínka EXIT_SAPMV45A_*) — Level C, released BAdI s ekvivalentní funkcionalitou neexistuje pro všechny scénáře</li>
+</ul>
+<h3 id="metriky-maj-slep-msta">Metriky mají slepá místa</h3>
+<p>KernSeife skóre záměrně neměří:</p>
+<ul>
+<li><strong>Funkčnost</strong> — kód s KernSeife score 0 může být plný bugů</li>
+<li><strong>Business hodnotu</strong> — přepis kódu který nikdo nevolá je ztráta času</li>
+<li><strong>Upgrade historii</strong> — objekt existující 20 let bez SPAU problémů může být stabilnější než nový „clean" kód</li>
+<li><strong>TCO přepisu</strong> — snížení skóre z 100 na 0 může stát miliony, zatímco skóre 15 s nízkým UPL = nulový risk</li>
+</ul>
+<blockquote class="warning">
+<p>⚠️ <strong>Varování před gamifikací:</strong> Nasměrovat tým na „snižte KernSeife skóre" bez byznysového kontextu vede k přepisování kódu který nikdo nevolá. Metriky jsou navigace, ne cíl.</p>
+</blockquote>
+<h3 id="legitimn-onpremise-scn">Legitimní on-premise scénář</h3>
+<p>On-premise zákazník s S/4HANA bez cloudového plánu:</p>
+<ul>
+<li>ATC findings jsou <strong>informace</strong>, ne blocker (pokud zákazník nenastaví quality gate)</li>
+<li>Level D kód je <strong>technický dluh</strong> — vědomý, zdokumentovaný, s upgrade-risk flaggingem</li>
+<li>Přechod probíhá při dotčení objektu („boy scout rule") — ne jako standalone projekt</li>
+<li>KernSeife trend je <strong>signál</strong>, ne SLA</li>
+</ul>
+<blockquote>
+<p>Klíčové: i pro on-premise zákazníka má Clean Core hodnotu — ale argumentovat Public Cloud nutností je kontraproduktivní. Argumentujte <strong>snazší upgrade</strong>, <strong>lepší testovatelnost</strong>, <strong>AI readiness</strong> — tyto benefity platí i on-premise.</p>
+</blockquote>
+<a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+<hr>
+<h2 id="implementace">6. Jak implementovat přechod u zákazníka</h2>
+<h3 id="fze-1-inventura-24-tdny">Fáze 1 — Inventura (2–4 týdny)</h3>
+<pre onclick="openModal(this)"><code>Nástroje: SCMON + UPL + ATC S/4 Readiness Check
+Výstup:
+  - Mapa objektů s Level A/B/C/D klasifikací
+  - UPL: co se reálně volá (zombie kód odfiltrovat)
+  - Top 10 D-level objektů podle frekvence volání</code></pre>
+<h3 id="fze-2-guidelines-a-governance-12-tdny">Fáze 2 — Guidelines a governance (1–2 týdny)</h3>
+<pre onclick="openModal(this)"><code>Akce:
+  - Prezentovat Legacy × New guidelines (tento dokument + srovnání)
+  - Nastavit ATC variant pro Clean Core check
+  - Integrovat ATC do CI/CD pipeline nebo transport management
+  - Vyškolit development tým (Dev4S4C kurz nebo workshop)</code></pre>
+<h3 id="fze-3-get-clean-prbn-618-msc">Fáze 3 — Get Clean (průběžně, 6–18 měsíců)</h3>
+<pre onclick="openModal(this)"><code>Princip: každý objekt, který se dotýkáš, oprav na Clean Core
+  - Nový vývoj: výhradně Level A
+  - Bugfix starého kódu: oprav + refaktor na Level A
+  - Velký refaktoring: prioritizovat dle UPL frekvence a D-level severity
+Metriky: Project KernSeife (ATC automated) + Clean Core Index (Patrick Weber) — měřit týdně</code></pre>
+<h3 id="fze-4-stay-clean-kontinuln">Fáze 4 — Stay Clean (kontinuálně)</h3>
+<pre onclick="openModal(this)"><code>ATC quality gate jako permanentní součást transport procesu
+Clean Core Index prezentovat managementu čtvrtletně
+Sledovat SAP Changelog pro Level C objekty před každým upgradem</code></pre>
+<h3 id="komunikace-vi-zkaznkovi">Komunikace vůči zákazníkovi</h3>
+<p>Zákazník typicky reaguje těmito způsoby — přehled nejčastějších námitek a doporučených odpovědí:</p>
+<table>
+<tr><th>Reakce zákazníka</th><th>Doporučená odpověď</th></tr>
+<tr><td>„My to tak děláme 20 let a funguje to"</td><td>Funguje dokud: (a) nemigrujete do cloudu (b) nepotřebujete Joule (c) SAP nevyjme Extension point. Každý z těchto scénářů je pravděpodobný do 5 let — a každý rok odkladu znamená více technického dluhu</td></tr>
+<tr><td>„Přepsat všechno najednou je drahé"</td><td>Souhlasíme — proto prioritizujeme UPL (co se reálně volá) a D-level (co blokuje cloud). Přepis probíhá inkrementálně při každém dotčení objektu — nevzniká samostatný projekt, ale trvalá praxe</td></tr>
+<tr><td>„SAP to jen chce kvůli SaaS"</td><td>Pravda — a zároveň benefity jsou reálné: rychlejší upgrade, AI ready, nižší TCO. Obojí může platit zároveň. My jsme tady proto, abychom zákazníkovi ty benefity pomohli získat</td></tr>
+<tr><td>„Zůstaneme on-premise, Clean Core nás netýká"</td><td>On-premise S/4HANA 2023+ vynucuje ATC checks při aktivaci některých funkcí. Navíc pokud se záměr změní za 3 roky, každý rok odkladu = více technického dluhu a dražší migrace</td></tr>
+<tr><td>„Naši vývojáři ABAP Cloud neumí, museli bychom je drahle školit"</td><td>Dev4S4C kurz je 5 dní. KernSeife + ATC jim ihned ukáže přesně co a kde je problém — učení probíhá na reálném kódu zákazníka, ne v abstraktní lekci</td></tr>
+<tr><td>„ATC hlásí tisíce chyb — kde vůbec začít?"</td><td>UPL (Usage and Procedure Log) odfiltruje zombie kód. Spustit ATC jen na UPL top-50 objektů — okamžitě vidíte co je kritické a reálně volané. Patrick Weber takhle identifikoval 80 % dluhu v 20 % kódu</td></tr>
+<tr><td>„Naše BAPI volání fungují léty prověřeně, proč to měnit?"</td><td>BAPI zůstávají Level B — nemigrujeme funkční věci bez důvodu. Migrace nastává jen při novém vývoji nebo cloud projektu. Tier-2 RFC proxy (<code>ACO_PROXY</code>) umí BAPI obalit do clean core volání automaticky</td></tr>
+<tr><td>„Modifikace jsme dělali, protože SAP standard nestačil pro naše procesy"</td><td>V té době to byl správný přístup. Dnes SAP released ~400 BAdI a tisíce CDS views. Pro část procesů cesta Level A již existuje — začneme inventurou toho, co SAP mezitím vydal</td></tr>
+<tr><td>„Fiori je pomalé a uživatelé chtějí zpět SAP GUI"</td><td>Performance problém je konkrétní — a řešitelný (OData query optimalizace, lazy loading, caching). GUI v Public Cloud ale prostě neexistuje. Doporučujeme Fiori UX workshop jako součást projektu — problém je skoro vždy v implementaci, ne ve Fiori samotném</td></tr>
+<tr><td>„Dodavatel nám kód píše v legacy stylu a nechce měnit"</td><td>ATC quality gate v transport management zastaví noncompliant transport ještě před importem do produkce. Contractually vyžadovat Clean Core compliance — máte nástroj na enforcement bez ruční kontroly</td></tr>
+<tr><td>„Nový vývoj zvládneme, ale kdo přepíše 2 000 starých Z-objektů?"</td><td>Nikdo — ne najednou. KernSeife + UPL ukáže, že 80 % volání pochází z 20 % objektů. Prioritizovat top-20 Level D objektů = nejvyšší ROI, realistický scope. Zbytek čeká jako Level B s monitoringem</td></tr>
+<tr><td>„Máme fixed upgrade deadline — není čas na Clean Core zároveň"</td><td>Upgrade a Clean Core se nevylučují — Clean Core snižuje počet SPAU/SPDD objektů před upgradem, takže upgrade je rychlejší a levnější. Nejhorší kombinace je neřešit ani jedno</td></tr>
+<tr><td>„Clean Core zní jako přepisování věcí které fungují, jenom proto aby SAP prodal Public Cloud"</td><td>Částečně pravda — a je fér to říct nahlas. SAP má z Cloud Core obchodní zájem. Ale benefity jsou reálné nezávisle na tom: snazší upgrade, lepší testovatelnost, Joule AI adoptabilita. Pracujeme s vámi na identifikaci kde přepis dává ekonomický smysl — ne kde ho SAP chce</td></tr>
+</table>
+<a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+<hr>
+<h2 id="rizika">7. Rizika a upřímná varování</h2>
+<h3 id="released-badi-neexistuje">⚠️ Released BAdI neexistuje</h3>
+<p>Část User-Exitů nemá released BAdI náhradu. SAP Note 3414378 dokumentuje exity které SAP odstraňuje, ale ne vždy s náhradou. Doporučení:</p>
+<ul>
+<li>Level C s changelog monitoringem jako dočasné řešení</li>
+<li>SAP Influence Program — žádat o BAdI release</li>
+<li>Dokumentovat jako tech debt s clear upgrade risk</li>
+</ul>
+<h3 id="atc-quick-fix-nen-vdy-sprvn">⚠️ ATC quick fix není vždy správný</h3>
+<p>Custom Code Migration App nabízí quick fixy (přepis <code>SELECT FROM MARA</code> na <code>I_PRODUCT</code>). Ale:</p>
+<ul>
+<li>Quick fix nepokryje komplexní logiku s JOINy přes více unreleased tabulek</li>
+<li>Vždy review quick fix výsledku — nestačí „apply all"</li>
+<li>10–20% případů vyžaduje ruční redesign datové logiky</li>
+</ul>
+<h3 id="joule-pro-legacy-kd-je-omezen">⚠️ Joule pro legacy kód je omezený</h3>
+<p>Joule (GitHub Copilot pro ABAP) je trénovaný na SAP standardu, ne na zákaznickém Z-kódu. Neočekávej, že Joule automaticky přepíše 30 let legacy kódu. Je nejsilnější při:</p>
+<ul>
+<li>Psaní nového Clean Core kódu (generování RAP artefaktů)</li>
+<li>Unit testů pro existující kód</li>
+<li>Vysvětlení co SAP released API dělá</li>
+</ul>
+<h3 id="pli-ambicizn-cle-varovn-z-praxe-patrick-weber">⚠️ Příliš ambiciózní cíle — varování z praxe (Patrick Weber)</h3>
+<blockquote>
+<p>„Cíle byly příliš ambiciózní. Pro část User-Exitů released náhradník prostě neexistuje.  </p>
+<p>ATC job na 30 let legacy → 2,4 milionu errorů."</p>
+</blockquote>
+<p>Klíčový takeaway: <strong>každý krok správným směrem se počítá</strong>. Clean Core není sprint — je to maraton. Zákazníkovi je třeba nastavit realistická očekávání.</p>
+<h3 id="smartforms-sapscript-adobe-forms-chyb-tmov-expertza">⚠️ SmartForms / SAPScript → Adobe Forms — chybí týmová expertíza</h3>
+<p>Formulářová migrace je technicky jednoduchá v teorii, ale v praxi náročná na specialistu:</p>
+<ul>
+<li>Tým ABAP vývojářů zpravidla neumí Adobe LiveCycle Designer (SFP transakce)</li>
+<li>ADS na BTP vyžaduje samostatnou konfiguraci a licenci — není součástí S/4HANA on-premise licence</li>
+<li>Weber's projekt tuto oblast označil jako jednu z nejtěžších — tým musel přizvat externího specialistu</li>
+<li>Doporučení: plánovat formulářovou migraci jako separátní workstream s dedikovaným zdrojem</li>
+</ul>
+<h3 id="background-joby-kaskdov-zvislosti-na-unreleased-tabulkch">⚠️ Background joby — kaskádové závislosti na unreleased tabulkách</h3>
+<p>Migrace background jobu na Application Job Framework neznamená jen přepsat <code>JOB_OPEN/CLOSE</code>:</p>
+<ul>
+<li>Většina legacy jobů čte přímo z unreleased tabulek (<code>BKPF</code>, <code>MARA</code>, <code>EKKO</code>...) — migrace jobu = migrace celé datové logiky</li>
+<li>Joby mohou záviset na starých FM nebo FORM rutinách — každá závislost je další migrační krok</li>
+<li>SAP Application Job Framework vyžaduje třídu implementující <code>IF_APJ_RT_RUN</code> — nelze zavolat existující Z-program přímo</li>
+<li>Doporučení: background joby migrovat vždy v rámci většího datového refaktoringu, ne izolovaně</li>
+</ul>
+<h3 id="partnersk-systmy-nejsou-pipraveny-na-restodata">⚠️ Partnerské systémy nejsou připraveny na REST/OData</h3>
+<p>Migrace z RFC na OData API naráží na protistranu:</p>
+<ul>
+<li>Starý ERP partner (jiný SAP nebo non-SAP) mluví RFC/IDoc — nelze ho přepnout jednostranně</li>
+<li>Interní middleware (XI/PI/PO) může být nakonfigurovaný výhradně pro RFC adaptéry</li>
+<li>Tier-2 RFC proxy (<code>SAP-samples/tier2-rfc-proxy</code>) řeší volající stranu, ale ne volaný legacy systém</li>
+<li>Doporučení: integrační migrace vyžaduje koordinaci s IT architektem a mapování všech A2A/B2B toků ještě před zahájením</li>
+</ul>
+<h3 id="btp-licencovn-neekan-nklady">⚠️ BTP licencování — nečekané náklady</h3>
+<p>Část Clean Core vzorů přesouvá funkcionalitu na BTP — ale BTP není zdarma:</p>
+<ul>
+<li>Adobe Document Services (ADS) = samostatná BTP service s consumption-based cenou</li>
+<li>SAP Build Process Automation (workflow náhrada) = licence per workflow instance nebo user</li>
+<li>BTP ABAP Environment (pokud zákazník chce cloud extensibility) = compute jednotky</li>
+<li>Integration Suite (pro REST orchestraci) = integration flows licence</li>
+<li>Doporučení: před architektonickými rozhodnutími vypočítat TCO včetně BTP nákladů — sticker shock může projekt zastavit</li>
+</ul>
+<h3 id="hr-a-payroll-oblasti-s-extrmn-malm-potem-released-api">⚠️ HR a Payroll — oblasti s extrémně malým počtem released API</h3>
+<p>HR/HCM modul má historicky nejnižší pokrytí released API v celém SAP portfoliu:</p>
+<ul>
+<li>Přímý přístup na infotype tabulky (<code>PA0001</code>, <code>PA0002</code>...) = Level D, ale released náhrada chybí pro velkou část scénářů</li>
+<li>SAP HCM na S/4HANA je v maintenance mode — migrace na SuccessFactors je doporučená cesta</li>
+<li>Zákazníci kteří nemigrují na SF musí akceptovat Level C pro mnoho HR scénářů</li>
+<li>Doporučení: HR moduly inventarizovat zvlášť, konzultovat s SAP HCM specialistou před commitmentem na timeline</li>
+</ul>
+<h3 id="implicit-enhancements-neviditeln-v-standardnm-code-inspector">⚠️ Implicit enhancements — neviditelné v standardním Code Inspector</h3>
+<p>Implicitní enhancementy (<code>ENHANCEMENT ... ENDENHANCEMENT</code>) jsou nejrizikovější forma rozšíření:</p>
+<ul>
+<li>Při prohlížení SAP standardního kódu (SE80) je vývojář <strong>nevidí</strong> — jsou skryté v enhancement sectionech</li>
+<li>Při upgradu SAP standardu může SAP přidat kód na stejné místo nebo přejmenovat proměnné → silent break</li>
+<li>SCMON nesleduje volání — nemáme UPL data pro prioritizaci</li>
+<li>KernSeife kód <code>EF9</code> score 10 Level D — nejvyšší rizikové skóre ze všech kategorií</li>
+<li>Doporučení: spustit speciální report pro vyhledání implicit enhancements (SM84 + enhancement spot report) jako první krok inventury</li>
+</ul>
+<h3 id="unit-testy-neexistuj-refaktoring-bez-zchytn-st">⚠️ Unit testy neexistují — refaktoring bez záchytné sítě</h3>
+<p>Legacy kód má zpravidla nulové nebo minimální unit test pokrytí:</p>
+<ul>
+<li>Přepsat Z-FM nebo Z-program bez unit testů = nemáme žádnou garanci zachování funkcionality</li>
+<li>Tlak na „oprav to rychle" vede k: přepis kódu bez testů → bug v produkci → zákazník ztrácí důvěru v Clean Core projekt</li>
+<li>Doporučení: <strong>nejdříve napsat unit testy pro existující logiku</strong> (Weber's approach), teprve potom refaktorovat. Testy dokumentují co kód dělá i když vývojář odejde.</li>
+</ul>
+<h3 id="kernseife-score-0-neznamen-automaticky-v-podku">⚠️ KernSeife score 0 neznamená automaticky „v pořádku"</h3>
+<p>Zdánlivě paradoxní: <code>MIG</code> (Migrace nutná) a <code>NOC</code> (Chybí klasifikace) mají score <strong>0</strong>, ale Level <strong>D</strong>:</p>
+<ul>
+<li><code>MIG</code> = SAP explicitně říká, že objekt musí být migrován — score 0 neznamená OK, znamená „toto se nepočítá do váhy, ale MUSÍ být řešeno"</li>
+<li><code>NOC</code> = objekt není v klasifikačním souboru — může jít o nový objekt, nebo o chybu v klasifikaci; vyžaduje manuální review</li>
+<li>Doporučení: sledovat <code>MIG</code> a <code>NOC</code> findings jako samostatnou kategorii — Level D objekty s nulovým score jsou v reportech „neviditelné" pokud reportujete jen sumární score</li>
+</ul>
+<a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+<hr>
+<h2 id="metriky">8. Metriky úspěchu</h2>
+<h3 id="project-kernseife-automatizovan-atc-men-doporueno">Project KernSeife — automatizované ATC měření (doporučeno)</h3>
+<p><strong>GitHub:</strong> <a href="https://github.com/SAP/project-kernseife" target="_blank">SAP/project-kernseife</a> | Verze: 1.5.0 (duben 2026) | 85 ⭐ | SAP official open-source</p>
+<p>KernSeife je <strong>custom ATC Check</strong> od SAP, který automatizuje měření clean core dluhu přímo v ABAP systému. Název je německý slovní hříčka: <em>Kern</em> (jádro) + <em>Seife</em> (mýdlo) = <strong>čisté jádro</strong>. Jde o enhanced verzi ATC kontroly z SAP Note 3565942 (Usage of APIs / Allowed Enhancement Technologies) s vlastním JSON scoring systémem.</p>
+<h4>Jak KernSeife skóruje — reálná data z <code>defaultSetup.json</code></h4>
+<p>KernSeife přiřazuje každému volání SAP objektu <strong>kód + score + level</strong>. Kompletní scoring škála (ověřeno přímým fetchem <code>defaultSetup.json</code> z <code>github.com/SAP/project-kernseife</code>, verze 1.5.0, duben 2026):</p>
+<table>
+<tr><th>Kategorie</th><th>Kód</th><th>Popis</th><th>Score</th><th>Level</th><th>Severity</th></tr>
+<tr><td><strong>Business Functions</strong></td><td>BF0</td><td>Released</td><td>0</td><td><strong>A</strong></td><td>✅ Success</td></tr>
+<tr><td></td><td>BF1</td><td>Recommended</td><td>1</td><td><strong>B</strong></td><td>ℹ️ Info</td></tr>
+<tr><td></td><td>BF3</td><td>Utility</td><td>3</td><td><strong>B</strong></td><td>ℹ️ Info</td></tr>
+<tr><td></td><td>BF5</td><td>Internal</td><td>5</td><td><strong>C</strong></td><td>⚠️ Warning</td></tr>
+<tr><td></td><td>BF9</td><td>Avoid</td><td>9</td><td><strong>D</strong></td><td>❌ Error</td></tr>
+<tr><td><strong>Frameworks</strong></td><td>FW0</td><td>Released</td><td>0</td><td><strong>A</strong></td><td>✅ Success</td></tr>
+<tr><td></td><td>FW1</td><td>Recommended</td><td>1</td><td><strong>B</strong></td><td>ℹ️ Info</td></tr>
+<tr><td></td><td>FW3</td><td>Utility</td><td>3</td><td><strong>B</strong></td><td>ℹ️ Info</td></tr>
+<tr><td></td><td>FW5</td><td>Internal</td><td>5</td><td><strong>C</strong></td><td>⚠️ Warning</td></tr>
+<tr><td></td><td>FW9</td><td>Avoid</td><td>9</td><td><strong>D</strong></td><td>❌ Error</td></tr>
+<tr><td><strong>Enhancement Framework</strong></td><td>EF0</td><td>Released</td><td>0</td><td><strong>A</strong></td><td>✅ Success</td></tr>
+<tr><td></td><td>EF1</td><td>Recommended</td><td>1</td><td><strong>B</strong></td><td>ℹ️ Info</td></tr>
+<tr><td></td><td>EF3</td><td>Utility</td><td>3</td><td><strong>B</strong></td><td>ℹ️ Info</td></tr>
+<tr><td></td><td>EF5</td><td>Internal</td><td>5</td><td><strong>C</strong></td><td>⚠️ Warning</td></tr>
+<tr><td></td><td>EF9</td><td>Avoid</td><td>10</td><td><strong>D</strong></td><td>❌ Error</td></tr>
+<tr><td><strong>Přímý přístup k tabulkám</strong></td><td>TBL</td><td>Objekt je SAP databázová tabulka</td><td>10</td><td><strong>D</strong></td><td>❌ Error</td></tr>
+<tr><td></td><td>TBLSEL</td><td>Čtení ze SAP tabulky</td><td>5</td><td><strong>C</strong></td><td>⚠️ Warning</td></tr>
+<tr><td></td><td>TBLUPD</td><td>Zápis do SAP tabulky</td><td>10</td><td><strong>D</strong></td><td>❌ Error</td></tr>
+<tr><td></td><td>TBLTYP</td><td>Použití SAP tabulky jako typ</td><td>1</td><td><strong>B</strong></td><td>ℹ️ Info</td></tr>
+<tr><td></td><td>TBLCDS</td><td>SAP tabulka v CDS view</td><td>5</td><td><strong>C</strong></td><td>⚠️ Warning</td></tr>
+<tr><td><strong>DDIC</strong></td><td>DDS</td><td>DDIC Simple</td><td>1</td><td><strong>B</strong></td><td>ℹ️ Info</td></tr>
+<tr><td></td><td>DDC</td><td>DDIC Complex</td><td>3</td><td><strong>B</strong></td><td>ℹ️ Info</td></tr>
+<tr><td></td><td>DDA</td><td>DDIC Avoid</td><td>2</td><td><strong>B</strong></td><td>ℹ️ Info</td></tr>
+<tr><td></td><td>MSG</td><td>Message Class</td><td>1</td><td><strong>B</strong></td><td>ℹ️ Info</td></tr>
+<tr><td><strong>Speciální</strong></td><td>MIG</td><td>Migrace nutná</td><td>0</td><td><strong>D</strong></td><td>❌ Error</td></tr>
+<tr><td></td><td>NOC</td><td>Chybí klasifikace</td><td>0</td><td><strong>D</strong></td><td>❌ Error</td></tr>
+</table>
+<blockquote>
+<p><strong>Klíčový detail:</strong> KernSeife rozlišuje <strong>čtení vs. zápis</strong> — <code>TBLSEL</code> (čtení, score 5) je méně kritické než <code>TBLUPD</code> (zápis, score 10). Ani Weber ani žádný jiný manuální index toto nerozlišuje.</p>
+</blockquote>
+<h4>KernSeife jako metrika trendu</h4>
+<pre onclick="openModal(this)"><code>Celkové skóre systému = Σ (výskyt objektu × score daného kódu)
+Cíl: celkové skóre klesá každý sprint
+Cíl pro nový kód: výhradně BF0/FW0/EF0 (score 0, Level A)</code></pre>
+<h4>Technické předpoklady</h4>
+<ul>
+<li>S/4HANA 2022 on-premise nebo vyšší (nebo BTP ABAP Environment)</li>
+<li>SAP Notes: 3565942 (ATC check pro "Usage of APIs") + 3444292</li>
+<li>Klasifikační soubor z Cloudification Repository: <code>objectClassifications_SAP.json</code></li>
+<li>Volitelně: BTP App pro vizualizaci scoring výsledků (Fiori, role collections: Admin/Manager/Developer)</li>
+</ul>
+<a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+<hr>
+<h3 id="clean-core-index-patrick-weber-historick-manuln-index">Clean Core Index (Patrick Weber) — historický manuální index</h3>
+<blockquote>
+<p>Weber's Clean Core Index série (SAP Community, 3 díly, 2024): <a href="https://community.sap.com/t5/technology-blog-posts-by-members/clean-core-strategy-a-practical-approach-to-get-a-cleaner-on-premise-system/ba-p/14180311" target="_blank">Part 1</a> | <a href="https://community.sap.com/t5/.../ba-p/14180323" target="_blank">Part 2</a> | <a href="https://community.sap.com/t5/.../ba-p/14180326" target="_blank">Part 3 (Index)</a> | GitHub: <a href="https://github.com/sap-weberpatrick/Clean-Core-Index" target="_blank">sap-weberpatrick/Clean-Core-Index</a></p>
+</blockquote>
+<p>Weber's index je <strong>manuálně vypočtený KPI</strong> — váhovaný součet objektů dle typu. Historicky cenný jako první veřejná metrika Clean Core dluhu a jako komunikační nástroj pro management.</p>
+<pre onclick="openModal(this)"><code>Index = Σ (počet objektů daného typu × severity váha)
+Index 0 = hypoteticky provozovatelné v Public Cloud</code></pre>
+<table>
+<tr><th>Typ objektu</th><th>Váha</th></tr>
+<tr><td>Z-reporty, Function Modules</td><td>1</td></tr>
+<tr><td>SAPScript / SmartForms</td><td>2</td></tr>
+<tr><td>User-Exits bez BAdI náhrady</td><td>5</td></tr>
+<tr><td>User-Exits s BAdI náhradou</td><td>8</td></tr>
+<tr><td>Modifikace, Implicit Enhancements</td><td>10</td></tr>
+</table>
+<p><strong>Reálné čísla z Weberova projektu:</strong></p>
+<p>30 let legacy, S/4HANA 2023 on-premise FP1 → po 8 měsících index klesl z <strong>~47 000 na ~35 000</strong> (–26%). ATC job na tomto systému nahlásil <strong>2,4 milionu findings</strong> při prvním spuštění.</p>
+<h4>Weber vs. KernSeife — kdy použít co</h4>
+<table>
+<tr><th>Aspekt</th><th>Weber Index</th><th>KernSeife</th></tr>
+<tr><td><strong>Typ</strong></td><td>Manuální výpočet (Excel/script)</td><td>Automatizovaný ATC check</td></tr>
+<tr><td><strong>Granularita</strong></td><td>Typ objektu (report, FM, exit...)</td><td>Konkrétní objekt + způsob použití</td></tr>
+<tr><td><strong>Read vs. Write</strong></td><td>Nerozlišuje</td><td>✅ Rozlišuje (TBLSEL vs. TBLUPD)</td></tr>
+<tr><td><strong>Integrace</strong></td><td>Ruční sběr dat</td><td>Nativní ATC v ABAP systému</td></tr>
+<tr><td><strong>Vizualizace</strong></td><td>Vlastní dashboard/Excel</td><td>BTP App (Fiori role collections)</td></tr>
+<tr><td><strong>Customizace</strong></td><td>Upravit váhy ručně</td><td>JSON klasifikační soubor</td></tr>
+<tr><td><strong>Vhodné pro</strong></td><td>Rychlý management report</td><td>Kontinuální governance a CI/CD</td></tr>
+<tr><td><strong>Open-source</strong></td><td>✅ GitHub (sap-weberpatrick)</td><td>✅ GitHub (SAP/project-kernseife)</td></tr>
+</table>
+<p><strong>Doporučení:</strong> Spusťte KernSeife pro automatizované měření v ATC. Weberův index používejte jako <strong>komunikační formát pro management</strong> — je srozumitelnější pro netechnické stakeholders.</p>
+<blockquote class="warning">
+<p>⚠️ <strong>Kontext pro management:</strong> KernSeife skóre měří <em>architektonický soulad se SAP Cloud směrem</em>, nikoliv funkčnost ani business hodnotu kódu. Snižování skóre je dobrý cíl pokud je řízeno byznysovými prioritami (cloud migrace, AI adopce, zjednodušení upgradů). Samotné snižování skóre bez kontextu není cíl — je to vedlejší efekt dobrých architektonických rozhodnutí. Viz také sekce <a href="#limity" target="_blank">5a — Kde Clean Core nedává smysl</a>.</p>
+</blockquote>
+<a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+<hr>
+<h3 id="atc-distribuce-ad">ATC distribuce A–D</h3>
+<table>
+<tr><th>Metrika</th><th>Startovní stav</th><th>Cíl (12 měsíců)</th></tr>
+<tr><td>% Level A kódu</td><td>zákazník-specifické</td><td>+20 procentních bodů</td></tr>
+<tr><td>% Level D kódu</td><td>zákazník-specifické</td><td>–50%</td></tr>
+<tr><td>Počet Unit testů</td><td>zákazník-specifické</td><td>každý nový objekt = pokrytí</td></tr>
+<tr><td>KernSeife celkové skóre</td><td>zákazník-specifické</td><td>klesající trend každý sprint</td></tr>
+</table>
+<h3 id="upgrade-readiness">Upgrade readiness</h3>
+<ul>
+<li>Každý upgrade support package: počet SPAU/SPDD objektů → klesající trend</li>
+<li>Cíl: nulové SPAU/SPDD pro nový kód psaný po zavedení Clean Core guidelines</li>
+</ul>
+<a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+<hr>
+<h2 id="priklady-moduly">9. Příklady objektů podle modulu — Level A–D a KernSeife mapping</h2>
+<blockquote>
+<p>Záměr: ukázat na reálných SAP objektech, jak se Level A–D klasifikace promítá do konkrétního kódu a jak totéž hodnotí KernSeife.  </p>
+<p>Zdroje: Cloudification Repository (SAP/abap-atc-cr-cv-s4hc), api.sap.com, KernSeife defaultSetup.json (verze 1.5.0).  </p>
+<p>⚠️ Názvy packages jsou aproximace — v konkrétním systému se mohou lišit drobnými variacemi.</p>
+</blockquote>
+<a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+<hr>
+<h3 id="modul-fi-financial-accounting">Modul: FI — Financial Accounting</h3>
+<h4>Funkcionalita: Účetní záznamy (Universal Journal)</h4>
+<table>
+<tr><th>Package</th><th>Objekt</th><th>Typ</th><th>Co zajišťuje</th><th>Level</th><th>KernSeife</th><th>Score</th></tr>
+<tr><td>FINS_ACDOC_API</td><td><code>I_JournalEntry</code></td><td>CDS View</td><td>Čtení hlaviček Universal Journal záznamů</td><td><strong>A</strong></td><td>BF0</td><td>0</td></tr>
+<tr><td>FINS_ACDOC_API</td><td><code>I_JournalEntryItem</code></td><td>CDS View</td><td>Čtení položek Universal Journal (z ACDOCA)</td><td><strong>A</strong></td><td>BF0</td><td>0</td></tr>
+<tr><td>FINS_ACDOC_API</td><td><code>A_JournalEntry</code></td><td>OData V4 Service</td><td>Vytvoření / čtení účetního záznamu přes REST</td><td><strong>A</strong></td><td>BF0</td><td>0</td></tr>
+<tr><td>FIN_FI</td><td><code>BAPI_ACC_DOCUMENT_POST</code></td><td>BAPI (RFC FM)</td><td>Zaúčtování FI dokladu — released API</td><td><strong>B</strong>¹</td><td>BF0/BF1</td><td>0–1</td></tr>
+<tr><td>FINS_ACDOC</td><td><code>ACDOCA</code></td><td>Databázová tabulka</td><td>Universal Journal — přímý SELECT</td><td><strong>D</strong></td><td>TBLSEL</td><td>5 (čtení)</td></tr>
+<tr><td>FIN_FI</td><td><code>BKPF</code></td><td>Databázová tabulka</td><td>FI doklad hlavička — legacy, v S/4 stub nad ACDOCA</td><td><strong>D</strong></td><td>TBLSEL</td><td>5 (čtení)</td></tr>
+<tr><td>FIN_FI</td><td><code>BSEG</code></td><td>Databázová tabulka</td><td>FI doklad položky — legacy, v S/4 stub nad ACDOCA</td><td><strong>D</strong></td><td>TBLSEL</td><td>5 (čtení)</td></tr>
+</table>
+<h4>Funkcionalita: Dodavatelské faktury (Accounts Payable)</h4>
+<table>
+<tr><th>Package</th><th>Objekt</th><th>Typ</th><th>Co zajišťuje</th><th>Level</th><th>KernSeife</th><th>Score</th></tr>
+<tr><td>FIN_AP</td><td><code>I_SupplierInvoice</code></td><td>CDS View</td><td>Čtení hlaviček dodavatelských faktur</td><td><strong>A</strong></td><td>BF0</td><td>0</td></tr>
+<tr><td>FIN_AP</td><td><code>I_SupplierInvoiceItemCube</code></td><td>CDS View</td><td>Analytický pohled na faktury (Embedded Analytics)</td><td><strong>A</strong></td><td>BF0</td><td>0</td></tr>
+<tr><td>FIN_AP</td><td><code>A_SupplierInvoice</code></td><td>OData V2 Service</td><td>Vytvoření / aktualizace faktury přes REST</td><td><strong>A</strong></td><td>BF0</td><td>0</td></tr>
+<tr><td>FIN_AP</td><td><code>RBKP</code></td><td>Databázová tabulka</td><td>Hlavičky faktur — legacy</td><td><strong>D</strong></td><td>TBLSEL</td><td>5</td></tr>
+<tr><td>FIN_AP</td><td><code>RSEG</code></td><td>Databázová tabulka</td><td>Položky faktur — legacy</td><td><strong>D</strong></td><td>TBLSEL</td><td>5</td></tr>
+</table>
+<h4>Příklady ABAP kódu — E2E průchod (FI)</h4>
+<blockquote>
+<p>Každý příklad má dvě části: <strong>[LEGACY]</strong> (aktuální stav u zákazníka) a <strong>[CLEAN CORE]</strong> (cílový stav po migraci).  </p>
+<p>Sekce <code>&quot; ───</code> indikují reálný objem kódu kolem klíčové logiky — zdrojové soubory mívají 100–300 řádků.</p>
+</blockquote>
+<p><strong>[LEGACY] FI-1: Přecenění pohledávek — nočně spouštěný batch job</strong></p>
+<pre onclick="openModal(this)"><code class="language-abap">&quot; ─── [~65 ř.] Deklarace, sel. obrazovka, autorizace ─────────────────────────
+DATA: ls_t001     TYPE t001,
+      lt_postings TYPE STANDARD TABLE OF accit,
+      ls_log      TYPE zfi_forex_log_s.
+PARAMETERS: p_bukrs TYPE bukrs OBLIGATORY,
+            p_keydt TYPE dats DEFAULT sy-datum.
+AUTHORITY-CHECK OBJECT &#x27;F_BKPF_BUK&#x27;
+  FIELD &#x27;ACTVT&#x27; ID &#x27;03&#x27; FIELD &#x27;BUKRS&#x27; ID p_bukrs.
+IF sy-subrc &lt;&gt; 0. MESSAGE e001(zfi) WITH p_bukrs. RETURN. ENDIF.
+&quot; ... [čtení customizingu T001/T009, open FP check, lock object ≈ dalších 45 ř.]
+
+&quot; ─── [~15 ř.] Klíčová logika ← hodnocena KernSeife ─────────────────────────
+SELECT SINGLE * FROM t001 INTO ls_t001         &quot; ← Level D | TBLSEL  | 5
+  WHERE bukrs = p_bukrs.
+
+CALL FUNCTION &#x27;FI_PERIOD_CLOSE_FOREX&#x27;          &quot; ← Level D | BF9    | 9
+  EXPORTING i_bukrs   = p_bukrs
+            i_keydate = p_keydt
+  IMPORTING et_postings = lt_postings.
+
+CALL FUNCTION &#x27;BAPI_ACC_DOCUMENT_POST&#x27;         &quot; ← Level B | BF1    | 1
+  TABLES accountgl = lt_postings.
+
+INSERT INTO zfi_forex_log VALUES ls_log.       &quot; ← Level D | TBLUPD | 10
+
+&quot; ─── [~20 ř.] Error handling + commit ───────────────────────────────────────
+IF sy-subrc &lt;&gt; 0. ROLLBACK WORK.
+  &quot; ... [BAL_LOG_MSG_ADD, MESSAGE e..., výpis chyb ≈ dalších 15 ř.]
+ELSE. COMMIT WORK AND WAIT.
+ENDIF.</code></pre>
+<table>
+<tr><th>Volání</th><th>Level</th><th>KernSeife</th><th>Score</th></tr>
+<tr><td><code>T001</code> — SELECT</td><td>D</td><td>TBLSEL</td><td>5</td></tr>
+<tr><td><code>FI_PERIOD_CLOSE_FOREX</code> — non-released FM</td><td>D</td><td>BF9</td><td>9</td></tr>
+<tr><td><code>BAPI_ACC_DOCUMENT_POST</code> — released BAPI</td><td>B</td><td>BF1</td><td>1</td></tr>
+<tr><td><code>ZFI_FOREX_LOG</code> — INSERT</td><td>D</td><td>TBLUPD</td><td>10</td></tr>
+<tr><td><strong>Skóre fragmentu</strong></td><td></td><td></td><td><strong>25</strong></td></tr>
+</table>
+<p><strong>[CLEAN CORE] FI-1: Přecenění pohledávek — released CDS + standardní uzávěrka</strong></p>
+<pre onclick="openModal(this)"><code class="language-abap">&quot; ─── Čtení otevřených položek přes released CDS ──────────────────────────────
+SELECT FROM i_journalentry                                  &quot; ← Level A | BF0 | 0
+  FIELDS companycode, customer, amountincompanycodecrcy
+  WHERE companycode = @p_bukrs AND isclearingentry = &#x27;&#x27;
+  INTO TABLE @lt_items.
+
+&quot; ─── Zaúčtování přecenění přes released BAPI ─────────────────────────────────
+CALL FUNCTION &#x27;BAPI_ACC_DOCUMENT_POST&#x27;                     &quot; ← Level B | BF1 | 1
+  TABLES accountgl = lt_forex_postings.
+
+&quot; ─── Log přes released Application Log API (cl_bali_log, S/4 2020+) ─────────
+cl_bali_log=&gt;create( )-&gt;add_messages_from_bapirettab(      &quot; ← Level A | BF0 | 0
+  it_bapiret2 = lt_return ).</code></pre>
+<table>
+<tr><th>Volání</th><th>Level</th><th>KernSeife</th><th>Score</th></tr>
+<tr><td><code>I_JournalEntry</code> — released CDS</td><td>A</td><td>BF0</td><td>0</td></tr>
+<tr><td><code>BAPI_ACC_DOCUMENT_POST</code> — released BAPI</td><td>B</td><td>BF1</td><td>1</td></tr>
+<tr><td><code>cl_bali_log</code> — released API</td><td>A</td><td>BF0</td><td>0</td></tr>
+<tr><td><strong>Skóre fragmentu</strong></td><td></td><td></td><td><strong>1</strong></td></tr>
+</table>
+<blockquote class="tip">
+<p>💡 Non-released FM (score 9) + Z-INSERT (score 10) → released CDS + BAPI + logging API. Pokles: <strong>25 → 1</strong>.</p>
+</blockquote>
+<p><strong>[LEGACY] FI-2: Schválení platebního příkazu — User-Exit + deprecated e-mail FM</strong></p>
+<pre onclick="openModal(this)"><code class="language-abap">&quot; ─── [~60 ř.] Deklarace, výběr plateb, autorizace ───────────────────────────
+DATA: ls_reguh     TYPE reguh,
+      ls_mail_data TYPE sodocchgi1,
+      lv_approved  TYPE c.
+PARAMETERS: p_laufd TYPE d, p_laufi TYPE c LENGTH 3.
+&quot; ... [autorizace F110, lock check, příprava recipient listu ≈ dalších 50 ř.]
+
+&quot; ─── [~15 ř.] Klíčová logika ← hodnocena KernSeife ─────────────────────────
+SELECT SINGLE * FROM reguh INTO ls_reguh       &quot; ← Level D | TBLSEL  | 5
+  WHERE laufd = p_laufd AND laufi = p_laufi.
+
+CALL CUSTOMER-FUNCTION &#x27;001&#x27;                   &quot; ← Level C | EF5    | 5
+  EXPORTING i_amount   = ls_reguh-rwbtr
+  IMPORTING e_approved = lv_approved.
+
+IF lv_approved = abap_false.
+  UPDATE zfi_payment_approval SET status = &#x27;R&#x27; &quot; ← Level D | TBLUPD | 10
+    WHERE payment_id = ls_reguh-zbukr.
+  CALL FUNCTION &#x27;SO_NEW_DOCUMENT_SEND_API2&#x27;    &quot; ← Level C | BF5    | 5
+    EXPORTING document_data = ls_mail_data.
+ENDIF.
+
+&quot; ─── [~15 ř.] Error handling + commit ───────────────────────────────────────
+COMMIT WORK AND WAIT.
+&quot; ... [výpis výsledků schválení, chybové zprávy ≈ dalších 10 ř.]</code></pre>
+<table>
+<tr><th>Volání</th><th>Level</th><th>KernSeife</th><th>Score</th></tr>
+<tr><td><code>REGUH</code> — SELECT</td><td>D</td><td>TBLSEL</td><td>5</td></tr>
+<tr><td><code>CALL CUSTOMER-FUNCTION &#x27;001&#x27;</code> — User-Exit</td><td>C</td><td>EF5</td><td>5</td></tr>
+<tr><td><code>ZFI_PAYMENT_APPROVAL</code> — UPDATE</td><td>D</td><td>TBLUPD</td><td>10</td></tr>
+<tr><td><code>SO_NEW_DOCUMENT_SEND_API2</code> — deprecated FM</td><td>C</td><td>BF5</td><td>5</td></tr>
+<tr><td><strong>Skóre fragmentu</strong></td><td></td><td></td><td><strong>25</strong></td></tr>
+</table>
+<p><strong>[CLEAN CORE] FI-2: Schválení platby — released BAdI + BTP e-mail API</strong></p>
+<pre onclick="openModal(this)"><code class="language-abap">&quot; ─── Released BAdI implementace — CLASS registrovaná v Enhancement Spot ───────
+CLASS zcl_fi_payment_approval DEFINITION PUBLIC FINAL.
+  PUBLIC SECTION.
+    INTERFACES if_fin_payment_ctrl.            &quot; ← Level A | EF0 | 0
+ENDCLASS.
+CLASS zcl_fi_payment_approval IMPLEMENTATION.
+  METHOD if_fin_payment_ctrl~check_payment.
+    &quot; business logika schválení (pure ABAP, bez přímého přístupu k tabulkám)
+    rv_approved = COND #( WHEN is_payment-amount &gt; 50000 THEN abap_false
+                          ELSE abap_true ).
+  ENDMETHOD.
+ENDMETHOD.
+
+&quot; ─── Notifikace přes released BTP e-mail API (cl_bcs_mail) ──────────────────
+IF rv_approved = abap_false.
+  cl_bcs_mail=&gt;create_instance(                              &quot; ← Level A | BF0 | 0
+    )-&gt;set_subject( &#x27;Platba zamítnuta&#x27; )-&gt;send( ).
+ENDIF.</code></pre>
+<table>
+<tr><th>Volání</th><th>Level</th><th>KernSeife</th><th>Score</th></tr>
+<tr><td><code>INTERFACES if_fin_payment_ctrl</code> — released BAdI</td><td>A</td><td>EF0</td><td>0</td></tr>
+<tr><td><code>cl_bcs_mail</code> — released email API</td><td>A</td><td>BF0</td><td>0</td></tr>
+<tr><td><strong>Skóre fragmentu</strong></td><td></td><td></td><td><strong>0</strong></td></tr>
+</table>
+<blockquote class="tip">
+<p>💡 User-Exit (score 5) + UPDATE Z-tbl (score 10) + deprecated FM (score 5) → released BAdI + BTP API. Pokles: <strong>25 → 0</strong>.</p>
+</blockquote>
+<p><strong>[LEGACY] FI-3: Custom DPH kalkulace — implicit enhancement uvnitř SAP FM</strong></p>
+<pre onclick="openModal(this)"><code class="language-abap">&quot; ─── Implicit enhancement vloženo UVNITŘ SAP FM ──────────────────────────────
+&quot; ─── Okolní SAP kód: ≈ 120 řádků (FM CALCULATE_TAX_FROM_NET_AMOUNT) ──────────
+&quot; ─── Tento blok je NEVIDITELNÝ v SE80, ATC, code review! ────────────────────
+
+ENHANCEMENT 1 ZFI_TAX_PHARMA_HOOK.            &quot; ← Level D | EF9    | 10
+  SELECT SINGLE zrate INTO lv_rate            &quot; ← Level D | TBLSEL  | 5
+    FROM ztax_pharma_rates
+    WHERE mwskz = i_mwskz AND country = i_land1.
+  IF sy-subrc = 0.
+    e_hwste = ( i_hwbas * lv_rate ) / 100.
+  ENDIF.
+ENDENHANCEMENT.
+
+&quot; ─── Pokračuje standardní SAP kód (dalších ~80 ř. FM) ───────────────────────</code></pre>
+<table>
+<tr><th>Volání</th><th>Level</th><th>KernSeife</th><th>Score</th></tr>
+<tr><td><code>ENHANCEMENT</code> — implicit, neviditelný</td><td>D</td><td>EF9</td><td>10</td></tr>
+<tr><td><code>ZTAX_PHARMA_RATES</code> — SELECT</td><td>D</td><td>TBLSEL</td><td>5</td></tr>
+<tr><td><strong>Skóre fragmentu</strong></td><td></td><td></td><td><strong>15</strong></td></tr>
+</table>
+<blockquote class="warning">
+<p>⚠️ Implicit enhancement není viditelný v SE80 ani standardním ATC průchodem — detekuje jej pouze KernSeife nebo dedikovaný custom ATC check.</p>
+</blockquote>
+<p><strong>[CLEAN CORE] FI-3: Custom DPH — released BAdI (explicit Enhancement Spot)</strong></p>
+<pre onclick="openModal(this)"><code class="language-abap">&quot; ─── Explicit Enhancement Spot — VIDITELNÝ v SE80, upgrade-safe ──────────────
+&quot; ─── CLASS registrována jako BAdI implementace v ADT / SE19 ──────────────────
+
+CLASS zcl_fi_pharma_tax DEFINITION PUBLIC FINAL.
+  PUBLIC SECTION.
+    INTERFACES if_fin_tax_determination.       &quot; ← Level A | EF0 | 0
+ENDCLASS.
+CLASS zcl_fi_pharma_tax IMPLEMENTATION.
+  METHOD if_fin_tax_determination~get_rate.
+    SELECT SINGLE zrate FROM ztax_pharma_rates &quot; ← Level D | TBLSEL | 5
+      WHERE mwskz = @iv_mwskz AND country = @iv_country
+      INTO @rv_rate.
+  ENDMETHOD.
+ENDCLASS.</code></pre>
+<table>
+<tr><th>Volání</th><th>Level</th><th>KernSeife</th><th>Score</th></tr>
+<tr><td><code>INTERFACES if_fin_tax_determination</code> — released BAdI</td><td>A</td><td>EF0</td><td>0</td></tr>
+<tr><td><code>ZTAX_PHARMA_RATES</code> — SELECT (zachovat Z-tabulku)</td><td>D</td><td>TBLSEL</td><td>5</td></tr>
+<tr><td><strong>Skóre fragmentu</strong></td><td></td><td></td><td><strong>5</strong></td></tr>
+</table>
+<blockquote class="tip">
+<p>💡 Z-tabulka zůstává, ale <strong>způsob hookování</strong> se mění z invisible EF9 (score 10) na released BAdI EF0 (score 0). Pokles: <strong>15 → 5</strong>. Zbývající TBLSEL lze adresovat v dalším cyklu.</p>
+</blockquote>
+<a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+<hr>
+<h3 id="modul-mm-materials-management">Modul: MM — Materials Management</h3>
+<h4>Funkcionalita: Material Master (kmenová data materiálu)</h4>
+<table>
+<tr><th>Package</th><th>Objekt</th><th>Typ</th><th>Co zajišťuje</th><th>Level</th><th>KernSeife</th><th>Score</th></tr>
+<tr><td>MAT_BAS</td><td><code>I_Product</code></td><td>CDS View</td><td>Základní data materiálu — náhrada MARA</td><td><strong>A</strong></td><td>BF0</td><td>0</td></tr>
+<tr><td>MAT_BAS</td><td><code>I_ProductPlant</code></td><td>CDS View</td><td>Závodová data materiálu — náhrada MARC</td><td><strong>A</strong></td><td>BF0</td><td>0</td></tr>
+<tr><td>MAT_BAS</td><td><code>I_ProductStorage</code></td><td>CDS View</td><td>Skladová data — náhrada MARD</td><td><strong>A</strong></td><td>BF0</td><td>0</td></tr>
+<tr><td>MAT_BAS</td><td><code>A_Product</code></td><td>OData V2/V4 Service</td><td>Vytvoření / aktualizace materiálu přes REST</td><td><strong>A</strong></td><td>BF0</td><td>0</td></tr>
+<tr><td>MAT_BAS</td><td><code>BAPI_MATERIAL_GET_DETAIL</code></td><td>BAPI (RFC FM)</td><td>Čtení detailu materiálu — released</td><td><strong>B</strong>¹</td><td>BF0/BF1</td><td>0–1</td></tr>
+<tr><td>MAT_BAS</td><td><code>MARA</code></td><td>Databázová tabulka</td><td>Základní data materiálu — legacy</td><td><strong>D</strong></td><td>TBLSEL</td><td>5</td></tr>
+<tr><td>MAT_BAS</td><td><code>MARC</code></td><td>Databázová tabulka</td><td>Závodová data materiálu — legacy</td><td><strong>D</strong></td><td>TBLSEL</td><td>5</td></tr>
+<tr><td>MAT_BAS</td><td><code>MARD</code></td><td>Databázová tabulka</td><td>Skladová data — legacy</td><td><strong>D</strong></td><td>TBLSEL</td><td>5</td></tr>
+</table>
+<h4>Funkcionalita: Nákupní objednávka (Purchase Order)</h4>
+<table>
+<tr><th>Package</th><th>Objekt</th><th>Typ</th><th>Co zajišťuje</th><th>Level</th><th>KernSeife</th><th>Score</th></tr>
+<tr><td>MM_PUR</td><td><code>I_PurchaseOrder</code></td><td>CDS View</td><td>Čtení hlaviček nákupní objednávky</td><td><strong>A</strong></td><td>BF0</td><td>0</td></tr>
+<tr><td>MM_PUR</td><td><code>I_PurchaseOrderItem</code></td><td>CDS View</td><td>Čtení položek nákupní objednávky</td><td><strong>A</strong></td><td>BF0</td><td>0</td></tr>
+<tr><td>MM_PUR</td><td><code>A_PurchaseOrder</code></td><td>OData V2 Service</td><td>Vytvoření / aktualizace PO přes REST</td><td><strong>A</strong></td><td>BF0</td><td>0</td></tr>
+<tr><td>MM_PUR</td><td><code>BAPI_PO_CREATE1</code></td><td>BAPI (RFC FM)</td><td>Vytvoření objednávky — released, nemá plnou REST alternativu pro všechny scénáře</td><td><strong>B</strong>¹</td><td>BF1</td><td>1</td></tr>
+<tr><td>MM_PUR</td><td><code>BAPI_PO_GETDETAIL</code></td><td>BAPI (RFC FM)</td><td>Čtení detailu PO — released</td><td><strong>B</strong>¹</td><td>BF0/BF1</td><td>0–1</td></tr>
+<tr><td>MM_PUR</td><td><code>EKKO</code></td><td>Databázová tabulka</td><td>Hlavičky PO — legacy</td><td><strong>D</strong></td><td>TBLSEL</td><td>5</td></tr>
+<tr><td>MM_PUR</td><td><code>EKPO</code></td><td>Databázová tabulka</td><td>Položky PO — legacy</td><td><strong>D</strong></td><td>TBLSEL</td><td>5</td></tr>
+<tr><td>MM_PUR</td><td><code>EBAN</code></td><td>Databázová tabulka</td><td>Nákupní požadavky — legacy</td><td><strong>D</strong></td><td>TBLSEL</td><td>5</td></tr>
+</table>
+<h4>Příklady ABAP kódu — E2E průchod (MM)</h4>
+<p><strong>[LEGACY] MM-1: Automatické doplnění skladu — noční replenishment batch</strong></p>
+<pre onclick="openModal(this)"><code class="language-abap">&quot; ─── [~70 ř.] Deklarace, výběrová obrazovka, autorizace ─────────────────────
+DATA: lv_stock   TYPE labst,
+      lv_qty     TYPE menge_d,
+      ls_pohead  TYPE bapimepoheader,
+      lt_poitems TYPE STANDARD TABLE OF bapimepoitem.
+PARAMETERS: p_werks TYPE werks_d, p_lgort TYPE lgort_d.
+AUTHORITY-CHECK OBJECT &#x27;M_MSEG_BWA&#x27;
+  FIELD &#x27;ACTVT&#x27; ID &#x27;01&#x27; FIELD &#x27;WERKS&#x27; ID p_werks.
+IF sy-subrc &lt;&gt; 0. MESSAGE e002(zmm) WITH p_werks. RETURN. ENDIF.
+&quot; ... [čtení strategie ZTMM_REPL_STRAT, lock skladu, příprava hlaviček ≈ dalších 50 ř.]
+
+&quot; ─── [~15 ř.] Klíčová logika ← hodnocena KernSeife ─────────────────────────
+SELECT labst INTO lv_stock                     &quot; ← Level D | TBLSEL  | 5
+  FROM mard
+  WHERE matnr = iv_matnr AND werks = iv_werks AND lgort = iv_lgort.
+
+CALL FUNCTION &#x27;Z_MM_CALC_REORDER_QTY&#x27;         &quot; ← Level C | BF5    | 5
+  EXPORTING iv_current_stock = lv_stock
+            iv_matnr         = iv_matnr
+  IMPORTING ev_order_qty     = lv_qty.
+
+CALL FUNCTION &#x27;BAPI_PO_CREATE1&#x27;               &quot; ← Level B | BF1    | 1
+  EXPORTING poheader = ls_pohead
+  TABLES    poitem   = lt_poitems.
+
+INSERT INTO zmm_reorder_log VALUES ls_entry.  &quot; ← Level D | TBLUPD | 10
+
+&quot; ─── [~20 ř.] Error handling + commit ───────────────────────────────────────
+IF sy-subrc &lt;&gt; 0. ROLLBACK WORK.
+  &quot; ... [BAL_LOG_MSG_ADD, MESSAGE e... ≈ dalších 15 ř.]
+ELSE. COMMIT WORK AND WAIT.
+ENDIF.</code></pre>
+<table>
+<tr><th>Volání</th><th>Level</th><th>KernSeife</th><th>Score</th></tr>
+<tr><td><code>MARD</code> — SELECT</td><td>D</td><td>TBLSEL</td><td>5</td></tr>
+<tr><td><code>Z_MM_CALC_REORDER_QTY</code> — custom Z-FM</td><td>C</td><td>BF5</td><td>5</td></tr>
+<tr><td><code>BAPI_PO_CREATE1</code> — released BAPI</td><td>B</td><td>BF1</td><td>1</td></tr>
+<tr><td><code>ZMM_REORDER_LOG</code> — INSERT</td><td>D</td><td>TBLUPD</td><td>10</td></tr>
+<tr><td><strong>Skóre fragmentu</strong></td><td></td><td></td><td><strong>21</strong></td></tr>
+</table>
+<blockquote>
+<p>¹ BAPI je released, ale pro nový vývoj preferujeme OData/REST (A_PurchaseOrder entity).</p>
+</blockquote>
+<p><strong>[CLEAN CORE] MM-1: Replenishment — released CDS + OData API</strong></p>
+<pre onclick="openModal(this)"><code class="language-abap">&quot; ─── Čtení stavů skladu přes released CDS ────────────────────────────────────
+SELECT FROM i_productstoragebin                             &quot; ← Level A | BF0 | 0
+  FIELDS matnr, werks, lgort, labst
+  WHERE werks = @p_werks AND lgort = @p_lgort
+  INTO TABLE @lt_stock.
+
+&quot; ─── Pure ABAP logika doplnění — bez přístupu na dict. tabulky ───────────────
+lv_qty = zcl_mm_repl_calc=&gt;calculate( lt_stock ).          &quot; ← Level A | BF0 | 0
+
+&quot; ─── Vytvoření PO přes OData (cl_web_http_client_manager, released) ──────────
+DATA(lo_http) = cl_web_http_client_manager=&gt;create_by_destination( &quot; ← Level A | BF0 | 0
+  &#x27;S4_MM_PO_ODATA&#x27; ).
+lo_http-&gt;get_http_client( )-&gt;execute( if_web_http_client=&gt;post ).
+&quot; Payload: JSON body pro entity A_PurchaseOrder</code></pre>
+<table>
+<tr><th>Volání</th><th>Level</th><th>KernSeife</th><th>Score</th></tr>
+<tr><td><code>I_ProductStorageBin</code> — released CDS</td><td>A</td><td>BF0</td><td>0</td></tr>
+<tr><td><code>zcl_mm_repl_calc</code> — pure ABAP, bez dict. přístupu</td><td>A</td><td>BF0</td><td>0</td></tr>
+<tr><td><code>cl_web_http_client_manager</code> — released HTTP client</td><td>A</td><td>BF0</td><td>0</td></tr>
+<tr><td><strong>Skóre fragmentu</strong></td><td></td><td></td><td><strong>0</strong></td></tr>
+</table>
+<blockquote class="tip">
+<p>💡 Custom Z-FM (score 5) + Z-INSERT (score 10) → released CDS + OData. Pokles: <strong>21 → 0</strong>.</p>
+</blockquote>
+<p><strong>[LEGACY] MM-2: Schválení příjmu zboží — classic BAdI (non-released)</strong></p>
+<pre onclick="openModal(this)"><code class="language-abap">&quot; ─── [~55 ř.] GET BADI, deklarace, autorizace ───────────────────────────────
+DATA: lo_gr_check TYPE REF TO zif_mm_gr_check,
+      lv_reject   TYPE c,
+      lv_text     TYPE maktx.
+&quot; ... [autorizace M_MSEG_BWA, field-symbol mapování, lock objekt ≈ dalších 40 ř.]
+
+&quot; ─── [~15 ř.] Klíčová logika ← hodnocena KernSeife ─────────────────────────
+GET BADI lo_gr_check                           &quot; ← Level C | EF5    | 5
+  FILTERS matnr = iv_matnr.
+
+CALL BADI lo_gr_check-&gt;check_goods_receipt     &quot; ← Level C | EF5    | 5
+  EXPORTING iv_matnr  = iv_matnr
+            iv_menge  = iv_menge
+  IMPORTING ev_reject = lv_reject.
+
+IF lv_reject = abap_true.
+  SELECT SINGLE maktx FROM makt INTO lv_text   &quot; ← Level D | TBLSEL  | 5
+    WHERE matnr = iv_matnr AND spras = sy-langu.
+
+  MESSAGE e001(zmm) WITH lv_text.              &quot; ← Level A | MSG    | 1
+ENDIF.
+
+&quot; ─── [~10 ř.] Cleanup + dequeue ──────────────────────────────────────────────
+&quot; ... [DEQUEUE_ALL, výpis, cleanup ≈ dalších 10 ř.]</code></pre>
+<table>
+<tr><th>Volání</th><th>Level</th><th>KernSeife</th><th>Score</th></tr>
+<tr><td><code>GET BADI</code> — classic (non-released Enhancement Spot)</td><td>C</td><td>EF5</td><td>5</td></tr>
+<tr><td><code>CALL BADI -&gt;check_goods_receipt</code> — metoda</td><td>C</td><td>EF5</td><td>5</td></tr>
+<tr><td><code>MAKT</code> — SELECT</td><td>D</td><td>TBLSEL</td><td>5</td></tr>
+<tr><td><code>MESSAGE e001(ZMM)</code> — message class</td><td>A</td><td>MSG</td><td>1</td></tr>
+<tr><td><strong>Skóre fragmentu</strong></td><td></td><td></td><td><strong>16</strong></td></tr>
+</table>
+<p><strong>[CLEAN CORE] MM-2: GR check — released BAdI + released CDS</strong></p>
+<pre onclick="openModal(this)"><code class="language-abap">&quot; ─── Released BAdI — CLASS implementuje released Interface ───────────────────
+CLASS zcl_mm_gr_quality DEFINITION PUBLIC FINAL.
+  PUBLIC SECTION.
+    INTERFACES if_mm_goodsmvt_item.            &quot; ← Level A | EF0 | 0
+ENDCLASS.
+CLASS zcl_mm_gr_quality IMPLEMENTATION.
+  METHOD if_mm_goodsmvt_item~check.
+    &quot; ─── Text materiálu přes released CDS ────────────────────────────────────
+    SELECT SINGLE product, productdescription
+      FROM i_productdescription                &quot; ← Level A | BF0 | 0
+      WHERE product = @is_goodsmvt-material AND language = @sy-langu
+      INTO @DATA(ls_desc).
+
+    IF calc_reject_condition( ls_desc ).
+      RAISE EXCEPTION TYPE cx_mm_goodsmvt_error.
+    ENDIF.
+  ENDMETHOD.
+ENDCLASS.</code></pre>
+<table>
+<tr><th>Volání</th><th>Level</th><th>KernSeife</th><th>Score</th></tr>
+<tr><td><code>INTERFACES if_mm_goodsmvt_item</code> — released BAdI</td><td>A</td><td>EF0</td><td>0</td></tr>
+<tr><td><code>I_ProductDescription</code> — released CDS</td><td>A</td><td>BF0</td><td>0</td></tr>
+<tr><td><strong>Skóre fragmentu</strong></td><td></td><td></td><td><strong>0</strong></td></tr>
+</table>
+<blockquote class="tip">
+<p>💡 Classic BAdI (EF5 × 2 = 10) + přímý SELECT (TBLSEL 5) → released BAdI + released CDS. Pokles: <strong>16 → 0</strong>.</p>
+</blockquote>
+<p><strong>[LEGACY] MM-3: Uzávěrka inventury — implicit enhancement + přímý UPDATE skladu</strong></p>
+<pre onclick="openModal(this)"><code class="language-abap">&quot; ─── Implicit enhancement UVNITŘ SAP programu RM07IIEX ───────────────────────
+&quot; ─── Okolní SAP kód: ≈ 200 řádků programu — Enhancement NEVIDITELNÝ v SE80 ───
+&quot; ─── Scénář: custom korekcní logika vložena jako implicit enhancement ────────
+
+ENHANCEMENT 1 ZMM_INVENTORY_CLOSE_HOOK.       &quot; ← Level D | EF9    | 10
+  UPDATE mard                                 &quot; ← Level D | TBLUPD | 10
+    SET labst = lv_corrected_qty
+    WHERE matnr = iv_matnr AND werks = iv_werks AND lgort = iv_lgort.
+
+  CALL FUNCTION &#x27;Z_EXT_WMS_SYNC&#x27;              &quot; ← Level D | BF9    | 9
+    DESTINATION &#x27;WMS_RFC&#x27;
+    EXPORTING iv_matnr = iv_matnr
+              iv_qty   = lv_corrected_qty.
+ENDENHANCEMENT.
+
+&quot; ─── Pokračuje standardní SAP kód ────────────────────────────────────────────</code></pre>
+<table>
+<tr><th>Volání</th><th>Level</th><th>KernSeife</th><th>Score</th></tr>
+<tr><td><code>ENHANCEMENT</code> — implicit</td><td>D</td><td>EF9</td><td>10</td></tr>
+<tr><td><code>MARD</code> — UPDATE přímý (bez BAPI!)</td><td>D</td><td>TBLUPD</td><td>10</td></tr>
+<tr><td><code>Z_EXT_WMS_SYNC</code> — RFC do WMS</td><td>D</td><td>BF9</td><td>9</td></tr>
+<tr><td><strong>Skóre fragmentu</strong></td><td></td><td></td><td><strong>29</strong></td></tr>
+</table>
+<blockquote class="warning">
+<p>⚠️ Přímý UPDATE <code>MARD</code> obchází SAP locking a MM inventory management vrstvu — vysoké riziko nekonzistentního stavu skladu při paralelním zpracování.</p>
+</blockquote>
+<p><strong>[CLEAN CORE] MM-3: Uzávěrka inventury — released BAdI + BTP REST</strong></p>
+<pre onclick="openModal(this)"><code class="language-abap">&quot; ─── Released BAdI (explicit, viditelný v ADT / SE19) ────────────────────────
+CLASS zcl_mm_invent_close DEFINITION PUBLIC FINAL.
+  PUBLIC SECTION.
+    INTERFACES if_mm_goodsmvt_posting.         &quot; ← Level A | EF0 | 0
+ENDCLASS.
+CLASS zcl_mm_invent_close IMPLEMENTATION.
+  METHOD if_mm_goodsmvt_posting~after_posting.
+    &quot; ─── Bez přímého UPDATE MARD — opravné pohyby přes standardní SAP 551/552 ─
+    &quot; ─── Integrace WMS přes BTP Integration Suite (REST iFlow) ──────────────
+    DATA(lo_http) = cl_web_http_client_manager=&gt;create_by_destination( &quot; ← Level A | BF0 | 0
+      &#x27;BTP_IS_WMS&#x27; ).
+    lo_http-&gt;get_http_client( )-&gt;execute( if_web_http_client=&gt;post ).
+  ENDMETHOD.
+ENDCLASS.</code></pre>
+<table>
+<tr><th>Volání</th><th>Level</th><th>KernSeife</th><th>Score</th></tr>
+<tr><td><code>INTERFACES if_mm_goodsmvt_posting</code> — released BAdI</td><td>A</td><td>EF0</td><td>0</td></tr>
+<tr><td><code>cl_web_http_client_manager</code> — released HTTP client (BTP)</td><td>A</td><td>BF0</td><td>0</td></tr>
+<tr><td><strong>Skóre fragmentu</strong></td><td></td><td></td><td><strong>0</strong></td></tr>
+</table>
+<blockquote class="tip">
+<p>💡 Invisible EF9 (10) + TBLUPD (10) + RFC (9) → released BAdI + BTP REST. Pokles: <strong>29 → 0</strong>.</p>
+</blockquote>
+<a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+<hr>
+<h3 id="modul-sd-sales-distribution">Modul: SD — Sales & Distribution</h3>
+<h4>Funkcionalita: Prodejní objednávka (Sales Order)</h4>
+<table>
+<tr><th>Package</th><th>Objekt</th><th>Typ</th><th>Co zajišťuje</th><th>Level</th><th>KernSeife</th><th>Score</th></tr>
+<tr><td>SD_SALES</td><td><code>I_SalesOrder</code></td><td>CDS View</td><td>Čtení hlaviček prodejní objednávky</td><td><strong>A</strong></td><td>BF0</td><td>0</td></tr>
+<tr><td>SD_SALES</td><td><code>I_SalesOrderItem</code></td><td>CDS View</td><td>Čtení položek prodejní objednávky</td><td><strong>A</strong></td><td>BF0</td><td>0</td></tr>
+<tr><td>SD_SALES</td><td><code>A_SalesOrder</code></td><td>OData V2 Service</td><td>Vytvoření / aktualizace SO přes REST</td><td><strong>A</strong></td><td>BF0</td><td>0</td></tr>
+<tr><td>SD_SALES</td><td><code>BAPI_SALESORDER_CREATEFROMDAT2</code></td><td>BAPI (RFC FM)</td><td>Vytvoření SO — released, velmi rozšířený</td><td><strong>B</strong>¹</td><td>BF1</td><td>1</td></tr>
+<tr><td>SD_SALES</td><td><code>VBAK</code></td><td>Databázová tabulka</td><td>Hlavičky SO — legacy</td><td><strong>D</strong></td><td>TBLSEL</td><td>5</td></tr>
+<tr><td>SD_SALES</td><td><code>VBAP</code></td><td>Databázová tabulka</td><td>Položky SO — legacy</td><td><strong>D</strong></td><td>TBLSEL</td><td>5</td></tr>
+</table>
+<h4>Funkcionalita: Dodávka (Outbound Delivery)</h4>
+<table>
+<tr><th>Package</th><th>Objekt</th><th>Typ</th><th>Co zajišťuje</th><th>Level</th><th>KernSeife</th><th>Score</th></tr>
+<tr><td>LE_SHP</td><td><code>I_OutboundDelivery</code></td><td>CDS View</td><td>Čtení hlaviček odchozích dodávek</td><td><strong>A</strong></td><td>BF0</td><td>0</td></tr>
+<tr><td>LE_SHP</td><td><code>I_OutboundDeliveryItem</code></td><td>CDS View</td><td>Čtení položek dodávky</td><td><strong>A</strong></td><td>BF0</td><td>0</td></tr>
+<tr><td>LE_SHP</td><td><code>A_OutbDelivery</code></td><td>OData V2 Service</td><td>Vytvoření / aktualizace dodávky přes REST</td><td><strong>A</strong></td><td>BF0</td><td>0</td></tr>
+<tr><td>LE_SHP</td><td><code>LIKP</code></td><td>Databázová tabulka</td><td>Hlavičky dodávky — legacy</td><td><strong>D</strong></td><td>TBLSEL</td><td>5</td></tr>
+<tr><td>LE_SHP</td><td><code>LIPS</code></td><td>Databázová tabulka</td><td>Položky dodávky — legacy</td><td><strong>D</strong></td><td>TBLSEL</td><td>5</td></tr>
+</table>
+<h4>Příklady ABAP kódu — E2E průchod (SD)</h4>
+<p><strong>[LEGACY] SD-1: Zpracování EDI objednávky — vytvoření SO s custom validacemi</strong></p>
+<pre onclick="openModal(this)"><code class="language-abap">&quot; ─── [~65 ř.] Parsování IDoc, deklarace, autorizace ─────────────────────────
+DATA: ls_kna1   TYPE kna1,
+      lv_price  TYPE netwr,
+      ls_header TYPE bapisdhd1,
+      lt_items  TYPE STANDARD TABLE OF bapisditm.
+&quot; ... [parsování IDOCu E1EDK01, mapování polí, autorizace V_VBAK_VKO ≈ dalších 50 ř.]
+
+&quot; ─── [~15 ř.] Klíčová logika ← hodnocena KernSeife ─────────────────────────
+SELECT SINGLE * FROM kna1 INTO ls_kna1         &quot; ← Level D | TBLSEL  | 5
+  WHERE kunnr = iv_kunnr.
+
+CALL FUNCTION &#x27;Z_SD_CHECK_CREDIT_LIMIT&#x27;        &quot; ← Level C | BF5    | 5
+  EXPORTING iv_kunnr  = iv_kunnr
+            iv_amount = iv_netwr
+  EXCEPTIONS credit_exceeded = 1.
+
+CALL CUSTOMER-FUNCTION &#x27;001&#x27;                   &quot; ← Level C | EF5    | 5
+  EXPORTING i_kunnr = iv_kunnr
+  IMPORTING e_price = lv_price.
+
+CALL FUNCTION &#x27;BAPI_SALESORDER_CREATEFROMDAT2&#x27; &quot; ← Level B | BF1    | 1
+  EXPORTING order_header_in = ls_header
+  TABLES    order_items_in  = lt_items.
+
+&quot; ─── [~20 ř.] Error handling + BAPI commit ───────────────────────────────────
+CALL FUNCTION &#x27;BAPI_TRANSACTION_COMMIT&#x27; EXPORTING wait = &#x27;X&#x27;.
+&quot; ... [MESSAGE, idoc status update ≈ dalších 15 ř.]</code></pre>
+<table>
+<tr><th>Volání</th><th>Level</th><th>KernSeife</th><th>Score</th></tr>
+<tr><td><code>KNA1</code> — SELECT</td><td>D</td><td>TBLSEL</td><td>5</td></tr>
+<tr><td><code>Z_SD_CHECK_CREDIT_LIMIT</code> — custom Z-FM</td><td>C</td><td>BF5</td><td>5</td></tr>
+<tr><td><code>CALL CUSTOMER-FUNCTION &#x27;001&#x27;</code> — User-Exit ceny</td><td>C</td><td>EF5</td><td>5</td></tr>
+<tr><td><code>BAPI_SALESORDER_CREATEFROMDAT2</code> — released BAPI</td><td>B</td><td>BF1</td><td>1</td></tr>
+<tr><td><strong>Skóre fragmentu</strong></td><td></td><td></td><td><strong>16</strong></td></tr>
+</table>
+<p><strong>[CLEAN CORE] SD-1: EDI SO — released CDS + released BAdI pro pricing + OData</strong></p>
+<pre onclick="openModal(this)"><code class="language-abap">&quot; ─── Validace zákazníka přes released CDS ────────────────────────────────────
+SELECT SINGLE businesspartner, customerclassification
+  FROM i_customer                                           &quot; ← Level A | BF0 | 0
+  WHERE businesspartner = @iv_kunnr
+  INTO @DATA(ls_customer).
+
+&quot; ─── Custom pricing logika přes released BAdI ────────────────────────────────
+CLASS zcl_sd_pricing DEFINITION PUBLIC FINAL.
+  PUBLIC SECTION.
+    INTERFACES if_sd_item_condition.           &quot; ← Level A | EF0 | 0
+ENDCLASS.
+
+&quot; ─── Vytvoření SO přes OData A_SalesOrder (HTTP Client) ──────────────────────
+DATA(lo_http) = cl_web_http_client_manager=&gt;create_by_destination( &quot; ← Level A | BF0 | 0
+  &#x27;S4_SD_SO_ODATA&#x27; ).
+lo_http-&gt;get_http_client( )-&gt;execute( if_web_http_client=&gt;post ).</code></pre>
+<table>
+<tr><th>Volání</th><th>Level</th><th>KernSeife</th><th>Score</th></tr>
+<tr><td><code>I_Customer</code> — released CDS</td><td>A</td><td>BF0</td><td>0</td></tr>
+<tr><td><code>INTERFACES if_sd_item_condition</code> — released BAdI</td><td>A</td><td>EF0</td><td>0</td></tr>
+<tr><td><code>cl_web_http_client_manager</code> — released HTTP client</td><td>A</td><td>BF0</td><td>0</td></tr>
+<tr><td><strong>Skóre fragmentu</strong></td><td></td><td></td><td><strong>0</strong></td></tr>
+</table>
+<blockquote class="tip">
+<p>💡 Z-FM (5) + User-Exit (5) + přímý SELECT (5) → released CDS + BAdI + OData. Pokles: <strong>16 → 0</strong>.</p>
+</blockquote>
+<p><strong>[LEGACY] SD-2: Tisk dodacího listu — SmartForms</strong></p>
+<pre onclick="openModal(this)"><code class="language-abap">&quot; ─── [~60 ř.] Deklarace, layout, autorizace ─────────────────────────────────
+DATA: ls_likp     TYPE likp,
+      lt_lips     TYPE STANDARD TABLE OF lips,
+      lv_fm_name  TYPE rs38l_fnam,
+      ls_ctrl     TYPE ssfctrlop.
+PARAMETERS: p_delivery TYPE vbeln_vl.
+&quot; ... [layout příprava, autorizace V_LIKP_VST, příprava tiskových parametrů ≈ dalších 45 ř.]
+
+&quot; ─── [~15 ř.] Klíčová logika ← hodnocena KernSeife ─────────────────────────
+SELECT SINGLE * FROM likp INTO ls_likp         &quot; ← Level D | TBLSEL  | 5
+  WHERE vbeln = p_delivery.
+
+SELECT * FROM lips INTO TABLE lt_lips          &quot; ← Level D | TBLSEL  | 5
+  WHERE vbeln = p_delivery.
+
+CALL FUNCTION &#x27;SSF_FUNCTION_MODULE_NAME&#x27;       &quot; ← Level D | FW9    | 9
+  EXPORTING formname = &#x27;ZSD_DELIVERY_NOTE&#x27;
+  IMPORTING fm_name  = lv_fm_name.
+
+CALL FUNCTION lv_fm_name                       &quot; ← Level D | FW9    | 9
+  EXPORTING control_parameters = ls_ctrl
+  TABLES    it_lips             = lt_lips.
+
+&quot; ─── [~15 ř.] Error handling ─────────────────────────────────────────────────
+IF sy-subrc &lt;&gt; 0. MESSAGE e010(zsd) WITH p_delivery. ENDIF.</code></pre>
+<table>
+<tr><th>Volání</th><th>Level</th><th>KernSeife</th><th>Score</th></tr>
+<tr><td><code>LIKP</code> — SELECT hlavičky</td><td>D</td><td>TBLSEL</td><td>5</td></tr>
+<tr><td><code>LIPS</code> — SELECT položek</td><td>D</td><td>TBLSEL</td><td>5</td></tr>
+<tr><td><code>SSF_FUNCTION_MODULE_NAME</code> — SmartForms lookup</td><td>D</td><td>FW9</td><td>9</td></tr>
+<tr><td>Dynamické volání SmartForms FM</td><td>D</td><td>FW9</td><td>9</td></tr>
+<tr><td><strong>Skóre fragmentu</strong></td><td></td><td></td><td><strong>28</strong></td></tr>
+</table>
+<p><strong>[CLEAN CORE] SD-2: Tisk dodávky — released CDS + BTP Document Services</strong></p>
+<pre onclick="openModal(this)"><code class="language-abap">&quot; ─── Čtení dodávky přes released CDS ────────────────────────────────────────
+SELECT FROM i_outbounddelivery                              &quot; ← Level A | BF0 | 0
+  FIELDS deliverydocument, shippingpoint, goodsissuedate
+  WHERE deliverydocument = @p_delivery
+  INTO TABLE @lt_delivery.
+
+SELECT FROM i_outbounddeliveryitem                         &quot; ← Level A | BF0 | 0
+  FIELDS deliverydocument, deliveryitem, material, deliveryquantity
+  WHERE deliverydocument = @p_delivery
+  INTO TABLE @lt_items.
+
+&quot; ─── Tisk přes SAP BTP Document Services (Adobe Forms / Print Service) ───────
+DATA(lo_http) = cl_web_http_client_manager=&gt;create_by_destination( &quot; ← Level A | BF0 | 0
+  &#x27;BTP_PRINT_SERVICE&#x27; ).
+&quot; Payload: JSON s daty dodávky → PDF generovaný na BTP
+lo_http-&gt;get_http_client( )-&gt;execute( if_web_http_client=&gt;post ).</code></pre>
+<table>
+<tr><th>Volání</th><th>Level</th><th>KernSeife</th><th>Score</th></tr>
+<tr><td><code>I_OutboundDelivery</code> — released CDS</td><td>A</td><td>BF0</td><td>0</td></tr>
+<tr><td><code>I_OutboundDeliveryItem</code> — released CDS</td><td>A</td><td>BF0</td><td>0</td></tr>
+<tr><td>BTP Print Service (HTTP call)</td><td>A</td><td>BF0</td><td>0</td></tr>
+<tr><td><strong>Skóre fragmentu</strong></td><td></td><td></td><td><strong>0</strong></td></tr>
+</table>
+<blockquote class="tip">
+<p>💡 SmartForms (FW9 × 2 = 18) + přímé SELECTy (TBLSEL × 2 = 10) → released CDS + BTP Print Service. Pokles: <strong>28 → 0</strong>.</p>
+</blockquote>
+<p><strong>[LEGACY] SD-3: ATP check — classic BAdI + RFC do SAP IBP</strong></p>
+<pre onclick="openModal(this)"><code class="language-abap">&quot; ─── [~60 ř.] GET BADI, deklarace, autorizace ───────────────────────────────
+DATA: lo_atp_check TYPE REF TO zif_sd_atp,
+      lv_atp_qty   TYPE menge_d,
+      lt_rules     TYPE STANDARD TABLE OF zatp_b2b_rule_s.
+&quot; ... [autorizace V_MARC_BW, nastavení filtru, lock materiálu ≈ dalších 45 ř.]
+
+&quot; ─── [~15 ř.] Klíčová logika ← hodnocena KernSeife ─────────────────────────
+GET BADI lo_atp_check                          &quot; ← Level C | EF5    | 5
+  FILTERS check_rule = &#x27;B2B&#x27;.
+
+CALL BADI lo_atp_check-&gt;check_availability     &quot; ← Level C | EF5    | 5
+  EXPORTING iv_matnr = iv_matnr
+            iv_werks = iv_werks
+            iv_menge = iv_menge
+  IMPORTING ev_atp_qty = lv_atp_qty.
+
+SELECT * FROM zatp_b2b_rules INTO TABLE lt_r   &quot; ← Level D | TBLSEL  | 5
+  WHERE matnr = iv_matnr.
+
+CALL FUNCTION &#x27;ZIBP_REALTIME_ATP&#x27;              &quot; ← Level D | BF9    | 9
+  DESTINATION &#x27;IBP_RFC&#x27;
+  EXPORTING it_items = lt_items.
+
+&quot; ─── [~15 ř.] Výsledek + error handling ─────────────────────────────────────
+IF sy-subrc &lt;&gt; 0. MESSAGE w020(zsd). ENDIF.</code></pre>
+<table>
+<tr><th>Volání</th><th>Level</th><th>KernSeife</th><th>Score</th></tr>
+<tr><td><code>GET BADI</code> — classic, non-released</td><td>C</td><td>EF5</td><td>5</td></tr>
+<tr><td><code>CALL BADI -&gt;check_availability</code></td><td>C</td><td>EF5</td><td>5</td></tr>
+<tr><td><code>ZATP_B2B_RULES</code> — SELECT</td><td>D</td><td>TBLSEL</td><td>5</td></tr>
+<tr><td><code>ZIBP_REALTIME_ATP</code> — RFC do SAP IBP</td><td>D</td><td>BF9</td><td>9</td></tr>
+<tr><td><strong>Skóre fragmentu</strong></td><td></td><td></td><td><strong>24</strong></td></tr>
+</table>
+<p><strong>[CLEAN CORE] SD-3: ATP check — released BAdI + SAP IBP REST přes BTP</strong></p>
+<pre onclick="openModal(this)"><code class="language-abap">&quot; ─── Released BAdI pro ATP check ─────────────────────────────────────────────
+CLASS zcl_sd_b2b_atp DEFINITION PUBLIC FINAL.
+  PUBLIC SECTION.
+    INTERFACES if_sd_atp_check.                &quot; ← Level A | EF0 | 0
+ENDCLASS.
+CLASS zcl_sd_b2b_atp IMPLEMENTATION.
+  METHOD if_sd_atp_check~check.
+    &quot; ─── Z-tabulka pravidel — zachovat (Level D zůstává, cíl snížit postupně)
+    SELECT SINGLE * FROM zatp_b2b_rules        &quot; ← Level D | TBLSEL | 5
+      WHERE matnr = @iv_matnr INTO @DATA(ls_rule).
+
+    &quot; ─── Volání SAP IBP přes BTP Integration Suite (REST iFlow) ─────────────
+    DATA(lo_http) = cl_web_http_client_manager=&gt;create_by_destination( &quot; ← Level A | BF0 | 0
+      &#x27;BTP_IS_IBP_ATP&#x27; ).
+    lo_http-&gt;get_http_client( )-&gt;execute( if_web_http_client=&gt;post ).
+  ENDMETHOD.
+ENDCLASS.</code></pre>
+<table>
+<tr><th>Volání</th><th>Level</th><th>KernSeife</th><th>Score</th></tr>
+<tr><td><code>INTERFACES if_sd_atp_check</code> — released BAdI</td><td>A</td><td>EF0</td><td>0</td></tr>
+<tr><td><code>ZATP_B2B_RULES</code> — SELECT (zachovat Z-tabulku)</td><td>D</td><td>TBLSEL</td><td>5</td></tr>
+<tr><td>BTP IS → SAP IBP (REST, bez RFC)</td><td>A</td><td>BF0</td><td>0</td></tr>
+<tr><td><strong>Skóre fragmentu</strong></td><td></td><td></td><td><strong>5</strong></td></tr>
+</table>
+<blockquote class="tip">
+<p>💡 Classic BAdI (EF5 × 2 = 10) + RFC (9) → released BAdI + BTP REST. Z-tabulka zachována. Pokles: <strong>24 → 5</strong>.</p>
+</blockquote>
+<a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+<hr>
+<h3 id="modul-co-controlling">Modul: CO — Controlling</h3>
+<h4>Funkcionalita: Nákladová a zisková střediska</h4>
+<table>
+<tr><th>Package</th><th>Objekt</th><th>Typ</th><th>Co zajišťuje</th><th>Level</th><th>KernSeife</th><th>Score</th></tr>
+<tr><td>CO_CCA</td><td><code>I_CostCenter</code></td><td>CDS View</td><td>Čtení kmenových dat nákladových středisek</td><td><strong>A</strong></td><td>BF0</td><td>0</td></tr>
+<tr><td>CO_CCA</td><td><code>I_CostCenterStdQuery</code></td><td>CDS View</td><td>Standardní dotaz na CC s analytickými atributy</td><td><strong>A</strong></td><td>BF0</td><td>0</td></tr>
+<tr><td>CO_PA</td><td><code>I_ProfitCenter</code></td><td>CDS View</td><td>Čtení kmenových dat ziskových středisek</td><td><strong>A</strong></td><td>BF0</td><td>0</td></tr>
+<tr><td>CO_CCA</td><td><code>I_ActualPlanJournalEntryItem</code></td><td>CDS View</td><td>Skutečné vs. plánované náklady — Embedded Analytics</td><td><strong>A</strong></td><td>BF0</td><td>0</td></tr>
+<tr><td>CO_CCA</td><td><code>CSKS</code></td><td>Databázová tabulka</td><td>Kmenová data CC — legacy</td><td><strong>D</strong></td><td>TBLSEL</td><td>5</td></tr>
+<tr><td>CO_CCA</td><td><code>CSKA</code></td><td>Databázová tabulka</td><td>Atributy CC — legacy</td><td><strong>D</strong></td><td>TBLSEL</td><td>5</td></tr>
+<tr><td>CO_PA</td><td><code>CEPC</code></td><td>Databázová tabulka</td><td>Kmenová data PC — legacy</td><td><strong>D</strong></td><td>TBLSEL</td><td>5</td></tr>
+</table>
+<h4>Příklady ABAP kódu — E2E průchod (CO)</h4>
+<p><strong>[LEGACY] CO-1: Měsíční uzávěrka — přeúčtování nákladů mezi CC</strong></p>
+<pre onclick="openModal(this)"><code class="language-abap">&quot; ─── [~70 ř.] Deklarace, batch parametry, autorizace ────────────────────────
+DATA: lt_costs   TYPE STANDARD TABLE OF cosr,
+      lv_year    TYPE gjahr,
+      lv_period  TYPE poper,
+      ls_result  TYPE zco_period_alloc_s.
+PARAMETERS: p_from_cc TYPE kostl, p_to_cc TYPE kostl,
+            p_gjahr   TYPE gjahr, p_perio  TYPE poper.
+AUTHORITY-CHECK OBJECT &#x27;K_CCA&#x27; FIELD &#x27;ACTVT&#x27; ID &#x27;02&#x27; FIELD &#x27;KOSTL&#x27; ID p_from_cc.
+IF sy-subrc &lt;&gt; 0. MESSAGE e001(zco). RETURN. ENDIF.
+&quot; ... [čtení alokačních pravidel ZTCO_ALLOC, lock CC, příprava dat ≈ dalších 50 ř.]
+
+&quot; ─── [~15 ř.] Klíčová logika ← hodnocena KernSeife ─────────────────────────
+CALL FUNCTION &#x27;CO_GET_BALANCE&#x27;                 &quot; ← Level D | BF9    | 9
+  EXPORTING i_kostl   = p_from_cc
+            i_gjahr   = p_gjahr
+            i_perio   = p_perio
+  IMPORTING et_costelements = lt_costs.
+
+CALL FUNCTION &#x27;KSRV_PLAN_EXECUTE&#x27;             &quot; ← Level D | BF9    | 9
+  EXPORTING im_kostl   = p_to_cc
+            im_gjahr   = p_gjahr
+  TABLES    im_costs   = lt_costs.
+
+INSERT INTO zco_period_alloc VALUES ls_result. &quot; ← Level D | TBLUPD | 10
+
+&quot; ─── [~20 ř.] Error handling + commit ───────────────────────────────────────
+IF sy-subrc &lt;&gt; 0. ROLLBACK WORK.
+  &quot; ... [chybový log, MESSAGE e... ≈ dalších 15 ř.]
+ELSE. COMMIT WORK AND WAIT.
+ENDIF.</code></pre>
+<table>
+<tr><th>Volání</th><th>Level</th><th>KernSeife</th><th>Score</th></tr>
+<tr><td><code>CO_GET_BALANCE</code> — non-released CO FM</td><td>D</td><td>BF9</td><td>9</td></tr>
+<tr><td><code>KSRV_PLAN_EXECUTE</code> — non-released CO FM</td><td>D</td><td>BF9</td><td>9</td></tr>
+<tr><td><code>ZCO_PERIOD_ALLOC</code> — INSERT</td><td>D</td><td>TBLUPD</td><td>10</td></tr>
+<tr><td><strong>Skóre fragmentu</strong></td><td></td><td></td><td><strong>28</strong></td></tr>
+</table>
+<p><strong>[CLEAN CORE] CO-1: Přeúčtování nákladů — released CDS + standardní CO-OM API</strong></p>
+<pre onclick="openModal(this)"><code class="language-abap">&quot; ─── Čtení skutečných vs. plánovaných nákladů přes released CDS ──────────────
+SELECT FROM i_actualplanjournalentryitem                    &quot; ← Level A | BF0 | 0
+  FIELDS costcenter, costcentervaluation, controllinglevel
+  WHERE costcenter = @p_from_cc AND fiscalyearperiod = @lv_fyp
+  INTO TABLE @lt_actuals.
+
+&quot; ─── Zaúčtování přeúčtování přes released CO document posting API ────────────
+&quot; Preferovaná cesta S/4HANA 2022+: CO allocation via released Business Object API
+DATA(lo_http) = cl_web_http_client_manager=&gt;create_by_destination( &quot; ← Level A | BF0 | 0
+  &#x27;S4_CO_ALLOC_API&#x27; ).
+lo_http-&gt;get_http_client( )-&gt;execute( if_web_http_client=&gt;post ).
+&quot; Alternativa: standard SAP CO-OM uzávěrkový report (KSV5/KSU5) — bez custom kódu</code></pre>
+<table>
+<tr><th>Volání</th><th>Level</th><th>KernSeife</th><th>Score</th></tr>
+<tr><td><code>I_ActualPlanJournalEntryItem</code> — released CDS</td><td>A</td><td>BF0</td><td>0</td></tr>
+<tr><td>CO Allocation API (HTTP/REST)</td><td>A</td><td>BF0</td><td>0</td></tr>
+<tr><td><strong>Skóre fragmentu</strong></td><td></td><td></td><td><strong>0</strong></td></tr>
+</table>
+<blockquote class="tip">
+<p>💡 Dva non-released CO FM (BF9 × 2 = 18) + Z-INSERT (10) → released CDS + CO API. Pokles: <strong>28 → 0</strong>.</p>
+</blockquote>
+<p><strong>[LEGACY] CO-2: Custom alokační klíč — User-Exit + přímý UPDATE CO tabulky</strong></p>
+<pre onclick="openModal(this)"><code class="language-abap">&quot; ─── [~60 ř.] Deklarace, výběr zakázek, autorizace ──────────────────────────
+DATA: lv_key      TYPE p DECIMALS 4,
+      lv_plan_sum TYPE wertv8,
+      lv_objnr    TYPE j_objnr.
+PARAMETERS: p_aufnr TYPE aufnr, p_kostl TYPE kostl.
+AUTHORITY-CHECK OBJECT &#x27;K_ORDER&#x27; FIELD &#x27;ACTVT&#x27; ID &#x27;02&#x27; FIELD &#x27;AUFNR&#x27; ID p_aufnr.
+IF sy-subrc &lt;&gt; 0. MESSAGE e005(zco). RETURN. ENDIF.
+&quot; ... [mapování AUFNR → OBJNR, lock zakázky, příprava klíče ≈ dalších 45 ř.]
+
+&quot; ─── [~15 ř.] Klíčová logika ← hodnocena KernSeife ─────────────────────────
+CALL CUSTOMER-FUNCTION &#x27;005&#x27;                   &quot; ← Level C | EF5    | 5
+  EXPORTING i_aufnr    = p_aufnr
+            i_kostl    = p_kostl
+  IMPORTING e_alloc_key = lv_key.
+
+SELECT SUM( wkg001 ) INTO lv_plan_sum          &quot; ← Level D | TBLSEL  | 5
+  FROM cosp
+  WHERE objnr = lv_objnr AND versn = &#x27;000&#x27;.
+
+UPDATE cosp SET wkg001 = lv_plan_sum * lv_key  &quot; ← Level D | TBLUPD | 10
+  WHERE objnr = lv_objnr AND versn = &#x27;000&#x27;.
+
+&quot; ─── [~15 ř.] Error handling ─────────────────────────────────────────────────
+IF sy-subrc &lt;&gt; 0. ROLLBACK WORK. MESSAGE e006(zco). ENDIF.</code></pre>
+<table>
+<tr><th>Volání</th><th>Level</th><th>KernSeife</th><th>Score</th></tr>
+<tr><td><code>CALL CUSTOMER-FUNCTION &#x27;005&#x27;</code> — User-Exit</td><td>C</td><td>EF5</td><td>5</td></tr>
+<tr><td><code>COSP</code> — SELECT (plánované hodnoty)</td><td>D</td><td>TBLSEL</td><td>5</td></tr>
+<tr><td><code>COSP</code> — UPDATE přímý (bez CO posting!)</td><td>D</td><td>TBLUPD</td><td>10</td></tr>
+<tr><td><strong>Skóre fragmentu</strong></td><td></td><td></td><td><strong>20</strong></td></tr>
+</table>
+<blockquote class="warning">
+<p>⚠️ Přímý UPDATE <code>COSP</code> obchází CO document trail — záznamy nejsou auditovatelné v CO-OM reporting.</p>
+</blockquote>
+<p><strong>[CLEAN CORE] CO-2: Alokační klíč — released BAdI + CO document posting API</strong></p>
+<pre onclick="openModal(this)"><code class="language-abap">&quot; ─── Released BAdI pro CO alokaci ────────────────────────────────────────────
+CLASS zcl_co_alloc_key DEFINITION PUBLIC FINAL.
+  PUBLIC SECTION.
+    INTERFACES if_co_allocation_rule.          &quot; ← Level A | EF0 | 0
+ENDCLASS.
+CLASS zcl_co_alloc_key IMPLEMENTATION.
+  METHOD if_co_allocation_rule~get_key.
+    &quot; ─── Pure ABAP logika výpočtu klíče — bez přímého SELECT COSP ────────────
+    rv_key = zcl_co_key_calc=&gt;calculate( iv_aufnr = iv_aufnr
+                                         iv_kostl = iv_kostl ).
+  ENDMETHOD.
+ENDCLASS.
+
+&quot; ─── Zaúčtování přes CO document API (ne přímý UPDATE COSP!) ─────────────────
+DATA(lo_http) = cl_web_http_client_manager=&gt;create_by_destination( &quot; ← Level A | BF0 | 0
+  &#x27;S4_CO_DOC_API&#x27; ).
+lo_http-&gt;get_http_client( )-&gt;execute( if_web_http_client=&gt;post ).</code></pre>
+<table>
+<tr><th>Volání</th><th>Level</th><th>KernSeife</th><th>Score</th></tr>
+<tr><td><code>INTERFACES if_co_allocation_rule</code> — released BAdI</td><td>A</td><td>EF0</td><td>0</td></tr>
+<tr><td>CO Document API (HTTP, bez COSP UPDATE)</td><td>A</td><td>BF0</td><td>0</td></tr>
+<tr><td><strong>Skóre fragmentu</strong></td><td></td><td></td><td><strong>0</strong></td></tr>
+</table>
+<blockquote class="tip">
+<p>💡 User-Exit (5) + COSP SELECT (5) + COSP UPDATE (10) → released BAdI + CO API. Pokles: <strong>20 → 0</strong>. Audit trail zachován.</p>
+</blockquote>
+<p><strong>[LEGACY] CO-3: Integrace s legacy plánovacím systémem — implicit enhancement + RFC</strong></p>
+<pre onclick="openModal(this)"><code class="language-abap">&quot; ─── Implicit enhancement UVNITŘ SAP FM CO_PA_PLAN_TRANSFER ──────────────────
+&quot; ─── Okolní SAP kód: ≈ 150 řádků FM — Enhancement NEVIDITELNÝ v SE80 ─────────
+&quot; ─── Scénář: synchronizace plan dat do externího systému ─────────────────────
+
+ENHANCEMENT 1 ZCO_PLAN_LEGACY_HOOK.           &quot; ← Level D | EF9    | 10
+  CALL FUNCTION &#x27;Z_LEGACY_PLAN_SYNC&#x27;          &quot; ← Level D | BF9    | 9
+    DESTINATION &#x27;LEGACY_PLAN&#x27;
+    EXPORTING iv_kostl  = iv_kostl
+              iv_amount = iv_amount
+              iv_gjahr  = iv_gjahr.
+
+  INSERT INTO zco_plan_sync_log VALUES ls_log. &quot; ← Level D | TBLUPD | 10
+ENDENHANCEMENT.
+
+&quot; ─── Pokračuje standardní SAP kód ────────────────────────────────────────────</code></pre>
+<table>
+<tr><th>Volání</th><th>Level</th><th>KernSeife</th><th>Score</th></tr>
+<tr><td><code>ENHANCEMENT</code> — implicit</td><td>D</td><td>EF9</td><td>10</td></tr>
+<tr><td><code>Z_LEGACY_PLAN_SYNC</code> — RFC do externího systému</td><td>D</td><td>BF9</td><td>9</td></tr>
+<tr><td><code>ZCO_PLAN_SYNC_LOG</code> — INSERT</td><td>D</td><td>TBLUPD</td><td>10</td></tr>
+<tr><td><strong>Skóre fragmentu</strong></td><td></td><td></td><td><strong>29</strong></td></tr>
+</table>
+<p><strong>[CLEAN CORE] CO-3: Integrace s plánovacím systémem — released BAdI + BTP iFlow</strong></p>
+<pre onclick="openModal(this)"><code class="language-abap">&quot; ─── Released Enhancement Spot (explicit, viditelný v ADT/SE19) ──────────────
+CLASS zcl_co_plan_sync DEFINITION PUBLIC FINAL.
+  PUBLIC SECTION.
+    INTERFACES if_co_plan_transfer.            &quot; ← Level A | EF0 | 0
+ENDCLASS.
+CLASS zcl_co_plan_sync IMPLEMENTATION.
+  METHOD if_co_plan_transfer~after_transfer.
+    &quot; ─── Synchronizace přes BTP Integration Suite (iFlow, bez RFC) ──────────
+    DATA(lo_http) = cl_web_http_client_manager=&gt;create_by_destination( &quot; ← Level A | BF0 | 0
+      &#x27;BTP_IS_LEGACY_PLAN&#x27; ).
+    lo_http-&gt;get_http_client( )-&gt;execute( if_web_http_client=&gt;post ).
+    &quot; ─── Log přes released Application Log API ───────────────────────────────
+    cl_bali_log=&gt;create( )-&gt;write_free_text( iv_text = &#x27;Plan sync OK&#x27; ). &quot; ← Level A | BF0 | 0
+  ENDMETHOD.
+ENDCLASS.</code></pre>
+<table>
+<tr><th>Volání</th><th>Level</th><th>KernSeife</th><th>Score</th></tr>
+<tr><td><code>INTERFACES if_co_plan_transfer</code> — released BAdI</td><td>A</td><td>EF0</td><td>0</td></tr>
+<tr><td>BTP Integration Suite iFlow (REST, bez RFC)</td><td>A</td><td>BF0</td><td>0</td></tr>
+<tr><td><code>cl_bali_log</code> — released Application Log</td><td>A</td><td>BF0</td><td>0</td></tr>
+<tr><td><strong>Skóre fragmentu</strong></td><td></td><td></td><td><strong>0</strong></td></tr>
+</table>
+<blockquote class="tip">
+<p>💡 Invisible EF9 (10) + RFC (9) + Z-INSERT (10) → released BAdI + BTP REST + logging API. Pokles: <strong>29 → 0</strong>.</p>
+</blockquote>
+<a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+<hr>
+<h3 id="modul-hr-human-capital-management">Modul: HR — Human Capital Management</h3>
+<h4>Funkcionalita: Kmenová data zaměstnance (Infotypes)</h4>
+<table>
+<tr><th>Package</th><th>Objekt</th><th>Typ</th><th>Co zajišťuje</th><th>Level</th><th>KernSeife</th><th>Score</th></tr>
+<tr><td>SF_EC</td><td>SuccessFactors Employee Central API</td><td>OData V2 REST</td><td>Čtení / aktualizace zaměstnaneckých dat přes BTP</td><td><strong>A</strong></td><td>BF0</td><td>0</td></tr>
+<tr><td>HRBAS</td><td><code>HR_GET_INFOTYPE</code></td><td>Function Module</td><td>Čtení infotypů — classic, bez released alternativy</td><td><strong>C</strong></td><td>BF5</td><td>5</td></tr>
+<tr><td>PA_PA</td><td><code>PA0001</code></td><td>Databázová tabulka</td><td>Infotyp 0001 — organizační přiřazení</td><td><strong>D</strong></td><td>TBLSEL</td><td>5</td></tr>
+<tr><td>PA_PA</td><td><code>PA0002</code></td><td>Databázová tabulka</td><td>Infotyp 0002 — osobní data zaměstnance</td><td><strong>D</strong></td><td>TBLSEL</td><td>5</td></tr>
+<tr><td>PA_PA</td><td><code>PA0008</code></td><td>Databázová tabulka</td><td>Infotyp 0008 — základní mzda</td><td><strong>D</strong></td><td>TBLSEL</td><td>5</td></tr>
+</table>
+<blockquote class="warning">
+<p>⚠️ HR modul má nejnižší pokrytí released API ze všech modulů — viz riziko v sekci 7.</p>
+</blockquote>
+<h4>Příklady ABAP kódu — E2E průchod (HR)</h4>
+<p><strong>[LEGACY] HR-1: Výpočet roční prémie — přímý přístup k infotypům</strong></p>
+<pre onclick="openModal(this)"><code class="language-abap">&quot; ─── [~70 ř.] Deklarace, výběr zaměstnanců, autorizace ──────────────────────
+DATA: ls_pa0008   TYPE pa0008,
+      lt_deducts  TYPE STANDARD TABLE OF pa0014,
+      lt_it0015   TYPE STANDARD TABLE OF p0015,
+      ls_result   TYPE zhr_bonus_result_s.
+PARAMETERS: p_persp TYPE c LENGTH 2, p_year TYPE numc4.
+AUTHORITY-CHECK OBJECT &#x27;P_ORGIN&#x27; FIELD &#x27;INFTY&#x27; ID &#x27;0008&#x27; FIELD &#x27;AUTHC&#x27; ID &#x27;R&#x27;.
+IF sy-subrc &lt;&gt; 0. MESSAGE e010(zhr). RETURN. ENDIF.
+&quot; ... [výběr aktivních zaměstnanců z PA0000, loop přes zaměstnance ≈ dalších 50 ř.]
+
+&quot; ─── [~15 ř.] Klíčová logika ← hodnocena KernSeife ─────────────────────────
+SELECT SINGLE * FROM pa0008 INTO ls_pa0008     &quot; ← Level D | TBLSEL  | 5
+  WHERE pernr = iv_pernr AND endda = &#x27;99991231&#x27;.
+
+SELECT * FROM pa0014 INTO TABLE lt_deducts     &quot; ← Level D | TBLSEL  | 5
+  WHERE pernr = iv_pernr AND endda = &#x27;99991231&#x27;.
+
+CALL FUNCTION &#x27;HR_GET_INFOTYPE&#x27;                &quot; ← Level C | BF5    | 5
+  EXPORTING pernr     = iv_pernr
+            infty     = &#x27;0015&#x27;
+  TABLES    infty_tab = lt_it0015.
+
+INSERT INTO zhr_bonus_result VALUES ls_result. &quot; ← Level D | TBLUPD | 10
+
+&quot; ─── [~20 ř.] Error handling + commit ───────────────────────────────────────
+IF sy-subrc &lt;&gt; 0. ROLLBACK WORK.
+  &quot; ... [MESSAGE e..., cleanup ≈ dalších 15 ř.]
+ELSE. COMMIT WORK AND WAIT.
+ENDIF.</code></pre>
+<table>
+<tr><th>Volání</th><th>Level</th><th>KernSeife</th><th>Score</th></tr>
+<tr><td><code>PA0008</code> — SELECT (základní mzda)</td><td>D</td><td>TBLSEL</td><td>5</td></tr>
+<tr><td><code>PA0014</code> — SELECT (srážky)</td><td>D</td><td>TBLSEL</td><td>5</td></tr>
+<tr><td><code>HR_GET_INFOTYPE</code> — classic HR FM</td><td>C</td><td>BF5</td><td>5</td></tr>
+<tr><td><code>ZHR_BONUS_RESULT</code> — INSERT</td><td>D</td><td>TBLUPD</td><td>10</td></tr>
+<tr><td><strong>Skóre fragmentu</strong></td><td></td><td></td><td><strong>25</strong></td></tr>
+</table>
+<p><strong>[CLEAN CORE] HR-1: Prémie — SuccessFactors EC OData API + released logging</strong></p>
+<pre onclick="openModal(this)"><code class="language-abap">&quot; ─── Čtení kompenzačních dat přes SuccessFactors EC OData API (přes BTP) ─────
+&quot; ─── Přístup: S/4HANA → BTP Integration Suite → EC OData V2 ────────────────
+DATA(lo_http) = cl_web_http_client_manager=&gt;create_by_destination( &quot; ← Level A | BF0 | 0
+  &#x27;BTP_IS_SF_EC&#x27; ).
+&quot; Endpoint: /odata/v2/EmpCompensation?pernr=...
+lo_http-&gt;get_http_client( )-&gt;execute( if_web_http_client=&gt;get ).
+
+&quot; ─── Pure ABAP kalkulace prémie (bez přístupu na PA-tabulky) ─────────────────
+lv_bonus = zcl_hr_bonus_calc=&gt;calculate( it_ec_data = lt_compensation ).
+
+&quot; ─── Uložení výsledku přes RAP Business Object (ne přímý INSERT) ──────────────
+MODIFY ENTITY zhr_bonus_result_bo                           &quot; ← Level A | BF0 | 0
+  CREATE FIELDS ( pernr bonus_amount )
+  WITH VALUE #( ( %cid = &#x27;1&#x27; pernr = iv_pernr bonus_amount = lv_bonus ) ).</code></pre>
+<table>
+<tr><th>Volání</th><th>Level</th><th>KernSeife</th><th>Score</th></tr>
+<tr><td>BTP IS → SuccessFactors EC OData (HTTP)</td><td>A</td><td>BF0</td><td>0</td></tr>
+<tr><td><code>zcl_hr_bonus_calc</code> — pure ABAP</td><td>A</td><td>BF0</td><td>0</td></tr>
+<tr><td><code>MODIFY ENTITY</code> — RAP BO (ne přímý INSERT)</td><td>A</td><td>BF0</td><td>0</td></tr>
+<tr><td><strong>Skóre fragmentu</strong></td><td></td><td></td><td><strong>0</strong></td></tr>
+</table>
+<blockquote class="tip">
+<p>💡 Přímé SELECTy PA (5+5) + classic HR FM (5) + Z-INSERT (10) → BTP/SF EC API + RAP BO. Pokles: <strong>25 → 0</strong>.</p>
+</blockquote>
+<p><strong>[LEGACY] HR-2: Hromadný přesun zaměstnanců — User-Exit + přímý UPDATE infotypu</strong></p>
+<pre onclick="openModal(this)"><code class="language-abap">&quot; ─── [~65 ř.] Deklarace, výběr, autorizace ───────────────────────────────────
+DATA: lt_pernrs TYPE STANDARD TABLE OF pernr_d,
+      lv_approved TYPE c.
+PARAMETERS: p_orgeh TYPE orgeh, p_new_orgeh TYPE orgeh.
+AUTHORITY-CHECK OBJECT &#x27;P_ORGIN&#x27;
+  FIELD &#x27;INFTY&#x27; ID &#x27;0001&#x27; FIELD &#x27;AUTHC&#x27; ID &#x27;W&#x27;.
+IF sy-subrc &lt;&gt; 0. MESSAGE e020(zhr). RETURN. ENDIF.
+&quot; ... [výběr zaměstnanců z PA0001 dle org. jednotky, lock infotypů ≈ dalších 50 ř.]
+
+&quot; ─── [~15 ř.] Klíčová logika ← hodnocena KernSeife ─────────────────────────
+CALL CUSTOMER-FUNCTION &#x27;001&#x27;                   &quot; ← Level C | EF5    | 5
+  EXPORTING i_pernr     = iv_pernr
+            i_new_orgeh = p_new_orgeh
+  IMPORTING e_approved  = lv_approved.
+
+IF lv_approved = abap_true.
+  UPDATE pa0001                                &quot; ← Level D | TBLUPD | 10
+    SET orgeh = p_new_orgeh
+    WHERE pernr = iv_pernr AND endda = &#x27;99991231&#x27;.
+
+  UPDATE pa2001                                &quot; ← Level D | TBLUPD | 10
+    SET begda = sy-datum
+    WHERE pernr = iv_pernr.
+ENDIF.
+
+&quot; ─── [~15 ř.] Cleanup ────────────────────────────────────────────────────────
+COMMIT WORK AND WAIT.
+&quot; ... [DEQUEUE infotypy, výpis výsledků ≈ dalších 10 ř.]</code></pre>
+<table>
+<tr><th>Volání</th><th>Level</th><th>KernSeife</th><th>Score</th></tr>
+<tr><td><code>CALL CUSTOMER-FUNCTION &#x27;001&#x27;</code> — User-Exit</td><td>C</td><td>EF5</td><td>5</td></tr>
+<tr><td><code>PA0001</code> — UPDATE přímý (org. přiřazení!)</td><td>D</td><td>TBLUPD</td><td>10</td></tr>
+<tr><td><code>PA2001</code> — UPDATE přímý (časové hospodářství!)</td><td>D</td><td>TBLUPD</td><td>10</td></tr>
+<tr><td><strong>Skóre fragmentu</strong></td><td></td><td></td><td><strong>25</strong></td></tr>
+</table>
+<blockquote class="warning">
+<p>⚠️ Přímý UPDATE HR infotypových tabulek obchází HR time constraint management a HR locking — vysoké riziko korupce infotypové history a chyb v payrollu.</p>
+</blockquote>
+<p><strong>[CLEAN CORE] HR-2: Přesun zaměstnanců — released BAPI + approval workflow BAdI</strong></p>
+<pre onclick="openModal(this)"><code class="language-abap">&quot; ─── Schválení přes released BAdI (explicit Enhancement Spot) ────────────────
+CLASS zcl_hr_org_approval DEFINITION PUBLIC FINAL.
+  PUBLIC SECTION.
+    INTERFACES if_hcm_org_change_approval.     &quot; ← Level A | EF0 | 0
+ENDCLASS.
+
+&quot; ─── Přesun přes released BAPI (ne přímý UPDATE PA0001) ─────────────────────
+CALL FUNCTION &#x27;BAPI_HRMASTER_DATA_SAVE_REPL_MULT&#x27; &quot; ← Level B | BF1 | 1
+  EXPORTING pernr       = iv_pernr
+  TABLES    infty_tab   = lt_infty_changes.
+
+CALL FUNCTION &#x27;BAPI_TRANSACTION_COMMIT&#x27;
+  EXPORTING wait = &#x27;X&#x27;.                        &quot; ← Level A | BF0 | 0
+
+&quot; ─── Workflow notifikace přes released BTP e-mail API ────────────────────────
+cl_bcs_mail=&gt;create_instance(                  &quot; ← Level A | BF0 | 0
+  )-&gt;set_subject( &#x27;Org change approved&#x27; )-&gt;send( ).</code></pre>
+<table>
+<tr><th>Volání</th><th>Level</th><th>KernSeife</th><th>Score</th></tr>
+<tr><td><code>INTERFACES if_hcm_org_change_approval</code> — released BAdI</td><td>A</td><td>EF0</td><td>0</td></tr>
+<tr><td><code>BAPI_HRMASTER_DATA_SAVE_REPL_MULT</code> — released BAPI</td><td>B</td><td>BF1</td><td>1</td></tr>
+<tr><td><code>cl_bcs_mail</code> — released email API</td><td>A</td><td>BF0</td><td>0</td></tr>
+<tr><td><strong>Skóre fragmentu</strong></td><td></td><td></td><td><strong>1</strong></td></tr>
+</table>
+<blockquote class="tip">
+<p>💡 User-Exit (5) + PA0001 UPDATE (10) + PA2001 UPDATE (10) → released BAdI + released BAPI. Pokles: <strong>25 → 1</strong>. PA infotypy chráněny BAPI API vrstvou.</p>
+</blockquote>
+<p><strong>[LEGACY] HR-3: Výpis odměn — classic ALV + SAPScript tisk</strong></p>
+<pre onclick="openModal(this)"><code class="language-abap">&quot; ─── [~70 ř.] Deklarace, výběr, layout příprava, autorizace ─────────────────
+DATA: lt_emp      TYPE STANDARD TABLE OF pa0002,
+      ls_layout   TYPE slis_layout_alv,
+      lt_fieldcat TYPE slis_t_fieldcat_alv.
+PARAMETERS: p_persp TYPE c LENGTH 2, p_year TYPE numc4.
+AUTHORITY-CHECK OBJECT &#x27;P_ORGIN&#x27; FIELD &#x27;INFTY&#x27; ID &#x27;0002&#x27; FIELD &#x27;AUTHC&#x27; ID &#x27;R&#x27;.
+IF sy-subrc &lt;&gt; 0. MESSAGE e010(zhr). RETURN. ENDIF.
+&quot; ... [příprava field catalog, layout ALV, tiskový parametr SAPScript ≈ dalších 50 ř.]
+
+&quot; ─── [~15 ř.] Klíčová logika ← hodnocena KernSeife ─────────────────────────
+SELECT pernr nachn vorna INTO TABLE lt_emp     &quot; ← Level D | TBLSEL  | 5
+  FROM pa0002
+  WHERE endda = &#x27;99991231&#x27;.
+
+CALL FUNCTION &#x27;REUSE_ALV_GRID_DISPLAY&#x27;         &quot; ← Level C | BF5    | 5
+  EXPORTING i_callback_program = sy-repid
+            is_layout           = ls_layout
+  TABLES    it_outtab           = lt_emp.
+
+CALL FUNCTION &#x27;OPEN_FORM&#x27;                      &quot; ← Level D | FW9    | 9
+  EXPORTING form = &#x27;ZHR_ANNUAL_BONUS&#x27;.
+
+CALL FUNCTION &#x27;WRITE_FORM&#x27;                     &quot; ← Level D | FW9    | 9
+  EXPORTING element = &#x27;MAIN&#x27;.
+
+CALL FUNCTION &#x27;CLOSE_FORM&#x27;.                    &quot; ← Level D | FW9    | 9
+
+&quot; ─── [~15 ř.] Error handling ─────────────────────────────────────────────────
+IF sy-subrc &lt;&gt; 0. MESSAGE e030(zhr). ENDIF.</code></pre>
+<table>
+<tr><th>Volání</th><th>Level</th><th>KernSeife</th><th>Score</th></tr>
+<tr><td><code>PA0002</code> — SELECT</td><td>D</td><td>TBLSEL</td><td>5</td></tr>
+<tr><td><code>REUSE_ALV_GRID_DISPLAY</code> — classic ALV FM</td><td>C</td><td>BF5</td><td>5</td></tr>
+<tr><td><code>OPEN_FORM</code> — SAPScript</td><td>D</td><td>FW9</td><td>9</td></tr>
+<tr><td><code>WRITE_FORM</code> — SAPScript</td><td>D</td><td>FW9</td><td>9</td></tr>
+<tr><td><code>CLOSE_FORM</code> — SAPScript</td><td>D</td><td>FW9</td><td>9</td></tr>
+<tr><td><strong>Skóre fragmentu</strong></td><td></td><td></td><td><strong>37</strong></td></tr>
+</table>
+<p><strong>[CLEAN CORE] HR-3: Výpis odměn — Fiori Analytical App + BTP Document Services</strong></p>
+<pre onclick="openModal(this)"><code class="language-abap">&quot; ─── Tato funkcionalita NEVYŽADUJE custom ABAP v Clean Core ──────────────────
+&quot; ─── Doporučení: nahradit standardní SAP Fiori Analytical App ───────────────
+&quot;     → SAP Fiori App ID F2348 (Employee Compensation Report)
+&quot;     → Nebo custom SAPUI5 app s consumed CDS přes OData
+
+&quot; ─── Pokud zůstává custom kód: CDS → OData + BTP Print Service ──────────────
+SELECT FROM i_employeebasicdataby                           &quot; ← Level A | BF0 | 0
+  FIELDS personalnumber, lastname, firstname
+  WHERE enddate = &#x27;99991231&#x27;
+  INTO TABLE @lt_emp.
+
+&quot; ─── Tisk přes SAP BTP Document Services (Adobe Forms) ──────────────────────
+DATA(lo_http) = cl_web_http_client_manager=&gt;create_by_destination( &quot; ← Level A | BF0 | 0
+  &#x27;BTP_PRINT_SERVICE&#x27; ).
+&quot; Payload: JSON s daty zaměstnanců → PDF vygenerovaný na BTP (Adobe Forms)
+lo_http-&gt;get_http_client( )-&gt;execute( if_web_http_client=&gt;post ).</code></pre>
+<table>
+<tr><th>Volání</th><th>Level</th><th>KernSeife</th><th>Score</th></tr>
+<tr><td><code>I_EmployeeBasicDataBy</code> — released CDS</td><td>A</td><td>BF0</td><td>0</td></tr>
+<tr><td>BTP Document Services (HTTP/REST)</td><td>A</td><td>BF0</td><td>0</td></tr>
+<tr><td><strong>Skóre fragmentu</strong></td><td></td><td></td><td><strong>0</strong></td></tr>
+</table>
+<blockquote class="tip">
+<p>💡 SAPScript (FW9 × 3 = 27) + PA0002 SELECT (5) + ALV FM (5) → released CDS + BTP Print Service. Pokles: <strong>37 → 0</strong>.  </p>
+<p>💡 Nejlepší volba: nahradit celý report standardní SAP Fiori Analytical App → <strong>nulový custom ABAP</strong>.</p>
+</blockquote>
+<a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+<hr>
+<h3 id="crosscutting-extensibility-vechny-moduly">Cross-cutting: Extensibility (všechny moduly)</h3>
+<h4>Technologie rozšiřitelnosti — srovnání</h4>
+<table>
+<tr><th>-</th><th>Technologie</th><th>Co zajišťuje</th><th>Level</th><th>KernSeife</th><th>Score</th></tr>
+<tr><td>✅</td><td>BAdI (released) — <code>GET BADI</code> + released Enhancement Spot</td><td>Formalizovaný hook s garantovanou zpětnou kompatibilitou</td><td><strong>A</strong></td><td>EF0</td><td>0</td></tr>
+<tr><td>✅</td><td>BAdI (released) s nástupcem — legacy BAdI s published replacement</td><td>Stále funkční, existuje migration path</td><td><strong>A</strong></td><td>EF0</td><td>0</td></tr>
+<tr><td>⚠️</td><td>BAdI (classic, non-released)</td><td>Enhancement hook bez stability kontraktu — SAP může odebrat</td><td><strong>C</strong></td><td>EF5</td><td>5</td></tr>
+<tr><td>⚠️</td><td>Enhancement Spot — Utility (explicit, viditelný)</td><td>Rozšíření s hookingem viditelným v SE80</td><td><strong>B/C</strong></td><td>EF3</td><td>3</td></tr>
+<tr><td>⚠️</td><td>User-Exit (<code>CALL CUSTOMER-FUNCTION</code>)</td><td>Starý enhancement mechanismus, SAP jej v S/4 odstraňuje</td><td><strong>C</strong></td><td>EF5</td><td>5</td></tr>
+<tr><td>❌</td><td>Implicit Enhancement (<code>ENHANCEMENT ... ENDENHANCEMENT</code>)</td><td>Neviditelné zásahy do SAP kódu — highest upgrade risk</td><td><strong>D</strong></td><td>EF9</td><td>10</td></tr>
+<tr><td>❌</td><td>SAP Standard Modification (přímá změna SAP objektu)</td><td>Trvalá závislost na SAP interní implementaci</td><td><strong>D</strong></td><td>EF9</td><td>10</td></tr>
+<tr><td>❌</td><td>Framework — Avoid (FW9)</td><td>SAP deprecated framework technologie (např. Web Dynpro)</td><td><strong>D</strong></td><td>FW9</td><td>9</td></tr>
+</table>
+<a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+<hr>
+<blockquote>
+<p><strong>Jak číst tabulky:</strong></p>
+<p>- <strong>Level A–D</strong> = klasifikace dle SAP Clean Core Extensibility modelu (A = released/cloud-ready, D = avoid/blocking)</p>
+<p>- <strong>KernSeife kód</strong> = kód přiřazovaný ATC checkem dle <code>defaultSetup.json</code> z <code>github.com/SAP/project-kernseife</code></p>
+<p>- <strong>Score</strong> = váha objektu pro výpočet celkového KernSeife skóre systému</p>
+<p>- ¹ <strong>BAPI jako objekt</strong> může být technicky released (BF0/BF1 v KernSeife). Level B označuje vzorec použití pro nový vývoj — pro nové integrace preferujeme OData / REST API.</p>
+</blockquote>
+<a href="#toc" class="back-to-toc">↑ zpět na obsah</a>
+<hr>
+<h2 id="propojení">🔗 Propojení</h2>
+<ul>
+<li>Vzniklé z: <em>2026-04-09-clean-core-prezentace-task</em> — Slide 4, akce #2 „Aktualizace guidelines"</li>
+<li>Stará pravidla: <em>ABAP-Guidelines-Legacy</em></li>
+<li>Nová pravidla: <em>ABAP-Guidelines-S4-CleanCore</em></li>
+<li>Předchozí verze: <em>ABAP-Guidelines-Konverzni-proces</em> (v1)</li>
+<li>Reference: <em>SAP Clean Core — Integrace, Extensibility a RISE Metodologie (2026-04-14)</em></li>
+<li>Reference: <em>Clean Core — Mluvený scénář</em></li>
+<li>Podnět k v2: nepřátelská analýza dokumentu (<code>nepratelska_analyza_zaver.md</code>)</li>
+</ul>
+
+<div class="log"><h3>📝 Changelog</h3><ul><li>v2.0 (2026-04-17): Přidána klasifikace pravidel (POVINNÉ/DOPORUČENO/TOLEROVÁNO), sekce 5a (limity Clean Core), zmírněn absolutní jazyk, rozšířena zákaznická komunikace — na základě nepřátelské analýzy dokumentu</li></ul></div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal" onclick="closeModalOnOverlay(event)">
+  <div class="modal-box">
+    <div class="modal-topbar">
+      <button class="modal-btn" onclick="pzZoom(1.25)">＋</button>
+      <button class="modal-btn" onclick="pzZoom(0.8)">－</button>
+      <button class="modal-btn" onclick="pzReset()">⟳ reset</button>
+      <span class="modal-scale-label" id="scale-label">100 %</span>
+      <span class="modal-hint">scroll = zoom &nbsp;·&nbsp; tažení = pohyb &nbsp;·&nbsp; Esc = zavřít</span>
+      <button class="modal-btn close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-viewport" id="modal-viewport">
+      <div id="panzoom-target"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+let pz = { scale: 1, x: 0, y: 0 };
+let pzDrag = { active: false, startX: 0, startY: 0 };
+let pzPinch = { active: false, dist: 0 };
+function pzTarget()   { return document.getElementById('panzoom-target'); }
+function pzViewport() { return document.getElementById('modal-viewport'); }
+function pzApply() {
+  pzTarget().style.transform = `translate(${pz.x}px, ${pz.y}px) scale(${pz.scale})`;
+  document.getElementById('scale-label').textContent = Math.round(pz.scale * 100) + ' %';
+}
+function pzZoom(factor, cx, cy) {
+  const vp = pzViewport(), r = vp.getBoundingClientRect();
+  const px = cx !== undefined ? cx : r.width / 2;
+  const py = cy !== undefined ? cy : r.height / 2;
+  const newScale = Math.min(Math.max(pz.scale * factor, 0.15), 10);
+  const ratio = newScale / pz.scale;
+  pz.x = px - ratio * (px - pz.x);
+  pz.y = py - ratio * (py - pz.y);
+  pz.scale = newScale;
+  pzApply();
+}
+function pzReset() { pz = { scale: 1, x: 0, y: 0 }; pzApply(); }
+function onWheel(e) {
+  e.preventDefault();
+  const r = pzViewport().getBoundingClientRect();
+  pzZoom(e.deltaY < 0 ? 1.12 : 0.89, e.clientX - r.left, e.clientY - r.top);
+}
+function onMouseDown(e) {
+  if (e.button !== 0) return;
+  pzDrag.active = true;
+  pzDrag.startX = e.clientX - pz.x;
+  pzDrag.startY = e.clientY - pz.y;
+  pzViewport().classList.add('dragging');
+  e.preventDefault();
+}
+function onMouseMove(e) {
+  if (!pzDrag.active) return;
+  pz.x = e.clientX - pzDrag.startX;
+  pz.y = e.clientY - pzDrag.startY;
+  pzApply();
+}
+function onMouseUp() { pzDrag.active = false; pzViewport().classList.remove('dragging'); }
+function touchDist(t) { return Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY); }
+function onTouchStart(e) {
+  if (e.touches.length === 1) {
+    pzDrag.active = true;
+    pzDrag.startX = e.touches[0].clientX - pz.x;
+    pzDrag.startY = e.touches[0].clientY - pz.y;
+  } else if (e.touches.length === 2) {
+    pzDrag.active = false; pzPinch.active = true; pzPinch.dist = touchDist(e.touches);
+  }
+}
+function onTouchMove(e) {
+  e.preventDefault();
+  if (e.touches.length === 1 && pzDrag.active) {
+    pz.x = e.touches[0].clientX - pzDrag.startX;
+    pz.y = e.touches[0].clientY - pzDrag.startY;
+    pzApply();
+  } else if (e.touches.length === 2 && pzPinch.active) {
+    const dist = touchDist(e.touches);
+    const r = pzViewport().getBoundingClientRect();
+    const mx = ((e.touches[0].clientX + e.touches[1].clientX) / 2) - r.left;
+    const my = ((e.touches[0].clientY + e.touches[1].clientY) / 2) - r.top;
+    pzZoom(dist / pzPinch.dist, mx, my);
+    pzPinch.dist = dist;
+  }
+}
+function onTouchEnd(e) { if (e.touches.length === 0) { pzDrag.active = false; pzPinch.active = false; } }
+function attachPanZoom() {
+  const vp = pzViewport();
+  vp.addEventListener('wheel', onWheel, { passive: false });
+  vp.addEventListener('mousedown', onMouseDown);
+  vp.addEventListener('dblclick', pzReset);
+  vp.addEventListener('touchstart', onTouchStart, { passive: true });
+  vp.addEventListener('touchmove', onTouchMove, { passive: false });
+  vp.addEventListener('touchend', onTouchEnd, { passive: true });
+  document.addEventListener('mousemove', onMouseMove);
+  document.addEventListener('mouseup', onMouseUp);
+}
+function detachPanZoom() {
+  const vp = pzViewport();
+  vp.removeEventListener('wheel', onWheel);
+  vp.removeEventListener('mousedown', onMouseDown);
+  vp.removeEventListener('dblclick', pzReset);
+  vp.removeEventListener('touchstart', onTouchStart);
+  vp.removeEventListener('touchmove', onTouchMove);
+  vp.removeEventListener('touchend', onTouchEnd);
+  document.removeEventListener('mousemove', onMouseMove);
+  document.removeEventListener('mouseup', onMouseUp);
+}
+function openModal(el) {
+  const target = document.getElementById('panzoom-target');
+  target.innerHTML = ''; pzReset();
+  if (el.classList && el.classList.contains('mermaid-wrap')) {
+    const svg = el.querySelector('svg');
+    if (svg) {
+      const clone = svg.cloneNode(true);
+      clone.style.cssText = 'max-width:none; width:auto; height:auto; display:block; margin:0 auto;';
+      target.appendChild(clone);
+    }
+  } else if (el.tagName === 'PRE') {
+    target.appendChild(el.cloneNode(true));
+  } else if (el.tagName === 'IMG') {
+    const img = document.createElement('img');
+    img.src = el.src; img.alt = el.alt;
+    target.appendChild(img);
+  }
+  document.getElementById('modal').classList.add('open');
+  attachPanZoom();
+  document.addEventListener('keydown', handleEsc);
+}
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  detachPanZoom();
+  document.removeEventListener('keydown', handleEsc);
+  setTimeout(() => { document.getElementById('panzoom-target').innerHTML = ''; }, 200);
+}
+function closeModalOnOverlay(e) { if (e.target === document.getElementById('modal')) closeModal(); }
+function handleEsc(e) { if (e.key === 'Escape') closeModal(); }
+</script>
+</body>
+</html>
